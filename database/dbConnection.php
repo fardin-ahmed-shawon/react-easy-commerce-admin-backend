@@ -1,5 +1,5 @@
 <?php
-$site_link = "";
+$site_link = "http://localhost/test/easy_tech_solutions/react_easy_commerce/";
 $servername = "localhost";
 
 //--------------------------------------------------------------------
