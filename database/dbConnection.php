@@ -8,7 +8,7 @@ $servername = "localhost";
 
 $username = "root";
 $password = "";
-$database_name = "easy_commerce_v9.3";
+$database_name = "easy_commerce_v9_3";
 
 // For production -----------------------------------------------------
 
