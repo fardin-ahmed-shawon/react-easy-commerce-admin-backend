@@ -71,13 +71,47 @@ if ($action == 'place-order') {
             $order['payment_method']    // string
         );
 
+        // START //
+        if ($stmt->execute()) {
 
-        if (!$stmt->execute()) {
+                if ($order['payment_method'] != "Cash On Delivery") {
+
+                    $order_no = $conn->insert_id;
+
+                    $sql_payment = "INSERT INTO payment_info (invoice_no, order_no, order_status, payment_method, acc_number, transaction_id, payment_status)
+                    VALUES (?, ?, 'Pending', ?, ?, ?, 'Unpaid')";
+
+                    $stmt_payment = $conn->prepare($sql_payment);
+
+                    $stmt_payment->bind_param("sisss", $order['invoice_no'], $order_no, $order['payment_method'], $order['accNum'], $order['transactionID']);
+
+                    $stmt_payment->execute();
+                    $stmt_payment->close();
+                }
+
+                // Decrease product stock
+                $sql_stock = "UPDATE product_info SET available_stock = available_stock - ? WHERE product_id = ?";
+                $stmt_stock = $conn->prepare($sql_stock);
+                $stmt_stock->bind_param("ii", $order['product_quantity'], $order['product_id']);
+                $stmt_stock->execute();
+                $stmt_stock->close();
+                // END
+
+                // Send a confirmation sms to the customer
+                $phoneNumber = '88' . $order['user_phone'];
+                $sms = "Dear {$order['user_full_name']}, your order with Invoice No: {$order['invoice_no']} has been placed successfully. Order Amount: {$order['total_price']} Tk. Thank you for shopping with us.";
+                //echo send_sms_to_customer($phoneNumber, $sms);
+                // end
+
+        } else {
             echo json_encode(["success"=>false, "message"=>"Execute failed: ".$stmt->error]);
             exit();
         }
-    }
+        // END
 
+    }
+    
+    
     echo json_encode(["success"=>true, "message"=>"Order placed successfully!"]);
     exit();
 }
