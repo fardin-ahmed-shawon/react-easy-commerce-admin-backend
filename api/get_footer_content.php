@@ -30,12 +30,12 @@ if ($action == '') {
 
 
 //////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////// Handle the 'get-banners' action ///////////////////////////
+//////////////////////////// Handle the 'get-footer-content' action ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
-if ($action == 'get-banners') {
+if ($action == 'get-footer-content') {
 
-    // Query the website_info table for banners
-    $sql = "SELECT banner_one, banner_two FROM website_info WHERE id = 1";
+    // Query the footer_info table for the record with id = 1
+    $sql = "SELECT * FROM footer_info WHERE id = 1";
     $result = mysqli_query($conn, $sql);
 
     if (!$result) {
@@ -48,35 +48,30 @@ if ($action == 'get-banners') {
 
     // Fetch the single record
     $row = mysqli_fetch_assoc($result);
-    
+
     if (!$row) {
         echo json_encode([
             "success" => false,
-            "message" => "No banners found"
+            "message" => "No website info found"
         ]);
         exit();
     }
 
-    // Prepare response in array format
-    $banners = [];
+    // Prepare response
+    $response = [
+        "id" => (int)$row['id'],
+        "about_us" => $row['about_us'],
+        "contact_us" => $row['contact_us'],
+        "faq" => $row['faq'],
+        "terms_of_use" => $row['terms_of_use'],
+        "privacy_policy" => $row['privacy_policy'],
+        "shipping_delivery" => $row['shipping_delivery']
+    ];
 
-    if (!empty($row['banner_one'])) {
-        $banners[] = [
-            "id" => 1,
-            "img" => $site_link . 'Admin/' . $row['banner_one']
-        ];
-    }
-
-    if (!empty($row['banner_two'])) {
-        $banners[] = [
-            "id" => 2,
-            "img" => $site_link . 'Admin/' . $row['banner_two']
-        ];
-    }
-
-    echo json_encode(
-        $banners
-    );
+    echo json_encode([
+        "success" => true,
+        "data" => $response
+    ]);
     exit();
 }
 ////////////////////////////////////////////////////////////////////////////////////
