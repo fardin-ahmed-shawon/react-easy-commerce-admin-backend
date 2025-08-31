@@ -55,7 +55,7 @@ $result = $conn->query("SELECT * FROM coupon ORDER BY id DESC");
                                                 <td><?php echo $i++; ?></td>
                                                 <td><?php echo htmlspecialchars($row['coupon_name']); ?></td>
                                                 <td><?php echo htmlspecialchars($row['coupon_code']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['coupon_discount']); ?> ৳</td>
+                                                <td><?php echo htmlspecialchars($row['coupon_discount']); ?> %</td>
                                                 <td><?php echo htmlspecialchars($row['created_at']); ?></td>
                                                 <td>
                                                     <a href="edit-coupons.php?id=<?php echo $row['id']; ?>" class="btn btn-info btn-sm">

@@ -84,12 +84,12 @@
             <?php endif; ?>
 
             <?php if (isset($access['discounts']) && $access['discounts'] == 1): ?>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
               <a class="nav-link" href="add-discounts.php">
                 <span class="menu-title">Discounts</span>
                 <i class="mdi mdi-sale-outline menu-icon"></i>
               </a>
-            </li>
+            </li> -->
             <?php endif; ?>
 
             <?php if (isset($access['coupons']) && $access['coupons'] == 1): ?>

@@ -97,8 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
 
                             <div class="form-group">
-                                <label style="font-size: 17px" for="discountinput">Enter Discount Amount *</label>
-                                <input type="text" class="form-control" id="discountinput" placeholder="Enter Discount Amount" name="discount_price" required>
+                                <label style="font-size: 17px" for="discountinput">Enter Discount Percentage % *</label>
+                                <input type="text" class="form-control" id="discountinput" placeholder="Enter Percentage %" name="discount_price" required>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Add Coupon</button>

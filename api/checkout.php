@@ -43,8 +43,8 @@ if ($action == 'place-order') {
     $sql = "INSERT INTO order_info (
         user_id, user_full_name, user_phone, user_email, user_address, 
         city_address, invoice_no, product_id, product_title, product_quantity, 
-        product_size, total_price, payment_method, order_status, order_visibility
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 'Show')";
+        product_size, total_price, payment_method, order_note, order_status, order_visibility
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 'Show')";
 
     $stmt = $conn->prepare($sql);
 
@@ -55,7 +55,7 @@ if ($action == 'place-order') {
 
     foreach ($orders as $order) {
         $stmt->bind_param(
-            "issssssisisds",
+            "issssssisisdss",
             $order['user_id'],          // int
             $order['user_full_name'],   // string
             $order['user_phone'],       // string
@@ -68,7 +68,8 @@ if ($action == 'place-order') {
             $order['product_quantity'], // int
             $order['product_size'],     // string
             $order['total_price'],      // decimal/double
-            $order['payment_method']    // string
+            $order['payment_method'],    // string
+            $order['order_note']         // string
         );
 
         // START //
