@@ -110,11 +110,11 @@ $page_title = 'Settings'; // Set the page title
                             <a href="edit-logo.php" class="btn btn-dark btn-sm">Update Logo</a>
                         </div>
 
-                        <div class="setting-block">
+                        <!-- <div class="setting-block">
                             <h6>Theme</h6>
                             <p class="text-muted small">Switch between available themes.</p>
                             <a href="edit-theme.php" class="btn btn-dark btn-sm">Change Theme</a>
-                        </div>
+                        </div> -->
 
                                 <?php
                             }
