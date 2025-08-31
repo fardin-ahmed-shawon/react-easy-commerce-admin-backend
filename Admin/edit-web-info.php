@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $twitter_link = $_POST['twitter_link'] ?? null;
     $yt_link = $_POST['yt_link'] ?? null;
     $location = $_POST['location'] ?? null;
+    $top_banner_ad_content = $_POST['top_banner_ad_content'] ?? null;
 
     // Ensure only one row exists
     $checkQuery = "SELECT * FROM website_info";
@@ -32,13 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             name='$name', address='$address', 
             inside_location='$inside_location', inside_delivery_charge='$inside_delivery_charge',outside_delivery_charge='$outside_delivery_charge', 
             phone='$phone', wp_api_num='$wp_api_num', acc_num='$acc_num', email='$email', fb_link='$fb_link', 
-            insta_link='$insta_link', twitter_link='$twitter_link', yt_link='$yt_link', location='$location'  
+            insta_link='$insta_link', twitter_link='$twitter_link', yt_link='$yt_link', location='$location', top_banner_ad_content='$top_banner_ad_content' 
              WHERE id=1";
         $conn->query($updateQuery);
     } else {
         // Insert new row
-        $insertQuery = "INSERT INTO website_info (id, name, address, inside_location, inside_delivery_charge,  outside_delivery_charge, phone, wp_api_num, acc_num, email, fb_link, insta_link, twitter_link, yt_link) 
-            VALUES (1, '$name', '$address', '$inside_location', '$inside_delivery_charge', '$outside_delivery_charge', '$phone', '$wp_api_num', '$acc_num', '$email', '$fb_link', '$insta_link', '$twitter_link', '$yt_link', '$location')";
+        $insertQuery = "INSERT INTO website_info (id, name, address, inside_location, inside_delivery_charge,  outside_delivery_charge, phone, wp_api_num, acc_num, email, fb_link, insta_link, twitter_link, yt_link, top_banner_ad_content) 
+            VALUES (1, '$name', '$address', '$inside_location', '$inside_delivery_charge', '$outside_delivery_charge', '$phone', '$wp_api_num', '$acc_num', '$email', '$fb_link', '$insta_link', '$twitter_link', '$yt_link', '$top_banner_ad_content')";
         $conn->query($insertQuery);
     }
 }
@@ -115,6 +116,10 @@ $info = $infoResult->fetch_assoc();
                                     <label for="location">Google Map location</label>
                                     <input type="text" class="form-control" id="location" name="location" value="<?= $info['location'] ?? '' ?>" placeholder="Enter your google map iframe link">
                                 </div>
+                                <div class="form-group">
+                                    <label for="top_banner_ad_content">Top Banner Ad Content</label>
+                                    <input type="text" class="form-control" id="top_banner_ad_content" name="top_banner_ad_content" value="<?= $info['top_banner_ad_content'] ?? '' ?>">
+                                </div>
                                 <button type="submit" class="btn btn-primary">Save</button>
                             </form>
                         </div>
@@ -137,6 +142,7 @@ $info = $infoResult->fetch_assoc();
                             <p><strong>Twitter:</strong> <a href="<?= $info['twitter_link'] ?? '#' ?>" target="_blank"><?= $info['twitter_link'] ?? 'N/A' ?></a></p>
                             <p><strong>YouTube:</strong> <a href="<?= $info['yt_link'] ?? '#' ?>" target="_blank"><?= $info['yt_link'] ?? 'N/A' ?></a></p>
                             <p><strong>Google Map location:</strong> <?= $info['location'] ?? 'N/A' ?></p>
+                            <p><strong>Top Banner Ad Content:</strong> <?= $info['top_banner_ad_content'] ?? 'N/A' ?></p>
                         </div>
                     </div>
                 </div>

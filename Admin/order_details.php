@@ -92,6 +92,8 @@ $order = $orders[0]; // First row for summary
                   <p><strong>Order Amount:</strong> ৳ <?= calculate_order_amount($order['invoice_no']) ?></p>
                   <p><strong>Order Status:</strong> <b class="text-primary"><?= htmlspecialchars($order['order_status']) ?></b></p>
                   <p><strong>Parcel Status:</strong> <b class="text-info"><?= $parcel_status; ?></b></p>
+                  <br>
+                  <p><strong>Order Note:</strong> <b class="text-success"><?= $order['order_note'] ?></b></p>
 
                   <?php
                     if ($is_tracking_code_set == 1) {

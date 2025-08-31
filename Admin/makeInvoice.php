@@ -111,7 +111,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark_canceled_both"]))
                         <th>Shipped</th>
                         <th>Completed</th>
                         <th>Canceled</th>
-                        <th>Fraud Check</th>
                         <th>Invoice</th>
                         <th>Details</th>
                       </tr>
@@ -165,8 +164,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark_canceled_both"]))
                                 if ($is_tracking_code_set == 0) {
                                   echo'
                                       <td>
-                                        <a href="steadfast_entry.php?invoice_no='. $row["invoice_no"] .'">
-                                          <button class="btn btn-primary">Send to Steadfast <span class="mdi mdi-send"></span></button>
+                                        <a href="steadfast_entry.php?invoice_no='. $row["invoice_no"] .'" class="btn btn-primary">
+                                          Send to Steadfast <span class="mdi mdi-send"></span>
                                         </a>
                                       </td>';
                                 } else {
@@ -203,9 +202,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark_canceled_both"]))
                                         <button type="submit" name="mark_canceled" class="btn btn-danger">Mark As Canceled</button>
                                   </form>
                                 </td>
-                                <td class="invoice-button">
-                                  <a href="fraud-checking.php" class="btn btn-warning text-dark">Fraud Check</a>
-                                </td>
+                                
                                 <td class="invoice-button">
                                   <a href="invoice.php?inv='.$row['invoice_no'].'" class="btn btn-dark">See Invoice</a>
                                 </td>
@@ -245,7 +242,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark_canceled_both"]))
                           <th>Shipped</th>
                           <th>Completed</th>
                           <th>Canceled</th>
-                          <th>Fraud Check</th>
                           <th>Invoice</th>
                           <th>Details</th>
                         </tr>
@@ -306,8 +302,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark_canceled_both"]))
                                       if ($is_tracking_code_set == 0) {
                                         echo'
                                             <td>
-                                              <a href="steadfast_entry.php?invoice_no='. $row["invoice_no"] .'">
-                                                <button class="btn btn-primary">Send to Steadfast <span class="mdi mdi-send"></span></button>
+                                              <a href="steadfast_entry.php?invoice_no='. $row["invoice_no"] .'" class="btn btn-primary">
+                                                Send to Steadfast <span class="mdi mdi-send"></span>
                                               </a>
                                             </td>';
                                       } else {
@@ -343,9 +339,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark_canceled_both"]))
                                                   <button type="submit" name="mark_canceled_both" class="btn btn-danger">Mark As Canceled</button>
                                             </form>
                                           </td>
-                                          <td class="invoice-button">
-                                            <a href="fraud-checking.php" class="btn btn-warning text-dark">Fraud Check</a>
-                                          </td>';
+                                          ';
 
 
                                     echo '<td class="invoice-button">
