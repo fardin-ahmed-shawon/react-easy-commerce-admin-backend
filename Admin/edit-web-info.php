@@ -112,7 +112,7 @@ $info = $infoResult->fetch_assoc();
                                     <label for="yt_link">YouTube Link</label>
                                     <input type="text" class="form-control" id="yt_link" name="yt_link" value="<?= $info['yt_link'] ?? '' ?>">
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group d-none">
                                     <label for="location">Google Map location</label>
                                     <input type="text" class="form-control" id="location" name="location" value="<?= $info['location'] ?? '' ?>" placeholder="Enter your google map iframe link">
                                 </div>
@@ -141,7 +141,7 @@ $info = $infoResult->fetch_assoc();
                             <p><strong>Instagram:</strong> <a href="<?= $info['insta_link'] ?? '#' ?>" target="_blank"><?= $info['insta_link'] ?? 'N/A' ?></a></p>
                             <p><strong>Twitter:</strong> <a href="<?= $info['twitter_link'] ?? '#' ?>" target="_blank"><?= $info['twitter_link'] ?? 'N/A' ?></a></p>
                             <p><strong>YouTube:</strong> <a href="<?= $info['yt_link'] ?? '#' ?>" target="_blank"><?= $info['yt_link'] ?? 'N/A' ?></a></p>
-                            <p><strong>Google Map location:</strong> <?= $info['location'] ?? 'N/A' ?></p>
+                            <p class="d-none"><strong>Google Map location:</strong> <?= $info['location'] ?? 'N/A' ?></p>
                             <p><strong>Top Banner Ad Content:</strong> <?= $info['top_banner_ad_content'] ?? 'N/A' ?></p>
                         </div>
                     </div>
