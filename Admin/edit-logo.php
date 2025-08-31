@@ -84,7 +84,7 @@ $info = $infoResult->fetch_assoc();
 
                             <hr>
 
-                            <form method="POST" action="">
+                            <form method="POST" action="" class="d-none">
                                 <div class="form-group">
                                     <label for="logo_size"><strong>Logo Size:</strong></label>
                                     <input type="text" class="form-control" id="logo_size" name="logo_size"
