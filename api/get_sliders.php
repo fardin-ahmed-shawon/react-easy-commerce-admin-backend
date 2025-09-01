@@ -38,35 +38,22 @@ if ($action == 'get-sliders') {
     $sql = "SELECT * FROM slider";
     $result = mysqli_query($conn, $sql);
 
-    if (!$result) {
-        echo json_encode([
-            "success" => false,
-            "message" => "Database query failed: " . mysqli_error($conn)
-        ]);
+    if (!$result || mysqli_num_rows($result) === 0) {
+        echo json_encode([]); // return empty array if no sliders
         exit();
     }
 
-    // Fetch the single record
-    $row = mysqli_fetch_assoc($result);
-    
-    if (!$row) {
-        echo json_encode([
-            "success" => false,
-            "message" => "No sliders found"
-        ]);
-        exit();
+    // Fetch all records
+    $sliders = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $sliders[] = [
+            "id" => (int)$row['slider_id'],
+            "img" => $site_link . 'api/' . $row['slider_img']
+        ];
     }
 
-    // Prepare response
-    $response = [
-        "id" => $row['slider_id'],
-        "img" => $site_link. 'api/'. $row['slider_img']
-    ];
-
-    echo json_encode([
-        "success" => true,
-        "data" => $response
-    ]);
+    // Output only the array
+    echo json_encode($sliders);
     exit();
 }
 ////////////////////////////////////////////////////////////////////////////////////
