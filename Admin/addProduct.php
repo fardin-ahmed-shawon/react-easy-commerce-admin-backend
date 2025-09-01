@@ -241,22 +241,73 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                           <label class="details">Total Stock *</label>
                           <input name="available_stock" type="text" placeholder="Enter your total stock amount" required>
                         </div>
-                        <style>
-                          
-                        </style>
+                        
                         <!-- Size Selection -->
                         <div class="input-box">
                           <label class="details">Choose Size (If available)</label>
                           <div class="size-options">
-                            <label><input type="checkbox" name="product_sizes[]" value="XS"> XS</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="S"> S</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="M"> M</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="L"> L</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="XL"> XL</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="XXL"> XXL</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="XXXL"> XXXL</label>
+                            <?php
+                              $sql = "SELECT id, size_label FROM size_labels ORDER BY id ASC";
+                              $result = $conn->query($sql);
+
+                              if ($result && $result->num_rows > 0) {
+                                  while ($row = $result->fetch_assoc()) {
+                                      $size = htmlspecialchars($row['size_label']);
+                                      echo '
+                                        <label class="size-chip">
+                                          <input type="checkbox" name="product_sizes[]" value="' . $size . '">
+                                          <span>' . $size . '</span>
+                                        </label>
+                                      ';
+                                  }
+                              } else {
+                                  echo "<p>No sizes found.</p>";
+                              }
+                            ?>
                           </div>
                         </div>
+
+                        <style>
+                          .size-options {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 8px;
+                            margin-top: 8px;
+                          }
+
+                          .size-chip {
+                            position: relative;
+                            cursor: pointer;
+                          }
+
+                          .size-chip input {
+                            display: none; /* hide the actual checkbox */
+                          }
+
+                          .size-chip span {
+                            display: inline-block;
+                            padding: 6px 12px;
+                            border-radius: 20px;
+                            background: #f3f4f6;
+                            border: 1px solid #d1d5db;
+                            font-size: 14px;
+                            font-weight: 500;
+                            transition: all 0.2s ease;
+                          }
+
+                          .size-chip input:checked + span {
+                            background: #2563eb; /* blue highlight */
+                            color: #fff;
+                            border-color: #2563eb;
+                            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+                          }
+
+                          .size-chip span:hover {
+                            background: #e5e7eb;
+                          }
+                        </style>
+
+
                         <!-- keyword -->
                         <div class="input-box">
                           <label class="details">Product Keyword</label>

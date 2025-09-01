@@ -38,6 +38,9 @@
                   <li class="nav-item">
                     <a class="nav-link" href="viewProduct.php">View Product</a>
                   </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="sizes.php">Sizes</a>
+                  </li>
                 </ul>
               </div>
             </li>

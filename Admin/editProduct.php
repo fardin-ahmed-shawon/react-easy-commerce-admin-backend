@@ -311,19 +311,77 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                           <label class="details">Total Stock *</label>
                           <input name="available_stock" type="text" placeholder="Enter your total stock amount" value="<?php echo htmlspecialchars($product['available_stock']); ?>" required>
                         </div>
+
                         <!-- Size Selection -->
                         <div class="input-box">
                           <label class="details">Choose Size (If available)</label>
                           <div class="size-options">
-                            <label><input type="checkbox" name="product_sizes[]" value="XS" <?php echo in_array('XS', $product_sizes) ? 'checked' : ''; ?>> XS</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="S" <?php echo in_array('S', $product_sizes) ? 'checked' : ''; ?>> S</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="M" <?php echo in_array('M', $product_sizes) ? 'checked' : ''; ?>> M</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="L" <?php echo in_array('L', $product_sizes) ? 'checked' : ''; ?>> L</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="XL" <?php echo in_array('XL', $product_sizes) ? 'checked' : ''; ?>> XL</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="XXL" <?php echo in_array('XXL', $product_sizes) ? 'checked' : ''; ?>> XXL</label>
-                            <label><input type="checkbox" name="product_sizes[]" value="XXXL" <?php echo in_array('XXXL', $product_sizes) ? 'checked' : ''; ?>> XXXL</label>
+                            <?php
+                              $sql = "SELECT id, size_label FROM size_labels ORDER BY id ASC";
+                              $result = $conn->query($sql);
+
+                              if ($result && $result->num_rows > 0) {
+                                  while ($row = $result->fetch_assoc()) {
+                                      $size = htmlspecialchars($row['size_label']);
+                                      $checked = in_array($size, $product_sizes) ? 'checked' : '';
+                                      echo '
+                                        <label class="size-chip">
+                                          <input type="checkbox" name="product_sizes[]" value="'.$size.'" '.$checked.'>
+                                          <span>'.$size.'</span>
+                                        </label>
+                                      ';
+                                  }
+                              } else {
+                                  echo "<p>No sizes found.</p>";
+                              }
+                            ?>
                           </div>
                         </div>
+
+                        <style>
+                          .size-options {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 6px;
+                            margin-top: 6px;
+                          }
+
+                          .size-chip {
+                            position: relative;
+                            cursor: pointer;
+                            user-select: none;
+                          }
+
+                          .size-chip input {
+                            display: none;
+                          }
+
+                          .size-chip span {
+                            display: inline-block;
+                            padding: 6px 14px;
+                            border-radius: 16px;
+                            background: #f9fafb;
+                            border: 1px solid #d1d5db;
+                            font-size: 14px;
+                            font-weight: 500;
+                            color: #374151;
+                            transition: all 0.2s ease;
+                          }
+
+                          .size-chip input:checked + span {
+                            background: #2563eb;
+                            color: #fff;
+                            border-color: #2563eb;
+                            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+                            transform: scale(1.05);
+                          }
+
+                          .size-chip span:hover {
+                            background: #e5e7eb;
+                          }
+                        </style>
+
+
                         <!-- keyword -->
                         <div class="input-box">
                           <label class="details">Product Keyword</label>
