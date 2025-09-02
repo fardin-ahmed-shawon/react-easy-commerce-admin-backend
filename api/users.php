@@ -53,7 +53,7 @@ if ($action == 'add-user') {
     }
 
     // Check if user already exists by phone
-    $stmt = $con->prepare("SELECT user_id FROM user_info WHERE user_phone = ?");
+    $stmt = $conn->prepare("SELECT user_id FROM user_info WHERE user_phone = ?");
     $stmt->bind_param("s", $phone);
     $stmt->execute();
     $stmt->store_result();
@@ -68,7 +68,7 @@ if ($action == 'add-user') {
 
     // Check if email exists (if provided)
     if (!empty($email)) {
-        $stmt = $con->prepare("SELECT user_id FROM user_info WHERE user_email = ?");
+        $stmt = $conn->prepare("SELECT user_id FROM user_info WHERE user_email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $stmt->store_result();
@@ -96,7 +96,7 @@ if ($action == 'add-user') {
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     // Prepare and execute the SQL statement to insert the user into the database
-    $stmt = $con->prepare("INSERT INTO user_info (user_fName, user_lName, user_phone, user_email, user_gender, user_password) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO user_info (user_fName, user_lName, user_phone, user_email, user_gender, user_password) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("ssssss", $first_name, $last_name, $phone, $email, $gender, $hashed_password);
 
     if ($stmt->execute()) {
@@ -121,7 +121,7 @@ if ($action == 'add-user') {
 
 
 //////////////////////////////////////////////////////////////////////////////////
-//////////////////////// Handle the 'update-user-info' action ////////////////////////
+///////////////////// Handle the 'update-user-info' action //////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 else if ($action == 'update-user-info') {
 
@@ -143,7 +143,7 @@ else if ($action == 'update-user-info') {
     }
 
     // Check if phone is unique (exclude current user)
-    $stmt = $con->prepare("SELECT user_id FROM user_info WHERE user_phone = ? AND user_id != ?");
+    $stmt = $conn->prepare("SELECT user_id FROM user_info WHERE user_phone = ? AND user_id != ?");
     $stmt->bind_param("si", $phone, $user_id);
     $stmt->execute();
     $stmt->store_result();
@@ -158,7 +158,7 @@ else if ($action == 'update-user-info') {
 
     // Check if email is unique (exclude current user)
     if (!empty($email)) {
-        $stmt = $con->prepare("SELECT user_id FROM user_info WHERE user_email = ? AND user_id != ?");
+        $stmt = $conn->prepare("SELECT user_id FROM user_info WHERE user_email = ? AND user_id != ?");
         $stmt->bind_param("si", $email, $user_id);
         $stmt->execute();
         $stmt->store_result();
@@ -173,7 +173,7 @@ else if ($action == 'update-user-info') {
     }
 
     // Prepare and execute the SQL statement to update the user
-    $stmt = $con->prepare("UPDATE user_info 
+    $stmt = $conn->prepare("UPDATE user_info 
                            SET user_fName = ?, user_lName = ?, user_phone = ?, user_email = ?, user_gender = ? 
                            WHERE user_id = ?");
     $stmt->bind_param("sssssi", $first_name, $last_name, $phone, $email, $gender, $user_id);
@@ -228,7 +228,7 @@ else if ($action == 'update-user-password') {
     }
 
     // Fetch current password hash from database
-    $stmt = $con->prepare("SELECT user_password FROM user_info WHERE user_id = ?");
+    $stmt = $conn->prepare("SELECT user_password FROM user_info WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -256,7 +256,7 @@ else if ($action == 'update-user-password') {
     $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
     // Update password in database
-    $stmt = $con->prepare("UPDATE user_info SET user_password = ? WHERE user_id = ?");
+    $stmt = $conn->prepare("UPDATE user_info SET user_password = ? WHERE user_id = ?");
     $stmt->bind_param("si", $hashed_password, $user_id);
 
     if ($stmt->execute()) {
@@ -299,7 +299,7 @@ if ($action == 'user-login') {
     }
 
     // Fetch user by phone
-    $stmt = $con->prepare("SELECT * FROM user_info WHERE user_phone = ?");
+    $stmt = $conn->prepare("SELECT * FROM user_info WHERE user_phone = ?");
     $stmt->bind_param("s", $phone);
     $stmt->execute();
     $result = $stmt->get_result();
