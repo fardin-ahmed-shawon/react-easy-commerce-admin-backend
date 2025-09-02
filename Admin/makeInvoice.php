@@ -72,306 +72,322 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark_canceled_both"]))
       $msg = "Error updating record: " . $conn->error;
   }
 }
+
+// --- Search and Filter Logic ---
+$search_invoice = isset($_GET['search_invoice']) ? $conn->real_escape_string($_GET['search_invoice']) : '';
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+
+// For Cash On Delivery
+$where_cod = "WHERE payment_method = 'Cash On Delivery' AND order_status != 'Pending'";
+if ($search_invoice) {
+    $where_cod .= " AND invoice_no LIKE '%$search_invoice%'";
+}
+if ($filter == 'Shipped') {
+    $where_cod .= " AND order_status = 'Shipped'";
+} elseif ($filter == 'Canceled') {
+    $where_cod .= " AND order_status = 'Canceled'";
+} elseif ($filter == 'SendToSteadfast') {
+    $where_cod .= " AND invoice_no IN (SELECT invoice_no FROM parcel_info WHERE tracking_code IS NULL)";
+}
+
+// For Mobile Banking
+$where_mb = "WHERE order_visibility = 'Show'";
+if ($search_invoice) {
+    $where_mb .= " AND invoice_no LIKE '%$search_invoice%'";
+}
+if ($filter == 'Shipped') {
+    $where_mb .= " AND order_status = 'Shipped'";
+} elseif ($filter == 'Canceled') {
+    $where_mb .= " AND order_status = 'Canceled'";
+} elseif ($filter == 'SendToSteadfast') {
+    $where_mb .= " AND invoice_no IN (SELECT invoice_no FROM parcel_info WHERE tracking_code IS NULL)";
+}
 ?>
 
 <!--------------------------->
 <!-- START MAIN AREA -->
 <!--------------------------->
 <div class="content-wrapper">
-            <div class="page-header">
-              <h3 class="page-title">
-                <span class="page-title-icon bg-gradient-primary text-white me-2">
-                  <i class="mdi mdi-home"></i>
-                </span> Invoice
-              </h3>
-            </div>
-            <div class="text-end">
-              <a href="all-invoice.php" class="btn btn-dark">All Invoice</a>
-            </div>
-            <br><hr><br>
-            
-<form method="get" action="all-invoice.php" target="_blank">
-        
-            <div class="row">
-              <h1>Cash On Delivery</h1>
-              
-              <!-- Table Area -->
-              <div style="overflow-y: auto;">
-        
-                <table class="table table-under-bordered">
-                  <tbody>
-                      <tr>
-                        <th>Select</th>
-                        <th>Serial No</th>
-                        <th>Invoice No</th>
-                        <th>Order No</th>
-                        <th>Order Status</th>
-                        <th>Payment Method</th>
-                        <th>Courier</th>
-                        <th>Shipped</th>
-                        <th>Completed</th>
-                        <th>Canceled</th>
-                        <th>Invoice</th>
-                        <th>Details</th>
-                      </tr>
+    <div class="page-header">
+      <h3 class="page-title">
+        <span class="page-title-icon bg-gradient-primary text-white me-2">
+          <i class="mdi mdi-home"></i>
+        </span> Invoice
+      </h3>
+    </div>
+    <div class="text-end">
+      <a href="all-invoice.php" class="btn btn-dark">All Invoice</a>
+    </div>
+    <br>
 
-                      <?php
-                      // Fetch data from order_info table
+    <!-- Search & Filter Controls -->
+    <form method="get" class="row mb-3">
+      <div class="col-md-3">
+        <input type="text" name="search_invoice" class="form-control" placeholder="Search Invoice No" value="<?php echo isset($_GET['search_invoice']) ? htmlspecialchars($_GET['search_invoice']) : ''; ?>">
+      </div>
+      <div class="col-md-9">
+        <button type="submit" name="filter" value="all" class="btn btn-secondary">All</button>
+        <button type="submit" name="filter" value="Shipped" class="btn btn-success">Shipped</button>
+        <button type="submit" name="filter" value="Canceled" class="btn btn-danger">Canceled</button>
+        <button type="submit" name="filter" value="SendToSteadfast" class="btn btn-primary">Send to Steadfast</button>
+      </div>
+    </form>
+    <br>
+    <hr>
+    <br>
 
-                      // Grouping the same Invoice No at Order No Column
-                      $sql = "SELECT invoice_no, GROUP_CONCAT(order_no ORDER BY order_no SEPARATOR ', ') as order_no, order_status, order_visibility, payment_method
+    <!-- Cash On Delivery -->
+    <div class="row">
+      <h1>Cash On Delivery</h1>
+      <!-- Table Area -->
+      <div style="overflow-y: auto;">
+        <table class="table table-under-bordered">
+          <tbody>
+              <tr>
+                <th>Serial No</th>
+                <th>Invoice No</th>
+                <th>Order No</th>
+                <th>Order Status</th>
+                <th>Payment Method</th>
+                <th>Courier</th>
+                <th>Shipped</th>
+                <th>Completed</th>
+                <th>Canceled</th>
+                <th>Invoice</th>
+                <th>Details</th>
+              </tr>
+
+              <?php
+              // Fetch data from order_info table
+              $sql = "SELECT invoice_no, GROUP_CONCAT(order_no ORDER BY order_no SEPARATOR ', ') as order_no, order_status, order_visibility, payment_method
                       FROM order_info
-                      WHERE payment_method = 'Cash On Delivery' AND order_status != 'Pending'
+                      $where_cod
                       GROUP BY invoice_no, order_status, payment_method";
 
-                      $result = $conn->query($sql);
+              $result = $conn->query($sql);
 
-                        if ($result->num_rows > 0) {
-                          $count = 1;
-                          while($row = $result->fetch_assoc()) {
-                            if ($row["payment_method"] == "Cash On Delivery" && $row["order_status"] != "Pending" && $row["order_visibility"] == "Show") {
+                if ($result->num_rows > 0) {
+                  $count = 1;
+                  while($row = $result->fetch_assoc()) {
+                    if ($row["payment_method"] == "Cash On Delivery" && $row["order_status"] != "Pending" && $row["order_visibility"] == "Show") {
 
+                      // Fetch courier tracking_code & get parcel status
+                      $invoice_no = $row['invoice_no'];
 
-                              // Fetch courier tracking_code & get parcel status
-                              $invoice_no = $row['invoice_no'];
+                      $sql2 = "SELECT tracking_code FROM parcel_info WHERE invoice_no   = '$invoice_no'";
+                      $result2 = $conn->query($sql2);
+                      $row2 = $result2->num_rows;
 
-                              $sql2 = "SELECT tracking_code FROM parcel_info WHERE invoice_no   = '$invoice_no'";
-                              $result2 = $conn->query($sql2);
-                              $row2 = $result2->num_rows;
+                      if ($row2 > 0) {
+                        $data = $result2->fetch_assoc();
+                        $is_tracking_code_set = 1;
+                      } else {
+                        $is_tracking_code_set = 0;
+                      }
+                      // End
 
-                              if ($row2 > 0) {
-                                $data = $result2->fetch_assoc();
+                      echo '<tr>
+                        <td>' . $count . '</td>
+                        <td>' . $row["invoice_no"] . '</td>
+                        <td>' . $row["order_no"] . '</td>
+                        <td class="order-status">' . $row["order_status"] . '</td>
+                        <td>' . $row["payment_method"] . '</td>
+                        ';
+                        
+                        if ($is_tracking_code_set == 0) {
+                          echo'
+                              <td>
+                                <a href="steadfast_entry.php?invoice_no='. $row["invoice_no"] .'" class="btn btn-primary">
+                                  Send to Steadfast <span class="mdi mdi-send"></span>
+                                </a>
+                              </td>';
+                        } else {
+                          echo'
+                            <td>
+                              <span class="btn btn-muted">
+                                Consignment Sent <span class="mdi mdi-send-check"></span>
+                              </span>
+                            </td>
+                            ';
+                        }
 
-                                $is_tracking_code_set = 1;
+                        echo '
+                        <td class="shipped-button">
+                            <form method="post" action="">
+                                <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
+                                <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
+                                <button type="submit" name="mark_shipped" class="btn btn-success">Mark As Shipped</button>
+                            </form>
+                        </td>
+                        
+                        <td class="completed-button">
+                          <form method="post" action="">
+                                <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
+                                <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
+                                <button type="submit" name="mark_completed" class="btn btn-success">Mark As Completed</button>
+                          </form>
+                        </td>
+                        <td class="canceled-button">
+                          <form method="post" action="">
+                                <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
+                                <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
+                                <button type="submit" name="mark_canceled" class="btn btn-danger">Mark As Canceled</button>
+                          </form>
+                        </td>
+                        
+                        <td class="invoice-button">
+                          <a href="invoice.php?inv='.$row['invoice_no'].'" class="btn btn-dark">See Invoice</a>
+                        </td>
+                        <td>
+                          <a class="btn btn-info" href="order_details.php?invoice_no='.$row['invoice_no'].'">
+                            View Details <span class="mdi mdi-details"></span>
+                          </a>
+                        </td>
+                      </tr>';
+                      $count++;
+                    }
+                  }
+                } 
+              ?>
+          </tbody>
+       </table>
+      </div>
+    </div>
 
-                              } else {
+    <!-- Mobile Banking -->
+    <br><hr><br>
+    <div class="row">
+        <h1>Mobile Banking</h1>
+        <!-- Table Area -->
+        <div style="overflow-y: auto;">
+          <table class="table table-under-bordered">
+            <tbody>
+                <tr>
+                  <th>Serial No</th>
+                  <th>Invoice No</th>
+                  <th>Order No</th>
+                  <th>Order Status</th>
+                  <th>Payment Method</th>
+                  <th>Courier</th>
+                  <th>Shipped</th>
+                  <th>Completed</th>
+                  <th>Canceled</th>
+                  <th>Invoice</th>
+                  <th>Details</th>
+                </tr>
 
-                                $is_tracking_code_set = 0;
-                                
-                              }
-                              // End
+                <?php
+                  // Query to retrieve data from payment_info table
+                  $sql = "SELECT invoice_no, 
+                          GROUP_CONCAT(CASE 
+                                      WHEN order_status != 'Pending' AND order_visibility = 'Show' 
+                                      THEN order_no 
+                                      END SEPARATOR ', ') as order_no, 
+                          serial_no, 
+                          order_status, 
+                          order_visibility, 
+                          payment_method, 
+                          acc_number, 
+                          transaction_id, 
+                          payment_date, 
+                          payment_status 
+                          FROM payment_info 
+                          $where_mb
+                          GROUP BY invoice_no";
+                  $result = $conn->query($sql);
 
-                              echo '<tr>
-                                <td><input type="checkbox" name="invoice[]" value="' . $row["invoice_no"] . '"></td>
-                                <td>' . $count . '</td>
-                                <td>' . $row["invoice_no"] . '</td>
-                                <td>' . $row["order_no"] . '</td>
-                                <td class="order-status">' . $row["order_status"] . '</td>
-                                <td>' . $row["payment_method"] . '</td>
+                  $count = 1;
+                  if ($result->num_rows > 0) {
+                      while ($row = $result->fetch_assoc()) {
+                          if ($row["payment_status"] == "Paid") {
 
-                                ';
-                                
-                                if ($is_tracking_code_set == 0) {
-                                  echo'
-                                      <td>
-                                        <a href="steadfast_entry.php?invoice_no='. $row["invoice_no"] .'" class="btn btn-primary">
-                                          Send to Steadfast <span class="mdi mdi-send"></span>
-                                        </a>
-                                      </td>';
-                                } else {
-                                  echo'
+                            // Fetch courier tracking_code & get parcel status
+                            $invoice_no = $row['invoice_no'];
+
+                            $sql2 = "SELECT tracking_code FROM parcel_info WHERE invoice_no   = '$invoice_no'";
+                            $result2 = $conn->query($sql2);
+                            $row2 = $result2->num_rows;
+
+                            if ($row2 > 0) {
+                              $data = $result2->fetch_assoc();
+                              $is_tracking_code_set = 1;
+                            } else {
+                              $is_tracking_code_set = 0;
+                            }
+                            // End
+
+                              echo "<tr>";
+                              echo "<td>" . $count . "</td>";
+                              echo "<td>" . $row["invoice_no"] . "</td>";
+                              echo "<td>" . $row["order_no"] . "</td>";
+                              echo "<td class='order-status'>" . $row["order_status"] . "</td>";
+                              echo "<td>" . $row["payment_method"] . "</td>";
+
+                              if ($is_tracking_code_set == 0) {
+                                echo'
                                     <td>
-                                      <span class="btn btn-muted">
-                                        Consignment Sent <span class="mdi mdi-send-check"></span>
-                                      </span>
-                                    </td>
-                                    ';
-                                }
+                                      <a href="steadfast_entry.php?invoice_no='. $row["invoice_no"] .'" class="btn btn-primary">
+                                        Send to Steadfast <span class="mdi mdi-send"></span>
+                                      </a>
+                                    </td>';
+                              } else {
+                                echo'
+                                  <td>
+                                    <span class="btn btn-muted">
+                                      Consignment Sent <span class="mdi mdi-send-check"></span>
+                                    </span>
+                                  </td>
+                                  ';
+                              }
 
-                                echo '
-
-                                <td class="shipped-button">
+                              echo '
+                                  <td class="shipped-button">
                                     <form method="post" action="">
                                         <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
                                         <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
-                                        <button type="submit" name="mark_shipped" class="btn btn-success">Mark As Shipped</button>
+                                        <button type="submit" name="mark_shipped_both" class="btn btn-success">Mark As Shipped</button>
                                     </form>
-                                </td>
-                                
-                                <td class="completed-button">
-                                  <form method="post" action="">
-                                        <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
-                                        <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
-                                        <button type="submit" name="mark_completed" class="btn btn-success">Mark As Completed</button>
-                                  </form>
-                                </td>
-                                <td class="canceled-button">
-                                  <form method="post" action="">
-                                        <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
-                                        <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
-                                        <button type="submit" name="mark_canceled" class="btn btn-danger">Mark As Canceled</button>
-                                  </form>
-                                </td>
-                                
-                                <td class="invoice-button">
-                                  <a href="invoice.php?inv='.$row['invoice_no'].'" class="btn btn-dark">See Invoice</a>
-                                </td>
-                                <td>
-                                  <a class="btn btn-info" href="order_details.php?invoice_no='.$row['invoice_no'].'">
+                                  </td>
+                              
+                                  <td class="completed-button">
+                                    <form method="post" action="">
+                                          <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
+                                          <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
+                                          <button type="submit" name="mark_completed_both" class="btn btn-success">Mark As Completed</button>
+                                    </form>
+                                  </td>
+                                  <td class="canceled-button">
+                                    <form method="post" action="">
+                                          <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
+                                          <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
+                                          <button type="submit" name="mark_canceled_both" class="btn btn-danger">Mark As Canceled</button>
+                                    </form>
+                                  </td>
+                                  ';
+
+                            echo '<td class="invoice-button">
+                              <a href="invoice.php?inv='.$row['invoice_no'].'" class="btn btn-dark">See Invoice</a>
+                              </td>';
+
+                            echo '<td>
+                                    <a class="btn btn-info" href="order_details.php?invoice_no='.$row['invoice_no'].'">
                                     View Details <span class="mdi mdi-details"></span>
-                                  </a>
-                                </td>
-                              </tr>';
+                                    </a>
+                                  </td>';
+                              echo "</tr>";
                               $count++;
-                            }
                           }
-                        } 
-                      ?>
-                  </tbody>
-               </table>
-               
-             
-              </div>
-            </div>
-            <br><hr><br>
-            <div class="row">
-                <h1>Mobile Banking</h1>
-                
-                <!-- Table Area -->
-                <div style="overflow-y: auto;">
-                  <table class="table table-under-bordered">
-                    <tbody>
-                        <tr>
-                          <th>Select</th>
-                          <th>Serial No</th>
-                          <th>Invoice No</th>
-                          <th>Order No</th>
-                          <th>Order Status</th>
-                          <th>Payment Method</th>
-                          <th>Courier</th>
-                          <th>Shipped</th>
-                          <th>Completed</th>
-                          <th>Canceled</th>
-                          <th>Invoice</th>
-                          <th>Details</th>
-                        </tr>
+                      }
+                  }
+                  ?>
 
-                        <?php
-                          // Query to retrieve data from payment_info table
-                          $sql = "SELECT invoice_no, 
-                                  GROUP_CONCAT(CASE 
-                                              WHEN order_status != 'Pending' AND order_visibility = 'Show' 
-                                              THEN order_no 
-                                              END SEPARATOR ', ') as order_no, 
-                                  serial_no, 
-                                  order_status, 
-                                  order_visibility, 
-                                  payment_method, 
-                                  acc_number, 
-                                  transaction_id, 
-                                  payment_date, 
-                                  payment_status 
-                                  FROM payment_info 
-                                  WHERE order_visibility = 'Show'
-                                  GROUP BY invoice_no";
-                          $result = $conn->query($sql);
-
-                          $count = 1;
-                          if ($result->num_rows > 0) {
-                              while ($row = $result->fetch_assoc()) {
-                                  if ($row["payment_status"] == "Paid") {
-
-                                    // Fetch courier tracking_code & get parcel status
-                                    $invoice_no = $row['invoice_no'];
-
-                                    $sql2 = "SELECT tracking_code FROM parcel_info WHERE invoice_no   = '$invoice_no'";
-                                    $result2 = $conn->query($sql2);
-                                    $row2 = $result2->num_rows;
-
-                                    if ($row2 > 0) {
-                                      $data = $result2->fetch_assoc();
-
-                                      $is_tracking_code_set = 1;
-
-                                    } else {
-
-                                      $is_tracking_code_set = 0;
-                                      
-                                    }
-                                    // End
-
-
-                                      echo "<tr>";
-                                      echo '<td><input type="checkbox" name="invoice[]" value="' . $row["invoice_no"] . '"></td>';
-                                      echo "<td>" . $count . "</td>";
-                                      echo "<td>" . $row["invoice_no"] . "</td>";
-                                      echo "<td>" . $row["order_no"] . "</td>";
-                                      echo "<td class='order-status'>" . $row["order_status"] . "</td>";
-                                      echo "<td>" . $row["payment_method"] . "</td>";
-
-                                      if ($is_tracking_code_set == 0) {
-                                        echo'
-                                            <td>
-                                              <a href="steadfast_entry.php?invoice_no='. $row["invoice_no"] .'" class="btn btn-primary">
-                                                Send to Steadfast <span class="mdi mdi-send"></span>
-                                              </a>
-                                            </td>';
-                                      } else {
-                                        echo'
-                                          <td>
-                                            <span class="btn btn-muted">
-                                              Consignment Sent <span class="mdi mdi-send-check"></span>
-                                            </span>
-                                          </td>
-                                          ';
-                                      }
-
-                                      echo '
-                                          <td class="shipped-button">
-                                            <form method="post" action="">
-                                                <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
-                                                <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
-                                                <button type="submit" name="mark_shipped_both" class="btn btn-success">Mark As Shipped</button>
-                                            </form>
-                                          </td>
-                                      
-                                          <td class="completed-button">
-                                            <form method="post" action="">
-                                                  <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
-                                                  <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
-                                                  <button type="submit" name="mark_completed_both" class="btn btn-success">Mark As Completed</button>
-                                            </form>
-                                          </td>
-                                          <td class="canceled-button">
-                                            <form method="post" action="">
-                                                  <input type="hidden" name="order_no" value="' . $row["order_no"] . '">
-                                                  <input type="hidden" name="invoice_no" value="' . $row["invoice_no"] . '">
-                                                  <button type="submit" name="mark_canceled_both" class="btn btn-danger">Mark As Canceled</button>
-                                            </form>
-                                          </td>
-                                          ';
-
-
-                                    echo '<td class="invoice-button">
-                                      <a href="invoice.php?inv='.$row['invoice_no'].'" class="btn btn-dark">See Invoice</a>
-                                      </td>';
-
-                                    echo '<td>
-                                            <a class="btn btn-info" href="order_details.php?invoice_no='.$row['invoice_no'].'">
-                                            View Details <span class="mdi mdi-details"></span>
-                                            </a>
-                                          </td>';
-                                      echo "</tr>";
-                                      $count++;
-                                  }
-                              }
-                          }
-                          ?>
-
-                    </tbody>
-                 </table>
-                </div>
-            </div>
-            
-            <br>
-            <div class="mt-3">
-            <button type="submit" class="btn btn-dark">
-              Download Selected Invoices
-            </button>
-          </div>
-</form>
-
-            
+            </tbody>
+         </table>
+        </div>
+    </div>
+    
+    <br>
+    
 </div>
 <!--------------------------->
 <!-- END MAIN AREA -->

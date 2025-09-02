@@ -42,6 +42,7 @@ $pageAccessMap = [
 
     'addProduct.php'          => 'product',
     'viewProduct.php'         => 'product',
+    'sizes.php'               => 'product',
 
     'insertCategory.php'      => 'categories',
     'viewCategory.php'        => 'categories',
