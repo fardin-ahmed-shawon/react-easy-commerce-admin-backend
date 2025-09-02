@@ -70,6 +70,7 @@ if ($action == 'get-web-info') {
         "outside_delivery_charge" => (int)$row['outside_delivery_charge'],
         "phone" => $row['phone'],
         "wp_api_num" => $row['wp_api_num'],
+        "messenger_username" => $row['messenger_username'],
         "acc_num" => $row['acc_num'],
         "email" => $row['email'],
         "fb_link" => $row['fb_link'],

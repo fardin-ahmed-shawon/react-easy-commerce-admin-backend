@@ -296,4 +296,40 @@ function get_order_list($style = '', $status= '', $limit = '') {
     return $output;
 }
 
+// ******* Find Customer Phone ********* //
+function find_customer_phone($invoice_no = '') {
+    global $conn;
+
+    if ($invoice_no != '') {
+        $sql = "SELECT user_phone FROM order_info WHERE invoice_no = '$invoice_no' LIMIT 1";
+    } else {
+        $sql = "SELECT user_phone FROM order_info";
+    }
+
+    $result = $conn->query($sql);
+    $row = $result->fetch_assoc();
+
+    return $row['user_phone'];
+}
+
+// ******* Find Order Date ********* //
+function find_order_date($invoice_no = '') {
+    global $conn;
+
+    if ($invoice_no != '') {
+        $sql = "SELECT DATE(order_date) AS order_date 
+                FROM order_info 
+                WHERE invoice_no = '$invoice_no' 
+                LIMIT 1";
+    } else {
+        $sql = "SELECT DATE(order_date) AS order_date FROM order_info";
+    }
+
+    $result = $conn->query($sql);
+    $row = $result->fetch_assoc();
+
+    return $row['order_date'];
+}
+
+
 ?>

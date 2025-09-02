@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $outside_delivery_charge = $_POST['outside_delivery_charge'] ?? null;
     $phone = $_POST['phone'] ?? null;
     $wp_api_num = $_POST['wp_api_num'] ?? null;
+    $messenger_username = $_POST['messenger_username'] ?? null;
     $acc_num = $_POST['acc_num'] ?? null;
     $email = $_POST['email'] ?? null;
     $fb_link = $_POST['fb_link'] ?? null;
@@ -32,14 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $updateQuery = "UPDATE website_info SET 
             name='$name', address='$address', 
             inside_location='$inside_location', inside_delivery_charge='$inside_delivery_charge',outside_delivery_charge='$outside_delivery_charge', 
-            phone='$phone', wp_api_num='$wp_api_num', acc_num='$acc_num', email='$email', fb_link='$fb_link', 
+            phone='$phone', wp_api_num='$wp_api_num', messenger_username='$messenger_username', acc_num='$acc_num', email='$email', fb_link='$fb_link', 
             insta_link='$insta_link', twitter_link='$twitter_link', yt_link='$yt_link', location='$location', top_banner_ad_content='$top_banner_ad_content' 
              WHERE id=1";
         $conn->query($updateQuery);
     } else {
         // Insert new row
-        $insertQuery = "INSERT INTO website_info (id, name, address, inside_location, inside_delivery_charge,  outside_delivery_charge, phone, wp_api_num, acc_num, email, fb_link, insta_link, twitter_link, yt_link, top_banner_ad_content) 
-            VALUES (1, '$name', '$address', '$inside_location', '$inside_delivery_charge', '$outside_delivery_charge', '$phone', '$wp_api_num', '$acc_num', '$email', '$fb_link', '$insta_link', '$twitter_link', '$yt_link', '$top_banner_ad_content')";
+        $insertQuery = "INSERT INTO website_info (id, name, address, inside_location, inside_delivery_charge,  outside_delivery_charge, phone, wp_api_num, messenger_username, acc_num, email, fb_link, insta_link, twitter_link, yt_link, top_banner_ad_content) 
+            VALUES (1, '$name', '$address', '$inside_location', '$inside_delivery_charge', '$outside_delivery_charge', '$phone', '$wp_api_num', '$messenger_username', '$acc_num', '$email', '$fb_link', '$insta_link', '$twitter_link', '$yt_link', '$top_banner_ad_content')";
         $conn->query($insertQuery);
     }
 }
@@ -89,6 +90,10 @@ $info = $infoResult->fetch_assoc();
                                     <input type="text" class="form-control" id="wp" name="wp_api_num" value="<?= $info['wp_api_num'] ?? '' ?>">
                                 </div>
                                 <div class="form-group">
+                                    <label for="messenger_username">Messenger Username</label>
+                                    <input type="text" class="form-control" id="messenger_username" name="messenger_username" value="<?= $info['messenger_username'] ?? '' ?>">
+                                </div>
+                                <div class="form-group">
                                     <label for="acc_num">Account Number (Mobile Banking)</label>
                                     <input type="text" class="form-control" id="acc_num" name="acc_num" value="<?= $info['acc_num'] ?? '' ?>">
                                 </div>
@@ -135,6 +140,7 @@ $info = $infoResult->fetch_assoc();
                             <p><strong>Outside Delivery Charge:</strong> <?= $info['outside_delivery_charge'] ?? 'N/A' ?></p>
                             <p><strong>Phone:</strong> <?= $info['phone'] ?? 'N/A' ?></p>
                             <p><strong>WhatsApp API Number:</strong> <?= $info['wp_api_num'] ?? 'N/A' ?></p>
+                            <p><strong>Messenger Username:</strong> <?= $info['messenger_username'] ?? 'N/A' ?></p>
                             <p><strong>Account Number:</strong> <?= $info['acc_num'] ?? 'N/A' ?></p>
                             <p><strong>Email:</strong> <?= $info['email'] ?? 'N/A' ?></p>
                             <p><strong>Facebook:</strong> <a href="<?= $info['fb_link'] ?? '#' ?>" target="_blank"><?= $info['fb_link'] ?? 'N/A' ?></a></p>
