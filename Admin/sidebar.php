@@ -144,6 +144,9 @@
                   <li class="nav-item">
                     <a class="nav-link" href="viewOrders.php">Active Orders</a>
                   </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="create-order.php">Create Order</a>
+                  </li>
                 </ul>
               </div>
             </li>
