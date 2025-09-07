@@ -5,7 +5,21 @@ header('Cache-Control: no-cache, no-store, must-revalidate'); // Prevent caching
 header('Pragma: no-cache'); // HTTP 1.0
 header('Expires: 0'); // Proxies
 
-header("Access-Control-Allow-Origin: http://localhost:5173"); // your React app origin
+// your React app origin
+//header("Access-Control-Allow-Origin: https://multaan.com/");
+
+$allowed_origins = [
+    "https://multaan.com",
+    "http://localhost:5173/"
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header("Access-Control-Allow-Credentials: true"); // if needed
+}
+
+
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
