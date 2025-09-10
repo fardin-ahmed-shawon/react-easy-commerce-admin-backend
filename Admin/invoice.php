@@ -45,6 +45,7 @@ $websiteEmail  = $webInfoRow['email'] ?? 'N/A';
 $websiteAddress= $webInfoRow['address'] ?? 'N/A';
 $insideCharge  = isset($webInfoRow['inside_delivery_charge']) ? (int)$webInfoRow['inside_delivery_charge'] : 80;
 $outsideCharge = isset($webInfoRow['outside_delivery_charge']) ? (int)$webInfoRow['outside_delivery_charge'] : 150;
+$noCharge = 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -124,7 +125,13 @@ body { background:#f7f8fa; }
                           </tr>';
                 }
 
-                $shipping = ($order['city_address']==="Inside Dhaka") ? $insideCharge : $outsideCharge;
+                $shipping = ($order['city_address'] === "") 
+                ? $noCharge 
+                : (($order['city_address'] === "Inside Dhaka") 
+                    ? $insideCharge 
+                    : $outsideCharge);
+
+
                 $total = $subtotal + $shipping - $discount_amount;
                 ?>
                 <tr><td colspan="4" class="text-right"><strong>Subtotal</strong></td><td class="text-right">৳ <?php echo number_format($subtotal,2); ?></td></tr>
