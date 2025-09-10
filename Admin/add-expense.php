@@ -11,11 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $expense_category = $_POST['expense_category'];
     $expense_amount = $_POST['expense_amount'];
     $expense_description = $_POST['expense_description'];
+    $expense_date = $_POST['expense_date']; // Get the selected date
 
-    $sql = "INSERT INTO expense_info (expense_title, expense_category, expense_amount, expense_description) 
-            VALUES (?, ?, ?, ?)";
+    $sql = "INSERT INTO expense_info (expense_title, expense_category, expense_amount, expense_description, expense_date) 
+            VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssds", $expense_title, $expense_category, $expense_amount, $expense_description);
+    $stmt->bind_param("ssdss", $expense_title, $expense_category, $expense_amount, $expense_description, $expense_date);
 
     if ($stmt->execute()) {
         $message = "Expense added successfully!";
@@ -47,33 +48,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ?>
                     <br>
                     <h1 class="text-center">Add Expense</h1>
-                  <form method="POST" action="">
-                    <div class="form-group">
-                      <label for="expense_title">Expense Title</label>
-                      <input type="text" class="form-control" id="expense_title" name="expense_title" placeholder="Enter your expense title" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="expense_category">Expense Category</label>
-                      <select class="form-control" id="expense_category" name="expense_category" required>
-                        <option value="">Choose Expense Category</option>
-                        <?php
-                        $category_query = "SELECT category_name FROM expense_category";
-                        $result = $conn->query($category_query);
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<option value='{$row['category_name']}'>{$row['category_name']}</option>";
-                        }
-                        ?>
-                      </select>
-                    </div>
-                    <div class="form-group">
-                      <label for="expense_amount">Expense Amount</label>
-                      <input type="number" step="0.01" class="form-control" id="expense_amount" name="expense_amount" placeholder="Enter your expense amount" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="expense_description">Expense Description</label>
-                      <textarea class="form-control" id="expense_description" name="expense_description" placeholder="Enter your expense description"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-gradient-primary mt-3">Add Expense</button>
+                    <form method="POST" action="">
+                      <div class="form-group">
+                        <label for="expense_title">Expense Title</label>
+                        <input type="text" class="form-control" id="expense_title" name="expense_title" placeholder="Enter your expense title" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="expense_category">Expense Category</label>
+                        <select class="form-control" id="expense_category" name="expense_category" required>
+                          <option value="">Choose Expense Category</option>
+                          <?php
+                          $category_query = "SELECT category_name FROM expense_category";
+                          $result = $conn->query($category_query);
+                          while ($row = $result->fetch_assoc()) {
+                              echo "<option value='{$row['category_name']}'>{$row['category_name']}</option>";
+                          }
+                          ?>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="expense_amount">Expense Amount</label>
+                        <input type="number" step="0.01" class="form-control" id="expense_amount" name="expense_amount" placeholder="Enter your expense amount" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="expense_description">Expense Description</label>
+                        <textarea class="form-control" id="expense_description" name="expense_description" placeholder="Enter your expense description"></textarea>
+                      </div>
+                      <div class="form-group">
+                        <label for="expense_date">Expense Date</label>
+                        <input type="date" class="form-control" id="expense_date" name="expense_date" required>
+                      </div>
+                      <button type="submit" class="btn btn-gradient-primary mt-3">Add Expense</button>
                   </form>
                 </div>
               </div>
