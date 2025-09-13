@@ -260,3 +260,44 @@ CREATE TABLE steadfast_info (
   api_key text NOT NULL,
   secret_key text NOT NULL
 );
+
+
+-- Landing Page Table
+CREATE TABLE landing_pages (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    product_slug VARCHAR(255) NOT NULL,
+    home_title VARCHAR(255) NOT NULL,
+    home_description TEXT NOT NULL,
+    home_img VARCHAR(255) NOT NULL,
+    feature_id INT NOT NULL,
+    feature_img VARCHAR(255) NOT NULL,
+    gallery_id INT NOT NULL,
+    review_id INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES product_info(product_id) ON DELETE CASCADE
+);
+
+CREATE TABLE features (
+  feature_id int(11) NOT NULL,
+  product_id INT NOT NULL,
+  feature_title varchar(255) NOT NULL,
+  feature_description text NOT NULL,
+  created_at timestamp NOT NULL DEFAULT current_timestamp(),
+  FOREIGN KEY (product_id) REFERENCES product_info(product_id) ON DELETE CASCADE
+)
+
+CREATE TABLE reviews (
+  review_id int(11) NOT NULL,
+  product_id INT NOT NULL,
+  review_image varchar(255) NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES product_info(product_id) ON DELETE CASCADE
+)
+
+CREATE TABLE gallery (
+  image_id int(11) NOT NULL,
+  product_id INT NOT NULL,
+  gallery_image varchar(255) NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES product_info(product_id) ON DELETE CASCADE
+)
+
+-- END
