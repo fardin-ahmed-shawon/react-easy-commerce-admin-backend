@@ -264,7 +264,7 @@ $page_title = 'View Products';
     qrContainer.innerHTML = "";
 
     // Product link (adjust to your real link)
-    const productUrl = `https://yourdomain.com/product.php?id=${encodeURIComponent(id)}`;
+    const productUrl = `https://multaan.com/product.php?id=${encodeURIComponent(id)}`;
 
     // Generate QR code
     new QRCode(qrContainer, {
