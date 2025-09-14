@@ -2,7 +2,7 @@
 //require 'dbconnection.php';
 require '../database/dbConnection.php';
 
-$product_slug = $_GET['slug'] ?? 'women-premium-tops-parishas';
+$product_slug = $_GET['slug'] ?? '';
 
 // fetch product id based on slug
 if ($product_slug != '') {
