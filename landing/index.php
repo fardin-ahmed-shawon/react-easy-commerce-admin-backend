@@ -1,24 +1,78 @@
 <?php
-require 'dbConnection.php';
+//require 'dbconnection.php';
+require '../database/dbConnection.php';
 
-$websiteName = 'Easy Tech Solutions';
-$websiteAddress = 'N/A';
-$websitePhone = 'N/A';
-$accNum = 'N/A';
-$websiteEmail = 'N/A';
-$websiteFbLink = '#';
-$websiteInstaLink = '#';
-$websiteTwitterLink = '#';
-$websiteYtLink = '#';
+$product_slug = $_GET['slug'] ?? 'iphone-16-pro-inactive-usa-512gb';
+
+// fetch product id based on slug
+if ($product_slug != '') {
+
+    $sql = "SELECT product_id FROM landing_pages WHERE product_slug='$product_slug'";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_num_rows($result);
+
+    if ($row > 0) {
+
+        $data = mysqli_fetch_assoc($result);
+        $product_id = $data['product_id'];
+
+    } else {
+        // If no product found with the given slug, redirect to a default page or show an error
+        //echo "<script>window.location.href = '404.php';</script>";
+    }
+} else {
+    // If no slug is provided, redirect to a default page or show an error
+    //echo "<script>window.location.href = '404.php';</script>";
+}
+// END
+
+// Fetch website settings
+$sql = "SELECT * FROM website_info";
+$result = mysqli_query($conn, $sql);
+$row = mysqli_num_rows($result);
+if ($row > 0) {
+    while ($data = mysqli_fetch_assoc($result)) {
+
+        $websiteName = $data['name'];
+        $websiteAddress = $data['address'];
+        $websitePhone = $data['phone'];
+        $accNum = $data['acc_num'];
+        $websiteEmail = $data['email'];
+        $websiteFbLink = $data['fb_link'];
+        $websiteInstaLink = $data['insta_link'];
+        $websiteTwitterLink = $data['twitter_link'];
+        $websiteYtLink = $data['yt_link'];
+
+        // Delivery Information
+        $inside_location = $data['inside_location'];
+        $inside_delivery_charge = $data['inside_delivery_charge'];
+        $outside_delivery_charge = $data['outside_delivery_charge'];
+
+        // Video location
+        $vdo = '';
+
+        $logo = $data['logo'];
+
+    }
+}
+// END
 
 
-// Delivery Information
-$inside_location = 'Dhaka';
-$inside_delivery_charge = '80';
-$outside_delivery_charge = '150';
+// Fetch Landing Page Info
+$sql = "SELECT * FROM landing_pages WHERE product_slug='$product_slug'";
+$result = mysqli_query($conn, $sql);
+$row = mysqli_num_rows($result);
+if ($row > 0) {
+    while ($data = mysqli_fetch_assoc($result)) {
 
-// Video location
-$vdo = '';
+        $home_title = $data['home_title'];
+        $home_des = $data['home_description'];
+        $home_img = $data['home_img'];
+        $feature_img = $data['feature_img'];
+
+    }
+}
+// END
 
 ?>
 <!DOCTYPE html>
@@ -31,7 +85,7 @@ $vdo = '';
         <meta content="Product Landing Page" name="description">
 
         <!-- Favicon -->
-        <link href="admin-panel/<?php echo $websiteFav; ?>" rel="icon">
+        <link href="../Admin/<?= $logo ?>" rel="icon">
 
         <!-- Google Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Montserrat:400|Quicksand:500,600,700&display=swap" rel="stylesheet">
@@ -83,51 +137,27 @@ $vdo = '';
         <div id="header" style="margin-top: 0;">
             <div class="container">
                 <div id="logo" class="pb-5" style="border-radius: 50%; display: flex; align-items: center; justify-content: space-between;">
-                    <a href="index.php"><img style="width: 200px;" src="../Admin/uploads/logo.png" alt="Logo" /></a>
+                    <a href="index.php"><img style="width: 200px;" src="../Admin/<?= $logo ?>" alt="Logo" /></a>
                 </div>
                 <div class="row align-items-center">
                     <div class="col-md-7">
                         <div class="header-content">
-                        <?php
-                        $sql = "SELECT * FROM home_text";
-                        $result = mysqli_query($conn, $sql);
-                        $row = mysqli_num_rows($result);
-                        if ($row > 0) {
-                            while ($data = mysqli_fetch_assoc($result)) {
-
-                                $home_title = $data['home_title'];
-                                $home_des = $data['home_description'];
-
-                            }
-                        }
-                        ?>
-
+                        
                             <h2><span>
-                                <?php echo $home_title; ?>
+                                <?= $home_title; ?>
                             </span></h2>
 
                             <ul class="fa-ul">
                                 <li><span class="fa-li"><i class="far fa-arrow-alt-circle-right"></i>
-                                </span><?php echo $home_des; ?></li>
+                                </span><?= $home_des; ?></li>
                             </ul>
-
 
                             <a class="btn" href="#products">Order Now</a>
                         </div>
                     </div>
                     <div class="col-md-5">
-                        <?php
-                            $sql = "SELECT home_image FROM images";
-                            $result = mysqli_query($conn, $sql);
-                            $row = mysqli_num_rows($result);
-                            if ($row > 0) {
-                                while ($data = mysqli_fetch_assoc($result)) {
-                                $home_img = $data['home_image'];
-                                }
-                            }
-                        ?>
                         <div class="header-img">
-                            <img src="uploads/<?php echo $home_img; ?>" alt="Product Image">
+                            <img src="<?= $home_img; ?>" alt="Product Image">
                         </div>
                     </div>
                 </div>
@@ -160,7 +190,7 @@ $vdo = '';
                     <div class="col-md-4">
                         <!-- Fetch first half -->
                         <?php
-                            $sql = "SELECT * FROM features LIMIT $midpoint";
+                            $sql = "SELECT * FROM features WHERE product_id = $product_id  LIMIT $midpoint";
                             $result = mysqli_query($conn, $sql);
                             if (mysqli_num_rows($result) > 0) {
                                 while ($data = mysqli_fetch_assoc($result)) {
@@ -183,26 +213,16 @@ $vdo = '';
                         ?>
                     </div>
 
-                    <?php
-                        // Fetch feature image
-                        $sql = "SELECT feature_image FROM images";
-                        $result = mysqli_query($conn, $sql);
-                        $ftr_img = '';
-                        if (mysqli_num_rows($result) > 0) {
-                            $data = mysqli_fetch_assoc($result);
-                            $ftr_img = $data['feature_image'];
-                        }
-                    ?>
                     <div class="col-md-4">
                         <div class="product-img">
-                            <img src="uploads/<?php echo $ftr_img; ?>" alt="Product Image">
+                            <img src="<?= $feature_img; ?>" alt="Product Image">
                         </div>
                     </div>
 
                     <div class="col-md-4">
                         <!-- Fetch second half -->
                         <?php
-                            $sql = "SELECT * FROM features LIMIT $midpoint, $totalFeatures";
+                            $sql = "SELECT * FROM features WHERE product_id = $product_id  LIMIT $midpoint, $totalFeatures";
                             $result = mysqli_query($conn, $sql);
                             if (mysqli_num_rows($result) > 0) {
                                 while ($data = mysqli_fetch_assoc($result)) {
@@ -233,7 +253,7 @@ $vdo = '';
         <?php
             if ($vdo != '') {
                 ?>
-                <div>
+                <!-- <div>
                     <div class="container">
                     <video width="100%" controls>
                         <source src="admin-panel/<?php echo $vdo; ?>" type="video/mp4">
@@ -241,7 +261,7 @@ $vdo = '';
                         Your browser does not support HTML video.
                     </video>
                     </div>
-                </div>
+                </div> -->
                 <?php
             } 
         ?>
@@ -262,7 +282,7 @@ $vdo = '';
 
                     <?php 
                         
-                        $sql = "SELECT * FROM product_info";
+                        $sql = "SELECT * FROM product_info WHERE product_id = $product_id";
                         $result = mysqli_query($conn, $sql);
                         $row = mysqli_num_rows($result);
 
@@ -276,9 +296,9 @@ $vdo = '';
 
                                 echo '
                                     <div class="col-md-3 mx-auto">
-                                        <div class="product-single" product-id="'.$productId.'" product-name="'.$productName.'" product-img="img/'.$productImg.'" product-price="'.$productPrice.'" product-quantity="1">
+                                        <div class="product-single" product-id="'.$productId.'" product-name="'.$productName.'" product-img="'.$productImg.'" product-price="'.$productPrice.'" product-quantity="1">
                                             <div class="product-img">
-                                                <img src="img/'.$productImg.'" alt="Product Image">
+                                                <img src="'.$productImg.'" alt="Product Image">
                                             </div>
                                             <div class="product-content">
                                                 <h2>'.$productName.'</h2>
@@ -315,16 +335,16 @@ $vdo = '';
                 <div class="owl-carousel testimonials-carousel">
 
                 <?php
-                    $sql = "SELECT * FROM reviews";
+                    $sql = "SELECT * FROM gallery WHERE product_id = $product_id";
                     $result = mysqli_query($conn, $sql);
                     $row = mysqli_num_rows($result);
                     if ($row > 0) {
                         while ($data = mysqli_fetch_assoc($result)) {
-                            $reviewImg = $data['review_image'];
+                            $galleryImg = $data['gallery_image'];
 
                             echo '
                                 <div class="testimonial-item">
-                                    <img src="uploads/'.$reviewImg.'" alt="">
+                                    <img src="../uploads/'.$galleryImg.'" alt="">
                                 </div>
                             ';
                         }
@@ -342,8 +362,7 @@ $vdo = '';
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             session_start();
             // Retrieve form data
-            $firstName = $_POST['firstName'];
-            $lastName = $_POST['lastName'];
+            $fullName = $_POST['fullName'];
             $phone = $_POST['phone'];
             $email = $_POST['email'];
             $address = $_POST['address'];
@@ -390,13 +409,12 @@ $vdo = '';
                     $total_price = $product['price'] * $product_quantity;
 
                     // Insert data into order_info table
-                    $sql = "INSERT INTO order_info (user_first_name, user_last_name, user_phone, user_email, user_address, city_address, invoice_no, product_id, product_title, product_quantity, total_price, payment_method)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    $sql = "INSERT INTO order_info (user_full_name, user_phone, user_email, user_address, city_address, invoice_no, product_id, product_title, product_quantity, total_price, payment_method)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param(
-                        "sssssssisiss",
-                        $firstName,
-                        $lastName,
+                        "ssssssisiss",
+                        $fullName,
                         $phone,
                         $email,
                         $address,
@@ -450,15 +468,10 @@ $vdo = '';
                                         <br>
                                         <div class="content">
                                             <div class="user-details full-input-box">
-                                                <!-- Input for First Name -->
+                                                <!-- Input for Full Name -->
                                                 <div class="input-box form-group">
-                                                    <span class="details">First Name<i class="text-danger">*</i></span>
-                                                    <input class="form-control" name="firstName" type="text" placeholder="Enter your first name" required="">
-                                                </div>
-                                                <!-- Input for Last Name -->
-                                                <div class="input-box form-group">
-                                                    <span class="details">Last Name<i class="text-danger">*</i></span>
-                                                    <input class="form-control" name="lastName" type="text" placeholder="Enter your last name" required="">
+                                                    <span class="details">Full Name<i class="text-danger">*</i></span>
+                                                    <input class="form-control" name="fullName" type="text" placeholder="Enter your full name" required="">
                                                 </div>
                                                 <!-- Input for Phone Number -->
                                                 <div class="input-box form-group">
@@ -619,7 +632,7 @@ $vdo = '';
                 <div class="owl-carousel testimonials-carousel">
 
                 <?php
-                    $sql = "SELECT * FROM reviews";
+                    $sql = "SELECT * FROM reviews WHERE product_id = $product_id";
                     $result = mysqli_query($conn, $sql);
                     $row = mysqli_num_rows($result);
                     if ($row > 0) {
