@@ -139,7 +139,7 @@ if ($row > 0) {
         <div id="header" style="margin-top: 0;">
             <div class="container">
                 <div id="logo" class="pb-5" style="border-radius: 50%; display: flex; align-items: center; justify-content: space-between;">
-                    <a href="index.php"><img style="width: 200px;" src="../Admin/<?= $logo ?>" alt="Logo" /></a>
+                    <a href="<?= $site_link; ?>/landing/<?= $product_slug; ?>"><img style="width: 200px;" src="../Admin/<?= $logo ?>" alt="Logo" /></a>
                 </div>
                 <div class="row align-items-center">
                     <div class="col-md-7">
@@ -754,7 +754,7 @@ if ($row > 0) {
                     .then(data => {
                         document.body.innerHTML = data;
                         localStorage.clear();
-                        window.location.href = "index.php?or_msg='successful'";
+                        window.location.href = "<?= $site_link;?>/landing/<?= $product_slug; ?>?or_msg=successful";
                     })
                     .catch(error => console.error('Error:', error));
                 });
