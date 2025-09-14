@@ -18,11 +18,13 @@ if ($product_slug != '') {
 
     } else {
         // If no product found with the given slug, redirect to a default page or show an error
-        //echo "<script>window.location.href = '404.php';</script>";
+        header("Location: 404.php");
+        exit;
     }
 } else {
     // If no slug is provided, redirect to a default page or show an error
-    //echo "<script>window.location.href = '404.php';</script>";
+    header("Location: 404.php");
+    exit;
 }
 // END
 

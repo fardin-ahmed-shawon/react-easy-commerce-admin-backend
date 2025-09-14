@@ -122,34 +122,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="content-wrapper">
     <div class="container mt-5">
-        <h2 class="mb-4">Edit Landing Page for <span class="text-primary"><?= htmlspecialchars($product_slug) ?></span></h2>
+        <h1 class="mb-4">Create Landing Page for</h1>
+        <span class="display-5 text-primary"><?= htmlspecialchars($product_slug) ?></span>
+        <br><br>
         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">Landing Page Info</div>
-                <div class="card-body row g-3">
+            <div class="card mb-4 rounded-0">
+                <div class="card-header bg-dark text-white">Landing Page Info</div>
+                <div class="card-body row g-3 p-3">
                     <div class="col-md-6">
-                        <label class="form-label">Home Title</label>
-                        <input type="text" name="home_title" class="form-control" required>
+                        <div class="row">
+                            <div class="col-12">
+                                <label class="form-label">Home Title</label>
+                                <input type="text" name="home_title" class="form-control" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Home Description</label>
+                                <textarea name="home_description" class="form-control" rows="4" required></textarea>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Home Description</label>
-                        <textarea name="home_description" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Home Image</label>
-                        <input type="file" name="home_img" accept="image/*" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Feature Image</label>
-                        <input type="file" name="feature_img" accept="image/*" class="form-control" required>
+                        <div class="row">
+                            <div class="col-12 py-3">
+                                <label class="form-label">Home Image</label>
+                                <input type="file" name="home_img" accept="image/*" class="form-control" required>
+                            </div>
+                            <div class="col-12 py-2">
+                                <label class="form-label">Feature Image</label>
+                                <input type="file" name="feature_img" accept="image/*" class="form-control" required>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Features -->
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">Features</div>
-                <div class="card-body" id="features-section">
+            <div class="card mb-4 rounded-0">
+                <div class="card-header bg-dark text-white">Features</div>
+                <div class="card-body p-3" id="features-section">
                     <div class="feature-group row g-3 mb-2">
                         <div class="col-md-5">
                             <input type="text" name="feature_title[]" class="form-control" placeholder="Feature Title" required>
@@ -162,13 +172,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-outline-success" id="add-feature">Add Feature</button>
+                <button type="button" class="btn btn-outline-success" id="add-feature"><b>Add Feature</b></button>
             </div>
 
             <!-- Reviews -->
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">Reviews</div>
-                <div class="card-body" id="reviews-section">
+            <div class="card mb-4 rounded-0">
+                <div class="card-header bg-dark text-white">Reviews</div>
+                <div class="card-body p-3" id="reviews-section">
                     <div class="review-group row g-3 mb-2">
                         <div class="col-md-10">
                             <input type="file" name="review_image[]" accept="image/*" class="form-control" required>
@@ -178,13 +188,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-outline-info" id="add-review">Add Review Image</button>
+                <button type="button" class="btn btn-outline-info" id="add-review"><b>Add Review Image</b></button>
             </div>
 
             <!-- Gallery -->
-            <div class="card mb-4">
-                <div class="card-header bg-warning text-white">Gallery</div>
-                <div class="card-body" id="gallery-section">
+            <div class="card mb-4 rounded-0">
+                <div class="card-header bg-dark text-white">Gallery</div>
+                <div class="card-body p-3" id="gallery-section">
                     <div class="gallery-group row g-3 mb-2">
                         <div class="col-md-10">
                             <input type="file" name="gallery_image[]" accept="image/*" class="form-control" required>
@@ -194,10 +204,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-outline-warning" id="add-gallery">Add Gallery Image</button>
+                <button type="button" class="btn btn-outline-primary" id="add-gallery"><b>Add Gallery Image</b></button>
             </div>
-
-            <button type="submit" class="btn btn-primary btn-lg w-100">Save Landing Page</button>
+            <br><hr><br>
+            <button type="submit" class="btn btn-dark btn-lg w-100"><b>Publish Landing Page</b></button>
         </form>
     </div>
 </div>
