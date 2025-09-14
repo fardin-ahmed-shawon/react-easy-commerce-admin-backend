@@ -17,6 +17,7 @@ $page_title = 'Landing Page List';
     </h3>
   </div>
 
+
   <div class="row">
     <h1>Landing Page List</h1>
     <div class="container">
@@ -54,18 +55,26 @@ $page_title = 'Landing Page List';
             <?php
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            $sql = "SELECT p.*, mc.main_ctg_name, sc.sub_ctg_name 
-                    FROM product_info p
-                    LEFT JOIN main_category mc ON p.main_ctg_id = mc.main_ctg_id
-                    LEFT JOIN sub_category sc ON p.sub_ctg_id = sc.sub_ctg_id";
+            $sql = "SELECT p.*, 
+                        mc.main_ctg_name, 
+                        sc.sub_ctg_name, 
+                        lp.id AS landing_id
+                  FROM product_info p
+                  LEFT JOIN main_category mc ON p.main_ctg_id = mc.main_ctg_id
+                  LEFT JOIN sub_category sc ON p.sub_ctg_id = sc.sub_ctg_id
+                  INNER JOIN landing_pages lp ON lp.product_id = p.product_id";
+
 
             if (!empty($search)) {
                 $search_safe = mysqli_real_escape_string($conn, $search);
-                $sql .= " WHERE p.product_title LIKE '%$search_safe%' OR p.product_code LIKE '%$search_safe%'";
+                $sql .= " AND (p.product_title LIKE '%$search_safe%' 
+                          OR p.product_code LIKE '%$search_safe%')";
             }
 
             $sql .= " ORDER BY p.product_id DESC";
+
             $result = mysqli_query($conn, $sql);
+
 
             if ($result && mysqli_num_rows($result) > 0) {
               while ($item = mysqli_fetch_assoc($result)) {
@@ -74,6 +83,7 @@ $page_title = 'Landing Page List';
                 $code  = htmlspecialchars($item['product_code'], ENT_QUOTES);
                 $price = htmlspecialchars($item['product_price'], ENT_QUOTES);
                 $id    = (int)$item['product_id'];
+                $landingId = (int)$item['landing_id'];
 
                 echo '<tr>';
                 echo '<td>'. $id .'</td>';
@@ -82,7 +92,7 @@ $page_title = 'Landing Page List';
                 echo '<td>'.$site_link.'landing/'. $slug .'</td>';
                 echo '<td>';
                 echo '<a href="'.$site_link.'landing/'. $slug .'" class="btn btn-dark btn-sm" target="_blank">Preview <span class="mdi mdi-eye"></span></a> ';
-                echo '<button class="btn btn-dark btn-sm" onclick="confirmEdit('. $id .')">Edit <span class="mdi mdi-square-edit-outline"></span></button> ';
+                echo '<button class="btn btn-dark btn-sm" onclick="confirmEdit('. $landingId .')">Edit <span class="mdi mdi-square-edit-outline"></span></button> ';
                 echo '<button class="btn btn-dark btn-sm" onclick="confirmDelete('. $id .')">Delete <span class="mdi mdi-trash-can-outline"></span></button> ';
                 echo '</td>';
                 echo '</tr>';
@@ -102,8 +112,8 @@ $page_title = 'Landing Page List';
 <!--------------------------->
 
 <script>
-  function confirmEdit(productId) {
-    window.location.href = `editProduct.php?id=${productId}`;
+  function confirmEdit(landingId) {
+    window.location.href = `editLanding.php?id=${landingId}`;
   }
 
   function confirmDelete(productId) {
@@ -117,7 +127,7 @@ $page_title = 'Landing Page List';
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = `deleteProduct.php?id=${productId}`;
+            window.location.href = `deleteLanding.php?id=${productId}`;
         }
     });
   }

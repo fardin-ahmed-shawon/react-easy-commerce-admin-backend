@@ -122,9 +122,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="content-wrapper">
     <div class="container mt-5">
-        <h1 class="mb-4">Create Landing Page for</h1>
-        <span class="display-5 text-primary"><?= htmlspecialchars($product_slug) ?></span>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-4">Create Landing Page for</h1>
+                <span class="display-5 text-primary"><?= htmlspecialchars($product_slug) ?></span>
+            </div>
+            <div>
+                <a href="create-landing-page.php" class="btn btn-dark">Back</a>
+            </div>
+        </div>
         <br><br>
+
         <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
             <div class="card mb-4 rounded-0">
                 <div class="card-header bg-dark text-white">Landing Page Info</div>

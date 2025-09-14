@@ -72,6 +72,7 @@ $page_title = 'Create Landing Page';
             if ($result && mysqli_num_rows($result) > 0) {
               while ($item = mysqli_fetch_assoc($result)) {
                 $title = htmlspecialchars($item['product_title'], ENT_QUOTES);
+                $slug = htmlspecialchars($item['product_slug'], ENT_QUOTES);
                 $code  = htmlspecialchars($item['product_code'], ENT_QUOTES);
                 $price = htmlspecialchars($item['product_price'], ENT_QUOTES);
                 $id    = (int)$item['product_id'];
@@ -85,7 +86,18 @@ $page_title = 'Create Landing Page';
                 echo '<td>'. htmlspecialchars($item['sub_ctg_name']) .'</td>';
                 
                 echo '<td>';
-                echo '<a class="btn btn-dark btn-sm" href="edit-landing-page.php?id='. $id .'">Create <span class="mdi mdi-square-edit-outline"></span></a> ';
+
+                // Check if a landing page already exists for this product
+                $check_sql = "SELECT COUNT(*) AS count FROM landing_pages WHERE product_id = $id";
+
+                $check_result = mysqli_query($conn, $check_sql);
+                $check_row = mysqli_fetch_assoc($check_result);
+
+                if ($check_row['count'] > 0) {
+                    echo '<a href="'.$site_link.'landing/'. $slug .'" class="btn btn-primary btn-sm" target="_blank">Preview <span class="mdi mdi-eye"></span></a> ';
+                } else {
+                    echo '<a class="btn btn-dark btn-sm" href="edit-landing-page.php?id='. $id .'">Create <span class="mdi mdi-square-edit-outline"></span></a> ';
+                }
                 
                 echo '</tr>';
               }
