@@ -1,6 +1,6 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF']);
-$page_title = 'View Products';
+$page_title = 'Landing Page List';
 ?>
 <?php require 'header.php'; ?>
 
@@ -13,12 +13,12 @@ $page_title = 'View Products';
       <span class="page-title-icon bg-gradient-primary text-white me-2">
         <i class="mdi mdi-home"></i>
       </span>
-      Product
+      Landing Page
     </h3>
   </div>
 
   <div class="row">
-    <h1>Product List</h1>
+    <h1>Landing Page List</h1>
     <div class="container">
       <!-- Search Form -->
       <form method="GET" class="mb-4">
@@ -46,12 +46,7 @@ $page_title = 'View Products';
               <td>ID</td>
               <td>Image</td>
               <td>Title</td>
-              <td>Code</td>
-              <td>Main Category</td>
-              <td>Sub Category</td>
-              <td>Available Quantity</td>
-              <td>Regular Price</td>
-              <td>Selling Price</td>
+              <td>URL</td>
               <td>Actions</td>
             </tr>
           </thead>
@@ -75,6 +70,7 @@ $page_title = 'View Products';
             if ($result && mysqli_num_rows($result) > 0) {
               while ($item = mysqli_fetch_assoc($result)) {
                 $title = htmlspecialchars($item['product_title'], ENT_QUOTES);
+                $slug = htmlspecialchars($item['product_slug'], ENT_QUOTES);
                 $code  = htmlspecialchars($item['product_code'], ENT_QUOTES);
                 $price = htmlspecialchars($item['product_price'], ENT_QUOTES);
                 $id    = (int)$item['product_id'];
@@ -83,13 +79,9 @@ $page_title = 'View Products';
                 echo '<td>'. $id .'</td>';
                 echo '<td><img src="../img/'. htmlspecialchars($item['product_img1']) .'" alt="img" style="width:50px;height:50px;"></td>';
                 echo '<td>'. $title .'</td>';
-                echo '<td>'. $code .'</td>';
-                echo '<td>'. htmlspecialchars($item['main_ctg_name']) .'</td>';
-                echo '<td>'. htmlspecialchars($item['sub_ctg_name']) .'</td>';
-                echo '<td>'. htmlspecialchars($item['available_stock']) .'</td>';
-                echo '<td>৳ '. htmlspecialchars($item['product_regular_price']) .'</td>';
-                echo '<td>৳ '. $price .'</td>';
+                echo '<td>https://example.com/landing/'. $slug .'</td>';
                 echo '<td>';
+                echo '<button class="btn btn-dark btn-sm" onclick="">Preview <span class="mdi mdi-eye"></span></button> ';
                 echo '<button class="btn btn-dark btn-sm" onclick="confirmEdit('. $id .')">Edit <span class="mdi mdi-square-edit-outline"></span></button> ';
                 echo '<button class="btn btn-dark btn-sm" onclick="confirmDelete('. $id .')">Delete <span class="mdi mdi-trash-can-outline"></span></button> ';
                 echo '</td>';

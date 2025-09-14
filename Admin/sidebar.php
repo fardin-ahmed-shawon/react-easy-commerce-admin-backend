@@ -39,7 +39,10 @@
                     <a class="nav-link" href="viewProduct.php">View Product</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="create-landing-page.php">Landing Page</a>
+                    <a class="nav-link" href="create-landing-page.php">Create Landing Page</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="landing-page-list.php">Landing Page List</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="sizes.php">Sizes</a>

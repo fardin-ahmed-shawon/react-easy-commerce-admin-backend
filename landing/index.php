@@ -2,7 +2,7 @@
 //require 'dbconnection.php';
 require '../database/dbConnection.php';
 
-$product_slug = $_GET['slug'] ?? 'iphone-16-pro-inactive-usa-512gb';
+$product_slug = $_GET['slug'] ?? 'women-premium-tops-parishas';
 
 // fetch product id based on slug
 if ($product_slug != '') {
@@ -157,7 +157,7 @@ if ($row > 0) {
                     </div>
                     <div class="col-md-5">
                         <div class="header-img">
-                            <img src="<?= $home_img; ?>" alt="Product Image">
+                            <img src="../Admin/<?= $home_img; ?>" alt="Product Image">
                         </div>
                     </div>
                 </div>
@@ -215,7 +215,7 @@ if ($row > 0) {
 
                     <div class="col-md-4">
                         <div class="product-img">
-                            <img src="<?= $feature_img; ?>" alt="Product Image">
+                            <img src="../Admin/<?= $feature_img; ?>" alt="Product Image">
                         </div>
                     </div>
 
@@ -248,24 +248,6 @@ if ($row > 0) {
             </div>
         </div>
         <!-- Feature End-->
-
-        <!-- Video -->
-        <?php
-            if ($vdo != '') {
-                ?>
-                <!-- <div>
-                    <div class="container">
-                    <video width="100%" controls>
-                        <source src="admin-panel/<?php echo $vdo; ?>" type="video/mp4">
-                        <source src="mov_bbb.ogg" type="video/ogg">
-                        Your browser does not support HTML video.
-                    </video>
-                    </div>
-                </div> -->
-                <?php
-            } 
-        ?>
-        <!-- End -->
         
         
         <!-- Products Start -->
@@ -344,7 +326,7 @@ if ($row > 0) {
 
                             echo '
                                 <div class="testimonial-item">
-                                    <img src="../uploads/'.$galleryImg.'" alt="">
+                                    <img src="../Admin/'.$galleryImg.'" alt="">
                                 </div>
                             ';
                         }
@@ -641,7 +623,7 @@ if ($row > 0) {
 
                             echo '
                                 <div class="testimonial-item">
-                                    <img src="uploads/'.$reviewImg.'" alt="">
+                                    <img src="../Admin/'.$reviewImg.'" alt="">
                                 </div>
                             ';
                         }
