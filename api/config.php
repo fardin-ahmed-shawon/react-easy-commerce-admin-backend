@@ -9,7 +9,7 @@ header('Expires: 0'); // Proxies
 //header("Access-Control-Allow-Origin: https://multaan.com/");
 
 $allowed_origins = [
-    "https://multaan.com",
+    "https://clothdrob.com/",
     "http://localhost:5173/"
 ];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';

@@ -1,20 +1,19 @@
 <?php
-$site_link = "http://localhost/test/easy_tech_solutions/react_easy_commerce/";
 $servername = "localhost";
 
 //--------------------------------------------------------------------
 
 // For local development ---------------------------------------------
-
+$site_link = "http://localhost/test/easy_tech_solutions/react_easy_commerce/";
 $username = "root";
 $password = "";
 $database_name = "easy_commerce_v9_4";
 
 // For production -----------------------------------------------------
-
-// $username = "easytechx";
-// $password = "_^Mlr+NnZ=ga";
-// $database_name = "easytechx_easy_commerce";
+//$site_link = "https://clothdrob.com/";
+// $username = "clothd";
+// $password = "Vp6IY-Lese6!56";
+// $database_name = "clothd_easy_commerce";
 
 //---------------------------------------------------------------------
 
