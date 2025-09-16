@@ -128,9 +128,9 @@ if ($filter == 'Shipped') {
         </span> Invoice
       </h3>
     </div>
-    <div class="text-end">
+    <!-- <div class="text-end">
       <a href="all-invoice.php" class="btn btn-dark">All Invoice</a>
-    </div>
+    </div> -->
     <br>
 
     <!-- Search & Filter Controls -->
@@ -182,6 +182,7 @@ if ($filter == 'Shipped') {
                 <th>Canceled</th>
                 <th>Invoice</th>
                 <th>Details</th>
+                <th>Label</th>
               </tr>
 
               <?php
@@ -273,6 +274,13 @@ if ($filter == 'Shipped') {
                             View Details <span class="mdi mdi-details"></span>
                           </a>
                         </td>
+
+                        <td>
+                          <a class="btn btn-primary" href="generate_label.php?invoice_no='.$row['invoice_no'].'" target="_blank">
+                            Generate Label <span class="mdi mdi-label"></span>
+                          </a>
+                        </td>
+
                       </tr>';
                       $count++;
                     }
@@ -307,6 +315,7 @@ if ($filter == 'Shipped') {
                   <th>Canceled</th>
                   <th>Invoice</th>
                   <th>Details</th>
+                  <th>Label</th>
                 </tr>
 
                 <?php
@@ -409,7 +418,13 @@ if ($filter == 'Shipped') {
                                     <a class="btn btn-info" href="order_details.php?invoice_no='.$row['invoice_no'].'">
                                     View Details <span class="mdi mdi-details"></span>
                                     </a>
-                                  </td>';
+                                  </td>
+                                  <td>
+                                    <a class="btn btn-primary" href="generate_label.php?invoice_no='.$row['invoice_no'].'" target="_blank">
+                                      Generate Label <span class="mdi mdi-label"></span>
+                                    </a>
+                                  </td>
+                                  ';
                               echo "</tr>";
                               $count++;
                           }
@@ -421,6 +436,11 @@ if ($filter == 'Shipped') {
          </table>
         </div>
     </div>
+
+    <br><br>
+    
+    <a href="all-invoice.php" class="btn btn-dark">Print All Invoice</a>
+    <a href="generate_label.php?invoice_no=all" class="btn btn-dark">Print All Label</a>
     
     <br>
     
