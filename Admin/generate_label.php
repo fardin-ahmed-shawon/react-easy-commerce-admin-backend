@@ -14,36 +14,61 @@ if ($result && $result->num_rows > 0) {
     $brand_name = $row['name'];
 }
 
-// If invoice_no=all → fetch all orders grouped by invoice
-if ($invoice_no === "all") {
-    $sql = "SELECT invoice_no, user_full_name, user_phone 
-            FROM order_info 
-            GROUP BY invoice_no, user_full_name, user_phone";
-    $result = $conn->query($sql);
-    while ($row = $result->fetch_assoc()) {
-        $labels[] = [
-            'invoice_no' => $row['invoice_no'],
-            'customer_name' => $row['user_full_name'],
-            'customer_phone' => $row['user_phone']
-        ];
+if (!empty($invoice_no)) {
+    if ($invoice_no === "all") {
+        // Fetch all invoices with products
+        $sql = "SELECT invoice_no, 
+                  user_full_name, 
+                  user_phone, 
+                  GROUP_CONCAT(
+                    CONCAT(
+                      product_title,
+                      CASE 
+                        WHEN product_size IS NOT NULL AND product_size <> '' 
+                        THEN CONCAT(' - (', product_size, ')') 
+                        ELSE '' 
+                      END
+                    ) SEPARATOR ', '
+                  ) AS products
+            FROM order_info
+            WHERE order_visibility = 'Show'
+            GROUP BY invoice_no
+            ";
+        $result = $conn->query($sql);
+        while ($row = $result->fetch_assoc()) {
+            $labels[] = [
+                'invoice_no' => $row['invoice_no'],
+                'customer_name' => $row['user_full_name'],
+                'customer_phone' => $row['user_phone'],
+                'products' => $row['products']
+            ];
+        }
+    } else {
+        // Handle multiple invoice numbers with products
+        $invoice_array = explode(",", $invoice_no);
+        $placeholders = implode(",", array_fill(0, count($invoice_array), "?"));
+
+        $stmt = $conn->prepare("SELECT invoice_no, user_full_name, user_phone, 
+                                       GROUP_CONCAT(CONCAT(product_title, ' - (', product_size, ')') SEPARATOR ', ') AS products
+                                FROM order_info 
+                                WHERE invoice_no IN ($placeholders)
+                                GROUP BY invoice_no");
+
+        $types = str_repeat("s", count($invoice_array));
+        $stmt->bind_param($types, ...$invoice_array);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $labels[] = [
+                'invoice_no' => $row['invoice_no'],
+                'customer_name' => $row['user_full_name'],
+                'customer_phone' => $row['user_phone'],
+                'products' => $row['products']
+            ];
+        }
+        $stmt->close();
     }
-} elseif (!empty($invoice_no)) {
-    // Fetch single order
-    $stmt = $conn->prepare("SELECT user_full_name, user_phone 
-                            FROM order_info 
-                            WHERE invoice_no = ? 
-                            LIMIT 1");
-    $stmt->bind_param("s", $invoice_no);
-    $stmt->execute();
-    $stmt->bind_result($customer_name, $customer_phone);
-    if ($stmt->fetch()) {
-        $labels[] = [
-            'invoice_no' => $invoice_no,
-            'customer_name' => $customer_name,
-            'customer_phone' => $customer_phone
-        ];
-    }
-    $stmt->close();
 }
 ?>
 <!DOCTYPE html>
@@ -62,10 +87,10 @@ if ($invoice_no === "all") {
     }
 
     .label {
-      width: 1.5in;
-      height: 1in;
+      width: 3in;
+      min-height: 2in;
       border: 1px solid #000;
-      padding: 2px;
+      padding: 4px;
       box-sizing: border-box;
       text-align: center;
       font-size: 10px;
@@ -75,6 +100,12 @@ if ($invoice_no === "all") {
     .brand {
       font-weight: bold;
       font-size: 11px;
+    }
+
+    .products {
+      margin-top: 5px;
+      font-size: 9px;
+      text-align: left;
     }
 
     @media print {
@@ -101,10 +132,22 @@ if ($invoice_no === "all") {
       <?php foreach ($labels as $lbl): ?>
         <div class="label">
           <div class="brand"><?php echo htmlspecialchars($brand_name); ?></div>
-          <div>Invoice: <?php echo htmlspecialchars($lbl['invoice_no']); ?></div>
-          <br>
-          <div>Name: <?php echo htmlspecialchars($lbl['customer_name']); ?></div>
-          <div>Phone: <?php echo htmlspecialchars($lbl['customer_phone']); ?></div>
+          <div><?php echo htmlspecialchars($lbl['invoice_no']); ?></div>
+          <hr>
+          <div style="display: flex; justify-content: space-between">
+            <div>Name: <?php echo htmlspecialchars($lbl['customer_name']); ?></div>
+            <div>Phone: <?php echo htmlspecialchars($lbl['customer_phone']); ?></div>
+          </div>
+          <hr><br>
+          <div class="products" style="text-align: center">
+            <?php 
+              $products = explode(',', $lbl['products']);
+              foreach ($products as $p) {
+                  echo htmlspecialchars(trim($p)) . "<br>";
+              }
+            ?>
+          </div>
+
         </div>
       <?php endforeach; ?>
   <?php else: ?>

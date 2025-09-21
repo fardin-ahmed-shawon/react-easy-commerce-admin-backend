@@ -5,6 +5,20 @@ $page_title = 'Make Invoice'; // Set the page title
 <?php require 'header.php'; ?>
 
 <?php
+// --------------------
+// Fetch main categories (for the new dropdown filter)
+// --------------------
+$main_categories = [];
+$mc_sql = "SELECT main_ctg_id, main_ctg_name FROM main_category ORDER BY main_ctg_name";
+if ($mc_result = $conn->query($mc_sql)) {
+    while ($mc_row = $mc_result->fetch_assoc()) {
+        $main_categories[] = $mc_row;
+    }
+}
+
+// --------------------
+// POST handlers (existing behaviour kept intact)
+// --------------------
 // Update order status to "Shipped" if the Mark As Shipped button is pressed
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark_shipped"])) {
   $invoice_no = $_POST["invoice_no"];
@@ -73,11 +87,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mark_canceled_both"]))
   }
 }
 
+
+// --------------------
+// Bulk Actions
+// --------------------
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['selected_invoices'])) {
+      $selected_invoices = $_POST['selected_invoices'];
+      $inv_list = implode(",", $selected_invoices);
+
+      if (isset($_POST['download_selected'])) {
+          echo "<script>window.location.href = 'all-invoice.php?invoice=" . urlencode($inv_list) . "';</script>";
+          exit;
+      }
+
+      if (isset($_POST['print_labels'])) {
+          echo "<script>window.location.href = 'generate_label.php?invoice_no=" . urlencode($inv_list) . "';</script>";
+          exit;
+      }
+  }
+// END
+
+
 // --- Search and Filter Logic ---
 $search_query = isset($_GET['search_query']) ? $conn->real_escape_string($_GET['search_query']) : '';
 $from_date = isset($_GET['from_date']) ? $conn->real_escape_string($_GET['from_date']) : '';
 $to_date = isset($_GET['to_date']) ? $conn->real_escape_string($_GET['to_date']) : '';
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+$main_ctg = isset($_GET['main_ctg']) ? intval($_GET['main_ctg']) : 0; // NEW: selected main category id (0 => all)
 
 // For Cash On Delivery
 $where_cod = "WHERE payment_method = 'Cash On Delivery' AND order_status != 'Pending'";
@@ -95,6 +131,12 @@ if ($filter == 'Shipped') {
     $where_cod .= " AND order_status = 'Completed'";
 } elseif ($filter == 'SendToSteadfast') {
     $where_cod .= " AND invoice_no IN (SELECT invoice_no FROM parcel_info WHERE tracking_code IS NULL)";
+}
+
+// NEW: main category filter - restrict invoices to those that include at least one product from the selected main category
+if ($main_ctg) {
+    // Using a subquery to find invoice_no values that have product(s) in the chosen main category
+    $where_cod .= " AND invoice_no IN (SELECT DISTINCT o.invoice_no FROM order_info o JOIN product_info p ON o.product_id = p.product_id WHERE p.main_ctg_id = $main_ctg)";
 }
 
 // For Mobile Banking
@@ -115,6 +157,11 @@ if ($filter == 'Shipped') {
     $where_mb .= " AND invoice_no IN (SELECT invoice_no FROM parcel_info WHERE tracking_code IS NULL)";
 }
 
+// Apply same main category filter for mobile banking results
+if ($main_ctg) {
+    $where_mb .= " AND invoice_no IN (SELECT DISTINCT o.invoice_no FROM order_info o JOIN product_info p ON o.product_id = p.product_id WHERE p.main_ctg_id = $main_ctg)";
+}
+
 ?>
 
 <!--------------------------->
@@ -128,26 +175,44 @@ if ($filter == 'Shipped') {
         </span> Invoice
       </h3>
     </div>
-    <!-- <div class="text-end">
-      <a href="all-invoice.php" class="btn btn-dark">All Invoice</a>
-    </div> -->
+    <div class="d-flex gap-2 justify-content-end">
+      <a href="all-invoice.php" class="btn btn-dark">Print All Invoice</a>
+      <a href="generate_label.php?invoice_no=all" class="btn btn-primary">Print All Label</a>
+    </div>
+    
     <br>
 
     <!-- Search & Filter Controls -->
     <form method="get" class="row mb-3">
-      <div class="col-md-3 mt-2 mt-md-0">
-        <input type="text" name="search_query" class="form-control" placeholder="Search Invoice No or Mobile" value="<?php echo isset($_GET['search_query']) ? htmlspecialchars($_GET['search_query']) : ''; ?>">
+      <div class="row">
+
+        <div class="col-md-3 mt-2 mt-md-0">
+          <input type="text" name="search_query" class="form-control" placeholder="Search Invoice No or Mobile" value="<?php echo isset($_GET['search_query']) ? htmlspecialchars($_GET['search_query']) : ''; ?>">
+        </div>
+        <div class="col-md-2 mt-2 mt-md-0">
+          <input type="date" name="from_date" class="form-control" value="<?php echo isset($_GET['from_date']) ? htmlspecialchars($_GET['from_date']) : ''; ?>">
+        </div>
+        <div class="col-md-2 mt-2 mt-md-0">
+          <input type="date" name="to_date" class="form-control" value="<?php echo isset($_GET['to_date']) ? htmlspecialchars($_GET['to_date']) : ''; ?>">
+        </div>
+
+        <!-- NEW: Main Category dropdown -->
+        <div class="col-md-3 mt-2 mt-md-0">
+          <select name="main_ctg" class="form-control">
+            <option value="">All Main Categories</option>
+            <?php foreach ($main_categories as $mc) : ?>
+              <option value="<?php echo $mc['main_ctg_id']; ?>" <?php echo ($main_ctg == $mc['main_ctg_id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($mc['main_ctg_name']); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div class="col-md-2 mt-2 mt-md-0 d-flex align-items-center">
+          <button type="submit" class="btn btn-dark me-2">Search</button>
+          <a href="makeInvoice.php" class="btn btn-secondary">Reset</a>
+        </div>
+
       </div>
-      <div class="col-md-2 mt-2 mt-md-0">
-        <input type="date" name="from_date" class="form-control" value="<?php echo isset($_GET['from_date']) ? htmlspecialchars($_GET['from_date']) : ''; ?>">
-      </div>
-      <div class="col-md-2 mt-2 mt-md-0">
-        <input type="date" name="to_date" class="form-control" value="<?php echo isset($_GET['to_date']) ? htmlspecialchars($_GET['to_date']) : ''; ?>">
-      </div>
-      <div class="col-md-2 mt-2 mt-md-0 d-flex align-items-center">
-        <button type="submit" class="btn btn-dark me-2">Search</button>
-        <a href="makeInvoice.php" class="btn btn-secondary">Reset</a>
-      </div>
+
       <div class="row d-flex align-items-center mx-0 pt-5">
         <button type="submit" name="filter" value="all" class="col-md-2 mt-2 mt-md-0 btn btn-secondary me-2">All</button>
         <button type="submit" name="filter" value="Shipped" class="col-md-2 mt-2 mt-md-0 btn btn-success me-2">Shipped</button>
@@ -160,14 +225,18 @@ if ($filter == 'Shipped') {
     <hr>
     <br>
 
+  <!-- Bulk Selection Form -->
+  <form method="post" id="bulkActionForm" action="">
+
     <!-- Cash On Delivery -->
     <div class="row">
       <h1>Cash On Delivery</h1>
       <!-- Table Area -->
       <div style="overflow-y: auto;">
         <table class="table table-under-bordered">
-          <tbody>
+          <tbody class="CODTable">
               <tr>
+                <th><input type="checkbox" id="selectAllCod"></th>
                 <th>Serial No</th>
                 <th>Invoice No</th>
                 <th>Phone</th>
@@ -214,7 +283,9 @@ if ($filter == 'Shipped') {
                       }
                       // End
 
-                      echo '<tr>
+                      echo '<tr>';
+                      echo "<td><input type='checkbox' name='selected_invoices[]' value='" . $row["invoice_no"] . "'></td>";
+                      echo'
                         <td>' . $count . '</td>
                         <td>' . $row["invoice_no"] . '</td>
                         <td>' . $row["user_phone"] . '</td>
@@ -299,8 +370,9 @@ if ($filter == 'Shipped') {
         <!-- Table Area -->
         <div style="overflow-y: auto;">
           <table class="table table-under-bordered">
-            <tbody>
+            <tbody class="MbTable">
                 <tr>
+                  <th><input type="checkbox" id="selectAllMb"></th>
                   <th>Serial No</th>
                   <th>Invoice No</th>
                   <th>Phone</th>
@@ -359,6 +431,7 @@ if ($filter == 'Shipped') {
                             // End
 
                               echo "<tr>";
+                              echo "<td><input type='checkbox' name='selected_invoices[]' value='" . $row["invoice_no"] . "'></td>";
                               echo "<td>" . $count . "</td>";
                               echo "<td>" . $row["invoice_no"] . "</td>";
                               echo "<td>" . find_customer_phone($row["invoice_no"]) . "</td>";
@@ -381,8 +454,7 @@ if ($filter == 'Shipped') {
                                     <span class="btn btn-muted">
                                       Consignment Sent <span class="mdi mdi-send-check"></span>
                                     </span>
-                                  </td>
-                                  ';
+                                  </td>';
                               }
 
                               echo '
@@ -437,16 +509,30 @@ if ($filter == 'Shipped') {
         </div>
     </div>
 
-    <br><br>
+    <!-- Bulk Action Buttons -->
+    <div class="mt-5">
+      <button type="submit" name="download_selected" class="m-1 btn btn-dark">Print Selected Invoices</button>
+      <button type="submit" name="print_labels" class="m-1 btn btn-primary">Print Selected Labels</button>
+    </div>
     
-    <a href="all-invoice.php" class="btn btn-dark">Print All Invoice</a>
-    <a href="generate_label.php?invoice_no=all" class="btn btn-dark">Print All Label</a>
-    
-    <br>
-    
+  </form>
+
+
 </div>
 <!--------------------------->
 <!-- END MAIN AREA -->
 <!--------------------------->
+<script>
+  // Select All for Cash On Delivery Table
+  document.getElementById('selectAllCod').addEventListener('change', function() {
+    let checkboxes = document.querySelectorAll('.CODTable input[name="selected_invoices[]"]');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+  });
 
+  // Select All for Mobile Banking Table
+  document.getElementById('selectAllMb').addEventListener('change', function() {
+    let checkboxes = document.querySelectorAll('.MbTable input[name="selected_invoices[]"]');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+  });
+</script>
 <?php require 'footer.php'; ?>
