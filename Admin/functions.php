@@ -331,5 +331,101 @@ function find_order_date($invoice_no = '') {
     return $row['order_date'];
 }
 
+// ******* Calculate Discount Amount ********* //
+function calculate_discount_amount($invoice_no = '') {
+    global $conn;
+
+    if ($invoice_no != '') {
+        $sql = "SELECT COALESCE(SUM(total_discount_amount), 0) AS total_amount 
+                FROM order_discount_list 
+                WHERE invoice_no = '$invoice_no'";
+    } else {
+        $sql = "SELECT COALESCE(SUM(total_discount_amount), 0) AS total_amount 
+                FROM order_discount_list";
+    }
+
+    $result = $conn->query($sql);
+
+    if ($result && $row = $result->fetch_assoc()) {
+        return (float)$row['total_amount']; // returns 0.0 if no rows
+    }
+
+    return 0; 
+}
+
+// ******* Find Shipping Charge ********* //
+function find_shipping_charge($invoice_no = '') {
+    global $conn;
+
+    // Fetch website information
+    $websiteInfoQuery = "SELECT inside_location, inside_delivery_charge, outside_delivery_charge  FROM website_info WHERE id=1";
+    $websiteInfoResult = mysqli_query($conn, $websiteInfoQuery);
+    $websiteInfo = mysqli_fetch_assoc($websiteInfoResult);
+
+    // Delivery Information
+    $inside_location = $websiteInfo['inside_location'] ?? 'Dhaka';
+    $inside_delivery_charge = $websiteInfo['inside_delivery_charge'] ?? '80';
+    $outside_delivery_charge = $websiteInfo['outside_delivery_charge'] ?? '150';
+
+    $shipping_cost = 0;
+
+    // Fetch Order Info
+    $orderInfoQuery = "SELECT city_address FROM order_info WHERE invoice_no = '$invoice_no' LIMIT 1";
+
+    $orderInfoResult = mysqli_query($conn, $orderInfoQuery);
+    $orderInfo = mysqli_fetch_assoc($orderInfoResult);
+
+
+    if ($orderInfo['city_address'] == 'Inside Dhaka') {
+        $shipping_cost = $inside_delivery_charge;
+    } else if ($orderInfo['city_address'] == 'Outside Dhaka') {
+        $shipping_cost = $outside_delivery_charge;
+    }
+
+    return $shipping_cost;
+}
+
+
+// ******* Fetch Sub Categories ********* //
+function get_sub_categories($main_ctg_name = '', $style = '') {
+    global $conn;
+
+    $sql = "SELECT * FROM sub_category WHERE main_ctg_name = '$main_ctg_name' ORDER BY sub_ctg_id DESC";
+    $result = $conn->query($sql);
+
+    $output = '';
+
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $sub_ctg_html = $style;
+
+            $sub_ctg_html = str_replace('#ID#', $row['sub_ctg_id'], $sub_ctg_html);
+            $sub_ctg_html = str_replace('#NAME#', $row['sub_ctg_name'], $sub_ctg_html);
+            $sub_ctg_html = str_replace('#SLUG#', $row['sub_ctg_slug'], $sub_ctg_html);
+
+            $output .= $sub_ctg_html;
+        }
+    }
+
+    return $output;
+}
+
+// ******* Calculate Product Discount Percentage ********* //
+function get_product_discount_percentage($regular_price = '', $selling_price = '') {
+    // Defensive checks
+    if (!is_numeric($regular_price) || !is_numeric($selling_price)) {
+        return 0; // invalid input
+    }
+
+    if ($regular_price <= 0 || $selling_price < 0 || $selling_price >= $regular_price) {
+        return 0; // no discount
+    }
+
+    // Calculate discount percentage
+    $discount = (($regular_price - $selling_price) / $regular_price) * 100;
+
+    return round($discount); // rounded percentage
+}
+
 
 ?>

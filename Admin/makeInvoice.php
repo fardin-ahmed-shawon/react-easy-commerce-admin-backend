@@ -250,7 +250,7 @@ if ($main_ctg) {
                 <th>Completed</th>
                 <th>Canceled</th>
                 <th>Invoice</th>
-                <th>Details</th>
+                <th colspan="2">Details</th>
                 <th>Label</th>
               </tr>
 
@@ -347,6 +347,12 @@ if ($main_ctg) {
                         </td>
 
                         <td>
+                          <a class="btn btn-dark" href="edit-order.php?invoice_no='.$row['invoice_no'].'">
+                            Edit <span class="mdi mdi-text-box-edit-outline"></span>
+                          </a>
+                        </td>
+
+                        <td>
                           <a class="btn btn-primary" href="generate_label.php?invoice_no='.$row['invoice_no'].'" target="_blank">
                             Generate Label <span class="mdi mdi-label"></span>
                           </a>
@@ -386,7 +392,7 @@ if ($main_ctg) {
                   <th>Completed</th>
                   <th>Canceled</th>
                   <th>Invoice</th>
-                  <th>Details</th>
+                  <th colspan="2">Details</th>
                   <th>Label</th>
                 </tr>
 
@@ -489,6 +495,11 @@ if ($main_ctg) {
                             echo '<td>
                                     <a class="btn btn-info" href="order_details.php?invoice_no='.$row['invoice_no'].'">
                                     View Details <span class="mdi mdi-details"></span>
+                                    </a>
+                                  </td>
+                                  <td>
+                                    <a class="btn btn-dark" href="edit-order.php?invoice_no='.$row['invoice_no'].'">
+                                      Edit <span class="mdi mdi-text-box-edit-outline"></span>
                                     </a>
                                   </td>
                                   <td>

@@ -5,20 +5,21 @@ $page_title = 'Dashboard'; // Set the page title
 <?php require 'header.php'; ?>
 
 <?php
-// Update order status to "Processing" if the Accept button is pressed
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_order'])) {
-  // Upddate order_info table
-  $order_no = $_POST['order_no'];
-  $update_sql = "UPDATE order_info SET order_status='Processing' WHERE order_no=?";
+// Update order status to "Processing" if Accept button is pressed
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
+  $invoice_no = $_POST['invoice_no'];
+
+  // Update order_info table
+  $update_sql = "UPDATE order_info SET order_status='Processing' WHERE invoice_no=?";
   $stmt = $conn->prepare($update_sql);
-  $stmt->bind_param("i", $order_no);
+  $stmt->bind_param("s", $invoice_no);
   $stmt->execute();
   $stmt->close();
 
   // Update payment_info table
-  $update_sql = "UPDATE payment_info SET order_status='Processing' WHERE order_no=?";
+  $update_sql = "UPDATE payment_info SET order_status='Processing' WHERE invoice_no=?";
   $stmt = $conn->prepare($update_sql);
-  $stmt->bind_param("i", $order_no);
+  $stmt->bind_param("s", $invoice_no);
   $stmt->execute();
   $stmt->close();
 }
@@ -185,7 +186,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_order'])) {
                           $result = $conn->query($sql);
                           $row = $result->fetch_assoc();
 
-                          echo "৳".number_format($row['total_collection']);
+                          echo "৳ ".number_format($row['total_collection']);
                           
                           ?>
                         </h1>
@@ -346,71 +347,78 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_order'])) {
                 ?>
                     <div class="col-md-8">
                       <!-- Latest pending orders Card -->
-                      <div class="card p-3">
-                        <div class="card-body">
-                          <h1 class="py-3 mb-0">Pending Orders</h1>
-                          <p>
-                            List of latest pending orders
-                          </p><br>
-                          <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <tr>
-                                  <th>Order No</th>
-                                  <th>Customer Phone</th>
-                                  <th>Invoice No</th>
-                                  <th>Total</th>
-                                  <th>Order Date</th>
-                                  <th colspan="3">Action</th>
-                                </tr>
-                              <tbody>
-                                <?php
-                                // Fetch data from order_info table
-                                $sql = "SELECT * FROM order_info WHERE order_status = 'Pending' AND order_visibility = 'Show' ORDER BY order_no DESC LIMIT 10";
-                                $result = $conn->query($sql);
-
-                                if ($result->num_rows > 0) {
-                                    while($row = $result->fetch_assoc()) {
-
-                                        echo "<tr>
-                                            <td>{$row['order_no']}</td>
-                                            <td>{$row['user_phone']}</td>
-
-                                            <td>{$row['invoice_no']}</td>
-
-                                            <td>{$row['total_price']} Tk</td>
-                                            <td>" . date('Y-m-d', strtotime($row['order_date'])) . "</td>
-                                            
-                                            <td>
-                                                <button class='btn btn-secondary' onclick=\"checkFraud('{$row['user_phone']}')\">Check Fraud</button>
-                                            </td>
-
-
-                                            <td>
-                                                <form method='post' action=''>
-                                                    <input type='hidden' name='order_no' value='{$row['order_no']}'>
-                                                    <button type='submit' name='accept_order' class='btn btn-dark'>Accept</button>
-                                                </form>
-                                            </td>
-                                            <td>
-                                                <a href='removeOrder.php?o_n={$row['order_no']}'>
-                                                
-                                        <button class='btn btn-danger' onclick='return checkDelete(event)'>Declined</button>
-                                                </a>
-                                            </td>
-                                        </tr>";
-                                    }
-                                }
-                                ?>
-                              </tbody>
-                            </table> 
-                          </div> 
-                          
-
-                        </div>  
-                        <a href="pendingOrders.php" class="p-3">
-                          <button class="btn btn-dark">See All Pending Orders</button>
-                        </a>     
-                      </div>
+                        <div class="card p-3">
+                          <div class="card-body">
+                            <h1 class="py-3 mb-0">Pending Orders</h1>
+                            <p>List of latest pending orders</p><br>
+                            <div class="table-responsive">
+                              <table class="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>SL</th>
+                                    <th>Order No(s)</th>
+                                    <th>Customer Phone</th>
+                                    <th>Invoice No</th>
+                                    <th>Products</th>
+                                    <th>Total</th>
+                                    <th>Order Date</th>
+                                    <th colspan="2">Action</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <?php
+                                  // Fetch grouped pending orders
+                                  $sql = "SELECT 
+                                            invoice_no,
+                                            GROUP_CONCAT(order_no ORDER BY order_no) AS order_nos,
+                                            GROUP_CONCAT(product_title SEPARATOR '<br>') AS products,
+                                            SUM(total_price) AS total_price,
+                                            user_phone,
+                                            MIN(order_date) AS order_date
+                                          FROM order_info
+                                          WHERE order_status = 'Pending' 
+                                            AND order_visibility = 'Show'
+                                          GROUP BY invoice_no, user_phone
+                                          ORDER BY MIN(order_no) DESC
+                                          LIMIT 10";
+                        
+                                  $result = $conn->query($sql);
+                                  $sl = 1;
+                        
+                                  if ($result->num_rows > 0) {
+                                      while($row = $result->fetch_assoc()) {
+                                          echo "<tr>
+                                                  <td>{$sl}</td>
+                                                  <td>{$row['order_nos']}</td>
+                                                  <td>{$row['user_phone']}</td>
+                                                  <td>{$row['invoice_no']}</td>
+                                                  <td>{$row['products']}</td>
+                                                  <td>{$row['total_price']} Tk</td>
+                                                  <td>" . date('Y-m-d', strtotime($row['order_date'])) . "</td>
+                                                  <td>
+                                                      <form method='post' action=''>
+                                                        <input type='hidden' name='invoice_no' value='{$row['invoice_no']}'>
+                                                        <button type='submit' name='accept_invoice' class='btn btn-dark'>Accept</button>
+                                                      </form>
+                                                    </td>
+                                                  <td>
+                                                    <a href='removeOrder.php?invoice_no={$row['invoice_no']}'>
+                            <button class='btn btn-danger' onclick='return checkDelete(event)'>Declined</button>
+                          </a>
+                                                  </td>
+                                                </tr>";
+                                          $sl++;
+                                      }
+                                  }
+                                  ?>
+                                </tbody>
+                              </table>
+                            </div> 
+                          </div>  
+                          <a href="pendingOrders.php" class="p-3">
+                            <button class="btn btn-dark">See All Pending Orders</button>
+                          </a>     
+                        </div>
                     </div>
                 <?php
               }
@@ -451,8 +459,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_order'])) {
                                 if ($result->num_rows > 0) {
                                     while($row = $result->fetch_assoc()) {
 
-                                      //$status = track_parcel($row['tracking_code']);
-                                      $status = "Not Set";
+                                      $status = track_parcel($row['tracking_code']);
+     
 
                                       echo "
                                       <tr>
@@ -490,7 +498,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_order'])) {
       
       <!-- Header -->
       <div class="modal-header bg-dark text-white ">
-        <h5 class="modal-title fw-bold">Fraud Checker</h5>
+        <h5 class="modal-title fw-bold">ðŸ“Š Fraud Checker</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
@@ -505,7 +513,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_order'])) {
         <!-- Table -->
         <div class="table-responsive mb-4">
           <table class="table table-bordered align-middle text-center mb-0">
-            
+            <thead class="table-dark">
+              <tr>
+                <th>Courier</th>
+                <th>Total</th>
+                <th class="text-success">Success</th>
+                <th class="text-danger">Cancel</th>
+              </tr>
+            </thead>
             <tbody id="fraudTableBody">
               <!-- Data injected here -->
             </tbody>
@@ -545,6 +560,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_order'])) {
     </div>
   </div>
 </div>
+
+
+
+
 <!--------------------------->
 <!-- END MAIN AREA -->
 <!--------------------------->
@@ -569,6 +588,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_order'])) {
         return false; // Prevent the default form submission
       }
 </script>
+
+
+
 <script>
 function checkFraud(phone) {
     // Reset modal
