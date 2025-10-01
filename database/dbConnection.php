@@ -7,7 +7,7 @@ $servername = "localhost";
 $site_link = "http://localhost/test/easy_tech_solutions/react_easy_commerce/";
 $username = "root";
 $password = "";
-$database_name = "easy_commerce_v9_4";
+$database_name = "react_easy_commerce_v9_4";
 
 // For production -----------------------------------------------------
 //$site_link = "https://clothdrob.com/";
