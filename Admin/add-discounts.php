@@ -9,18 +9,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Retrieve form inputs
     $purchase_amount = $_POST['purchase_amount'];
     $discount_amount = $_POST['discount_amount'];
+    $free_shipping = isset($_POST['free_shipping']) ? 1 : 0; // Checkbox handling
 
     // Validate required fields
     if (empty($purchase_amount) || empty($discount_amount)) {
         $error_message = "All fields are required.";
     } else {
         // Prepare SQL query to insert data
-        $sql = "INSERT INTO discount (purchase_amount, discount_amount, created_at) 
-                VALUES (?, ?, NOW())";
+        $sql = "INSERT INTO discount (purchase_amount, discount_amount, free_shipping, created_at) 
+                VALUES (?, ?, ?, NOW())";
 
-        // Use prepared statements to prevent SQL injection
+        // Use prepared statements
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ii", $purchase_amount, $discount_amount);
+        $stmt->bind_param("iii", $purchase_amount, $discount_amount, $free_shipping);
 
         // Execute the query
         if ($stmt->execute()) {
@@ -28,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             $error_message = "Error: " . $stmt->error;
         }
-        // Close the statement
         $stmt->close();
     }
 }
@@ -78,6 +78,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <input type="text" class="form-control" id="discountinput" placeholder="Enter Discount Amount" name="discount_amount" required>
                             </div>
 
+                            <div class="form-group form-check mt-3 mx-4">
+                                <input type="checkbox" class="form-check-input" id="free_shipping" name="free_shipping" value="1">
+                                <label class="form-check-label" for="free_shipping" style="font-size: 16px;">
+                                    Free Shipping
+                                </label>
+                            </div>
+
+
                             <button type="submit" class="btn btn-primary">Add Discount</button>
                         </form>
                     </div>
@@ -94,38 +102,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="table-responsive">
                           <table class="table table-bordered">
                               <thead>
-                                  <tr>
-                                      <th>#</th>
-                                      <th>Purchase Amount</th>
-                                      <th>Discount Amount</th>
-                                      <th>Created At</th>
-                                      <th>Actions</th>
-                                  </tr>
-                              </thead>
-                              <tbody>
-                                  <?php
-                                  $result = $conn->query("SELECT * FROM discount ORDER BY id DESC");
-                                  if ($result && $result->num_rows > 0):
-                                      $i = 1;
-                                      while ($row = $result->fetch_assoc()):
-                                  ?>
-                                  <tr>
-                                      <td><?php echo $i++; ?></td>
-                                      <td><?php echo htmlspecialchars($row['purchase_amount']); ?></td>
-                                      <td><?php echo htmlspecialchars($row['discount_amount']); ?></td>
-                                      <td><?php echo htmlspecialchars($row['created_at']); ?></td>
-                                      <td>
-                                          <a href="edit-discount.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-info">Edit</a>
-                                          <br>
-                                          <a href="javascript:void(0);" class="btn btn-sm btn-danger delete-discount" data-id="<?php echo $row['id']; ?>">Delete</a>
-                                      </td>
-                                  </tr>
-                                  <?php endwhile; else: ?>
-                                  <tr>
-                                      <td colspan="5" class="text-center">No discounts found.</td>
-                                  </tr>
-                                  <?php endif; ?>
-                              </tbody>
+    <tr>
+        <th>#</th>
+        <th>Purchase Amount</th>
+        <th>Discount Amount</th>
+        <th>Free Shipping</th>
+        <th>Created At</th>
+        <th>Actions</th>
+    </tr>
+</thead>
+<tbody>
+    <?php
+    $result = $conn->query("SELECT * FROM discount ORDER BY id DESC");
+    if ($result && $result->num_rows > 0):
+        $i = 1;
+        while ($row = $result->fetch_assoc()):
+    ?>
+    <tr>
+        <td><?php echo $i++; ?></td>
+        <td><?php echo htmlspecialchars($row['purchase_amount']); ?></td>
+        <td><?php echo htmlspecialchars($row['discount_amount']); ?></td>
+        <td>
+            <?php echo $row['free_shipping'] == 1 ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>'; ?>
+        </td>
+        <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+        <td>
+            <a href="edit-discount.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-info">Edit</a>
+            <br>
+            <a href="javascript:void(0);" class="btn btn-sm btn-danger delete-discount" data-id="<?php echo $row['id']; ?>">Delete</a>
+        </td>
+    </tr>
+    <?php endwhile; else: ?>
+    <tr>
+        <td colspan="6" class="text-center">No discounts found.</td>
+    </tr>
+    <?php endif; ?>
+</tbody>
+
                           </table>
                         </div>
                     </div>
