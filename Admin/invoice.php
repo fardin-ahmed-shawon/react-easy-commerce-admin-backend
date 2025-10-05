@@ -125,11 +125,7 @@ body { background:#f7f8fa; }
                           </tr>';
                 }
 
-                $shipping = ($order['city_address'] === "") 
-                ? $noCharge 
-                : (($order['city_address'] === "Inside Dhaka") 
-                    ? $insideCharge 
-                    : $outsideCharge);
+                $shipping = number_format((float)find_shipping_charge($invoice_no), 2);
 
 
                 $total = $subtotal + $shipping - $discount_amount;

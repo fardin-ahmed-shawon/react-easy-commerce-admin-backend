@@ -170,7 +170,7 @@ if (!empty($selectedInvoices)) {
               echo '</tr>';
           }
 
-          $shipping = (isset($order['city_address']) && $order['city_address'] === "Inside Dhaka") ? $insideCharge : $outsideCharge;
+          $shipping = number_format((float)find_shipping_charge($invoice_no), 2);
           $total = $subtotals + $shipping - $discount_amount;
 
           echo '<tr><td colspan="4" class="text-right"><strong>Subtotal</strong></td><td class="text-right">৳ ' . number_format($subtotals, 2) . '</td></tr>';

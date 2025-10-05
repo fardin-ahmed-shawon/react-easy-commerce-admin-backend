@@ -369,6 +369,11 @@ function find_shipping_charge($invoice_no = '') {
 
     $shipping_cost = 0;
 
+    // Check is shipping charge free or not
+    if (is_shipping_charge_free($invoice_no) == 1) {
+        return $shipping_cost;
+    }
+
     // Fetch Order Info
     $orderInfoQuery = "SELECT city_address FROM order_info WHERE invoice_no = '$invoice_no' LIMIT 1";
 
@@ -427,5 +432,13 @@ function get_product_discount_percentage($regular_price = '', $selling_price = '
     return round($discount); // rounded percentage
 }
 
+// ******* Check Shipping Charge is free or not ********* //
+function is_shipping_charge_free($invoice_no = '') {
+    global $conn;
+    $sql = "SELECT free_shipping FROM order_discount_list WHERE invoice_no = '$invoice_no'";
+    $result = $conn->query($sql);
+    $row = $result->fetch_assoc();
+    return $row['free_shipping'] ?? 0;
+}
 
 ?>

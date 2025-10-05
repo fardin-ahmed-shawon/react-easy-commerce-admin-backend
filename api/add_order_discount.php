@@ -37,16 +37,17 @@ if ($action == 'add_order_discount') {
     $invoice_no = $_POST['invoice_no'] ?? '';
     $total_order_amount = $_POST['total_order_amount'] ?? 0;
     $total_discount_amount = $_POST['total_discount_amount'] ?? 0;
+    $free_shipping = $_POST['free_shipping'] ?? 0;
 
     // Validate required fields
-    if (empty($invoice_no) || $total_order_amount === '' || $total_discount_amount === '') {
+    if (empty($invoice_no) || $total_order_amount === '' || $total_discount_amount === '' || $free_shipping === '') {
         echo json_encode(["success" => false, "message" => "All fields are required!"]);
         exit();
     }
 
     $sql = "INSERT INTO order_discount_list (
-        invoice_no, total_order_amount, total_discount_amount
-    ) VALUES (?, ?, ?)";
+        invoice_no, total_order_amount, total_discount_amount, free_shipping
+    ) VALUES (?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
 
@@ -56,10 +57,11 @@ if ($action == 'add_order_discount') {
     }
 
     $stmt->bind_param(
-        "sdd",
+        "sddi",
         $invoice_no,
         $total_order_amount,
-        $total_discount_amount
+        $total_discount_amount,
+        $free_shipping
     );
 
     if (!$stmt->execute()) {

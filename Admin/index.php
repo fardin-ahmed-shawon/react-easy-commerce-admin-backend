@@ -24,7 +24,209 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
   $stmt->close();
 }
 ?>
+<style>
+  /* Modern Stats Card Styles */
+  .stats-card {
+    position: relative;
+    padding: 24px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: visible;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+  }
 
+  .stats-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    border-radius: 0 0 16px 16px;
+  }
+
+  .stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .stats-card:hover::before {
+    opacity: 1;
+  }
+
+  .stats-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .stats-icon i {
+    font-size: 28px;
+    color: #fff;
+  }
+
+  .stats-content {
+    position: relative;
+    z-index: 1;
+    padding-right: 76px;
+  }
+
+  .stats-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  .stats-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .stats-trend {
+    margin-top: auto;
+  }
+
+  .trend-icon {
+    font-size: 20px;
+    color: #10b981;
+    font-weight: bold;
+  }
+
+  .stats-badge {
+    margin-top: auto;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    width: fit-content;
+  }
+
+  .badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .badge-info {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .badge-success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .badge-purple {
+    background: #e9d5ff;
+    color: #6b21a8;
+  }
+
+  .badge-dark {
+    background: #e2e8f0;
+    color: #334155;
+  }
+
+  /* Gradient Variants */
+  .stats-gradient-danger {
+    --gradient-start: #ef4444;
+    --gradient-end: #dc2626;
+  }
+
+  .stats-gradient-info {
+    --gradient-start: #3b82f6;
+    --gradient-end: #2563eb;
+  }
+
+  .stats-gradient-success {
+    --gradient-start: #10b981;
+    --gradient-end: #059669;
+  }
+
+  .stats-gradient-primary {
+    --gradient-start: #8b5cf6;
+    --gradient-end: #7c3aed;
+  }
+
+  .stats-gradient-warning {
+    --gradient-start: #f59e0b;
+    --gradient-end: #d97706;
+  }
+
+  .stats-gradient-purple {
+    --gradient-start: #a855f7;
+    --gradient-end: #9333ea;
+  }
+
+  .stats-gradient-dark {
+    --gradient-start: #64748b;
+    --gradient-end: #475569;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 1199px) {
+    .stats-value {
+      font-size: 28px;
+    }
+    
+    .stats-icon {
+      width: 48px;
+      height: 48px;
+    }
+    
+    .stats-icon i {
+      font-size: 24px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .stats-card {
+      padding: 20px;
+    }
+    
+    .stats-value {
+      font-size: 24px;
+    }
+    
+    .stats-icon {
+      width: 44px;
+      height: 44px;
+      top: 16px;
+      right: 16px;
+    }
+    
+    .stats-icon i {
+      font-size: 20px;
+    }
+  }
+</style>
 <!--------------------------->
 <!-- START MAIN AREA -->
 <!--------------------------->
@@ -38,296 +240,286 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
             </div>
 
             <!-- Dashboard Stats Area -->
-            <div class="row">
+            <div class="row g-4">
 
               <!-- Total Products -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-danger card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Total Products <i class="mdi mdi-apps mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-danger">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-apps"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Total Products</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total products from product_info table
                       $sql = "SELECT COUNT(product_id) AS total_products FROM product_info";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
                       echo $row['total_products'];
                       ?>
-                    </h1>
+                    </h2>
+                  </div>
+                  <div class="stats-trend">
+                    <span class="trend-icon">↗</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Total Categories -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-info card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Product Categories <i class="mdi mdi mdi-order-bool-ascending mdi-24px float-end mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <!-- Product Categories -->
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-info">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-order-bool-ascending"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Product Categories</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total categories from category_info table
                       $sql = "SELECT COUNT(main_ctg_id) AS total_categories FROM main_category";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
                       echo $row['total_categories'];
                       ?>
-                    </h1>
+                    </h2>
+                  </div>
+                  <div class="stats-trend">
+                    <span class="trend-icon">→</span>
                   </div>
                 </div>
               </div>
 
-              
-              <?php
-              if (isset($access['inventory']) && $access['inventory'] == 1) {
-                ?>
-
+              <?php if (isset($access['inventory']) && $access['inventory'] == 1) { ?>
               <!-- Total Stock -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-success card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Total Stock Unit <i class="mdi mdi-archive-clock-outline mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-success">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-archive-clock-outline"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Total Stock Unit</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total categories from category_info table
                       $sql = "SELECT SUM(available_stock) AS total FROM product_info";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
-                      echo $row['total'];
+                      echo number_format($row['total']);
                       ?>
-                    </h1>
+                    </h2>
+                  </div>
+                  <div class="stats-trend">
+                    <span class="trend-icon">↗</span>
                   </div>
                 </div>
               </div>
+              <?php } ?>
 
-                <?php
-              }
-              ?>
-              
-
-              <?php
-              if (isset($access['customers']) && $access['customers'] == 1) {
-                ?>
-
-              <!-- Total Customer -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-primary card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Customers 
-                      <i class="mdi mdi-account mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <?php if (isset($access['customers']) && $access['customers'] == 1) { ?>
+              <!-- Total Customers -->
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-primary">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-account"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Customers</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total customers from user_info table
                       $sql = "SELECT COUNT(user_id) AS total_customers FROM user_info";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
-                      echo $row['total_customers'];
+                      echo number_format($row['total_customers']);
                       ?>
-                    </h1>
+                    </h2>
+                  </div>
+                  <div class="stats-trend">
+                    <span class="trend-icon">↗</span>
                   </div>
                 </div>
               </div>
+              <?php } ?>
 
-                <?php
-              }
-              ?>
-
-
-              <?php
-                if (isset($access['orders']) && $access['orders'] == 1) {
-                  ?>
-
+              <?php if (isset($access['orders']) && $access['orders'] == 1) { ?>
               <!-- Total Purchased Unit -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-primary card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Total Purchased Unit <i class="mdi mdi-cart-variant mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-primary">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-cart-variant"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Total Purchased Unit</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total categories from category_info table
                       $sql = "SELECT SUM(product_quantity) AS total FROM order_info";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
-                      echo $row['total'] ?? '0';
+                      echo number_format($row['total'] ?? 0);
                       ?>
-                    </h1>
+                    </h2>
+                  </div>
+                  <div class="stats-trend">
+                    <span class="trend-icon">↗</span>
                   </div>
                 </div>
               </div>
+              <?php } ?>
 
-                  <?php
-                }
-              ?>
-              
-              <?php
-              if (isset($access['accounts']) && $access['accounts'] == 1) {
-                ?>
-                  <!-- Total Collections -->
-                  <div class="col-md-3 stretch-card grid-margin">
-                    <div class="card bg-gradient-success card-img-holder text-white">
-                      <div class="card-body">
-                        <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                        <h4 class="font-weight-normal mb-3">Total Sales <i class="mdi mdi-cash-check mdi-24px float-end"></i>
-                        </h4>
-                        <h1 class="mb-5">
-                          <?php
-                          // Fetch total categories from category_info table
-                          $sql = "SELECT SUM(total_price) AS total_collection FROM order_info WHERE order_status = 'Completed'";
-
-                          $result = $conn->query($sql);
-                          $row = $result->fetch_assoc();
-
-                          echo "৳ ".number_format($row['total_collection']);
-                          
-                          ?>
-                        </h1>
-                      </div>
-                    </div>
+              <?php if (isset($access['accounts']) && $access['accounts'] == 1) { ?>
+              <!-- Total Sales -->
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-success">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-cash-check"></i>
                   </div>
-
-                <?php
-              }
-              ?>
-
-              <?php
-                if (isset($access['orders']) && $access['orders'] == 1) {
-                  ?>
-
-              <!-- Total Pending Orders -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-info card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Pending Orders <i class="mdi mdi-cart-arrow-down mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+                  <div class="stats-content">
+                    <h6 class="stats-label">Total Sales</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total pending orders from order_info table
+                      $sql = "SELECT SUM(total_price) AS total_collection FROM order_info WHERE order_status = 'Completed'";
+                      $result = $conn->query($sql);
+                      $row = $result->fetch_assoc();
+                      echo "৳ " . number_format($row['total_collection']);
+                      ?>
+                    </h2>
+                  </div>
+                  <div class="stats-trend">
+                    <span class="trend-icon">↗</span>
+                  </div>
+                </div>
+              </div>
+              <?php } ?>
+
+              <?php if (isset($access['orders']) && $access['orders'] == 1) { ?>
+              <!-- Pending Orders -->
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-warning">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-cart-arrow-down"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Pending Orders</h6>
+                    <h2 class="stats-value">
+                      <?php
                       $sql = "SELECT COUNT(order_no) AS total_orders FROM order_info WHERE order_visibility='Show' AND order_status='Pending'";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
                       echo $row['total_orders'];
                       ?>
-                    </h1>
+                    </h2>
                   </div>
+                  <div class="stats-badge badge-warning">Action Required</div>
                 </div>
               </div>
 
-              <!-- Total Approved Orders -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-danger card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Approved Orders <i class="mdi  mdi-cart-arrow-up mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <!-- Approved Orders -->
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-info">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-cart-arrow-up"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Approved Orders</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total active orders from order_info table
                       $sql = "SELECT COUNT(order_no) AS total_orders FROM order_info WHERE order_visibility='Show' AND order_status !='Pending'";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
                       echo $row['total_orders'];
                       ?>
-                    </h1>
+                    </h2>
+                  </div>
+                  <div class="stats-trend">
+                    <span class="trend-icon">↗</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Total Processing Orders -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-info card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Processing Orders <i class="mdi mdi-cart-outline mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <!-- Processing Orders -->
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-info">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-cart-outline"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Processing Orders</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total active orders from order_info table
                       $sql = "SELECT COUNT(order_no) AS total_orders FROM order_info WHERE order_visibility='Show' AND order_status ='Processing'";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
                       echo $row['total_orders'];
                       ?>
-                    </h1>
+                    </h2>
                   </div>
+                  <div class="stats-badge badge-info">In Progress</div>
                 </div>
               </div>
 
-              <!-- Total Shipped Orders -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-danger card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">On The Way Orders <i class="mdi mdi-cart-arrow-right mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <!-- Shipped Orders -->
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-purple">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-cart-arrow-right"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">On The Way</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total active orders from order_info table
                       $sql = "SELECT COUNT(order_no) AS total_orders FROM order_info WHERE order_visibility='Show' AND order_status = 'Shipped'";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
                       echo $row['total_orders'];
                       ?>
-                    </h1>
+                    </h2>
                   </div>
+                  <div class="stats-badge badge-purple">Shipping</div>
                 </div>
               </div>
 
-              <!-- Total Completed Orders -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-success card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Delivered Orders <i class="mdi mdi-cart-check mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <!-- Delivered Orders -->
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-success">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-cart-check"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Delivered Orders</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total completed orders from order_info table
                       $sql = "SELECT COUNT(order_no) AS total_orders FROM order_info WHERE order_status ='Completed'";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
                       echo $row['total_orders'];
                       ?>
-                    </h1>
+                    </h2>
                   </div>
+                  <div class="stats-badge badge-success">Completed</div>
                 </div>
               </div>
 
-              <!-- Total Cancelled Orders -->
-              <div class="col-md-3 stretch-card grid-margin">
-                <div class="card bg-gradient-dark card-img-holder text-white">
-                  <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Cancelled Orders <i class="mdi mdi-cart-remove mdi-24px float-end"></i>
-                    </h4>
-                    <h1 class="mb-5">
+              <!-- Cancelled Orders -->
+              <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-gradient-dark">
+                  <div class="stats-icon">
+                    <i class="mdi mdi-cart-remove"></i>
+                  </div>
+                  <div class="stats-content">
+                    <h6 class="stats-label">Cancelled Orders</h6>
+                    <h2 class="stats-value">
                       <?php
-                      // Fetch total Cancelled orders from order_info table
                       $sql = "SELECT COUNT(order_no) AS total_orders FROM order_info WHERE order_status ='Canceled'";
                       $result = $conn->query($sql);
                       $row = $result->fetch_assoc();
                       echo $row['total_orders'];
                       ?>
-                    </h1>
+                    </h2>
                   </div>
+                  <div class="stats-badge badge-dark">Void</div>
                 </div>
               </div>
+              <?php } ?>
 
-                  <?php
-                }
-              ?>
-              
-
-            </div><br>
+            </div>
+            <br>
             <!-- End -->
 
             <!-- Charts Area -->
