@@ -23,8 +23,76 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
   $stmt->execute();
   $stmt->close();
 }
+
+// Fetch sales data for charts
+$timeRange = isset($_GET['range']) ? $_GET['range'] : '30';
+
+// Daily Sales Trend
+$dailySalesQuery = "SELECT 
+    DATE(order_date) as date,
+    SUM(total_price) as revenue,
+    COUNT(DISTINCT invoice_no) as orders
+FROM order_info
+WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL $timeRange DAY)
+    AND order_status != 'Canceled'
+GROUP BY DATE(order_date)
+ORDER BY date";
+$dailySalesResult = $conn->query($dailySalesQuery);
+$dailySalesData = [];
+while($row = $dailySalesResult->fetch_assoc()) {
+    $dailySalesData[] = $row;
+}
+
+// Top Selling Products
+$topProductsQuery = "SELECT 
+    p.product_title as name,
+    SUM(o.total_price) as sales,
+    SUM(o.product_quantity) as quantity
+FROM order_info o
+JOIN product_info p ON o.product_id = p.product_id
+WHERE o.order_status != 'Canceled'
+GROUP BY p.product_id, p.product_title
+ORDER BY sales DESC
+LIMIT 5";
+$topProductsResult = $conn->query($topProductsQuery);
+$topProductsData = [];
+while($row = $topProductsResult->fetch_assoc()) {
+    $topProductsData[] = $row;
+}
+
+// Payment Methods Distribution
+$paymentMethodsQuery = "SELECT 
+    payment_method as name,
+    COUNT(*) as value,
+    SUM(total_price) as amount
+FROM order_info
+WHERE order_status != 'Canceled'
+GROUP BY payment_method
+ORDER BY amount DESC";
+$paymentMethodsResult = $conn->query($paymentMethodsQuery);
+$paymentMethodsData = [];
+while($row = $paymentMethodsResult->fetch_assoc()) {
+    $paymentMethodsData[] = $row;
+}
+
+// City-wise Sales
+$cityWiseQuery = "SELECT 
+    city_address as city,
+    COUNT(DISTINCT invoice_no) as orders,
+    SUM(total_price) as revenue
+FROM order_info
+WHERE order_status != 'Canceled'
+GROUP BY city_address
+ORDER BY revenue DESC
+LIMIT 5";
+$cityWiseResult = $conn->query($cityWiseQuery);
+$cityWiseData = [];
+while($row = $cityWiseResult->fetch_assoc()) {
+    $cityWiseData[] = $row;
+}
 ?>
-<style>
+
+<!-- <style>
   /* Modern Stats Card Styles */
   .stats-card {
     position: relative;
@@ -190,6 +258,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
     --gradient-end: #475569;
   }
 
+  /* Chart Card Styles */
+  .chart-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .chart-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  .time-filter {
+    display: flex;
+    gap: 8px;
+  }
+
+  .time-btn {
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .time-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  .time-btn.active {
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+  }
+
   /* Responsive adjustments */
   @media (max-width: 1199px) {
     .stats-value {
@@ -225,8 +344,426 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
     .stats-icon i {
       font-size: 20px;
     }
+
+    .chart-card {
+      padding: 16px;
+    }
+
+    .time-filter {
+      flex-wrap: wrap;
+    }
   }
+</style> -->
+
+<style>
+  /* Modern Stats Card Styles */
+  .stats-card {
+    position: relative;
+    padding: 24px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    overflow: visible;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stats-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border-radius: 0 0 20px 20px;
+  }
+
+  .stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .stats-card:hover::before {
+    opacity: 1;
+  }
+
+  .stats-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .stats-card:hover .stats-icon {
+    transform: rotate(10deg) scale(1.1);
+  }
+
+  .stats-icon i {
+    font-size: 28px;
+    color: #fff;
+  }
+
+  .stats-content {
+    position: relative;
+    z-index: 1;
+    padding-right: 76px;
+  }
+
+  .stats-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+
+  .stats-value {
+    font-size: 36px;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .stats-trend {
+    margin-top: auto;
+  }
+
+  .trend-icon {
+    font-size: 22px;
+    font-weight: bold;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .stats-badge {
+    margin-top: auto;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: inline-block;
+    width: fit-content;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Gradient Variants */
+  .stats-gradient-danger { --gradient-start: #ef4444; --gradient-end: #dc2626; }
+  .stats-gradient-info { --gradient-start: #3b82f6; --gradient-end: #2563eb; }
+  .stats-gradient-success { --gradient-start: #10b981; --gradient-end: #059669; }
+  .stats-gradient-primary { --gradient-start: #8b5cf6; --gradient-end: #7c3aed; }
+  .stats-gradient-warning { --gradient-start: #f59e0b; --gradient-end: #d97706; }
+  .stats-gradient-purple { --gradient-start: #a855f7; --gradient-end: #9333ea; }
+  .stats-gradient-dark { --gradient-start: #64748b; --gradient-end: #475569; }
+
+  /* Enhanced Chart Card Styles */
+  .chart-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .chart-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .chart-card:hover {
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .chart-title {
+    font-size: 22px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .chart-title::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+    border-radius: 2px;
+  }
+
+  .time-filter {
+    display: flex;
+    gap: 8px;
+    background: #fff;
+    padding: 6px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .time-btn {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+  }
+
+  .time-btn:hover {
+    background: #f1f5f9;
+    color: #3b82f6;
+    transform: translateY(-2px);
+  }
+
+  .time-btn.active {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: #fff;
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Modern Table Styles */
+  .modern-table-container {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .modern-table-container:hover {
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+  }
+
+  .table-header {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .table-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .table-header p {
+    color: #64748b;
+    font-size: 15px;
+    margin: 0;
+  }
+
+  .modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .modern-table thead th {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: #fff;
+    padding: 16px;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border: none;
+    white-space: nowrap;
+  }
+
+  .modern-table thead th:first-child {
+    border-radius: 12px 0 0 0;
+  }
+
+  .modern-table thead th:last-child {
+    border-radius: 0 12px 0 0;
+  }
+
+  .modern-table tbody tr {
+    transition: all 0.3s ease;
+    background: #fff;
+  }
+
+  .modern-table tbody tr:hover {
+    background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+    transform: scale(1.01);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .modern-table tbody td {
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .modern-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .action-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-accept {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+  }
+
+  .btn-decline {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #fff;
+  }
+
+  .view-all-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .view-all-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Status Badge */
+  .status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+  }
+
+  .status-primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Responsive */
+  @media (max-width: 1199px) {
+    .stats-value { font-size: 28px; }
+    .stats-icon { width: 50px; height: 50px; }
+    .stats-icon i { font-size: 24px; }
+  }
+
+  @media (max-width: 767px) {
+    .stats-card { padding: 20px; }
+    .stats-value { font-size: 24px; }
+    .stats-icon { width: 46px; height: 46px; top: 16px; right: 16px; }
+    .stats-icon i { font-size: 20px; }
+    .chart-card, .modern-table-container { padding: 20px; }
+    .time-filter { flex-wrap: wrap; }
+    .chart-title { font-size: 18px; }
+    .modern-table { font-size: 12px; }
+    .modern-table thead th, .modern-table tbody td { padding: 12px 8px; }
+  }
+
+  /* Chart Canvas Wrapper */
+  .chart-canvas-wrapper {
+    position: relative;
+    /* height: 350px; */
+    z-index: 1;
+  }
+  
+
+  /* Badge variants */
+  .badge-warning { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
+  .badge-info { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af; }
+  .badge-success { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; }
+  .badge-purple { background: linear-gradient(135deg, #e9d5ff, #d8b4fe); color: #6b21a8; }
+  .badge-dark { background: linear-gradient(135deg, #e2e8f0, #cbd5e1); color: #334155; }
 </style>
+
 <!--------------------------->
 <!-- START MAIN AREA -->
 <!--------------------------->
@@ -520,16 +1057,59 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
 
             </div>
             <br>
-            <!-- End -->
 
-            <!-- Charts Area -->
-            <!-- <div class="container row">
-              <div class="col-md-6">
-                <canvas id="myChart"></canvas>
+            <!-- Sales Charts Area -->
+            <?php if (isset($access['accounts']) && $access['accounts'] == 1) { ?>
+            <div class="row">
+              <!-- Sales Trend Chart -->
+              <div class="col-lg-12">
+                <div class="chart-card">
+                  <div class="chart-header">
+                    <h3 class="chart-title">Sales Trend</h3>
+                    <div class="time-filter">
+                      <a href="?range=7" class="time-btn <?php echo $timeRange == 7 ? 'active' : ''; ?>">7 Days</a>
+                      <a href="?range=30" class="time-btn <?php echo $timeRange == 30 ? 'active' : ''; ?>">30 Days</a>
+                      <a href="?range=90" class="time-btn <?php echo $timeRange == 90 ? 'active' : ''; ?>">90 Days</a>
+                    </div>
+                  </div>
+                  <canvas id="salesTrendChart" height="100"></canvas>
+                </div>
               </div>
-            </div><br> -->
-            <!-- End -->
 
+              <!-- Payment Methods Chart -->
+              <!-- <div class="col-lg-4">
+                <div class="chart-card">
+                  <div class="chart-header">
+                    <h3 class="chart-title">Payment Methods</h3>
+                  </div>
+                  <div class="chart-canvas-wrapper">
+                    <canvas id="paymentMethodChart" height="100"></canvas>
+                  </div>
+                </div>
+              </div> -->
+
+              <!-- Top Products Chart -->
+              <div class="col-lg-6">
+                <div class="chart-card">
+                  <div class="chart-header">
+                    <h3 class="chart-title">Top Selling Products</h3>
+                  </div>
+                  <canvas id="topProductsChart" height="150"></canvas>
+                </div>
+              </div>
+
+              <!-- City-wise Sales Chart -->
+              <div class="col-lg-6">
+                <div class="chart-card">
+                  <div class="chart-header">
+                    <h3 class="chart-title">Sales by City</h3>
+                  </div>
+                  <canvas id="cityWiseChart" height="150"></canvas>
+                </div>
+              </div>
+            </div>
+            <br>
+            <?php } ?>
 
             <!-- Latest Pending Orders & Latest Parcel Area -->
             <div class="row">
@@ -537,15 +1117,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
               // admin & autherized user can access this area
               if ($_SESSION['role'] == 'Admin' || (isset($access['orders']) && $access['orders'] == 1)) {
                 ?>
-                    <div class="col-md-8">
+                    <div class="col-lg-8">
                       <!-- Latest pending orders Card -->
                         <div class="card p-3">
                           <div class="card-body">
-                            <h1 class="py-3 mb-0">Pending Orders</h1>
+                            <h1 class="chart-title mb-1">Pending Orders</h1>
                             <p>List of latest pending orders</p><br>
                             <div class="table-responsive">
                               <table class="table table-bordered">
-                                <thead>
                                   <tr>
                                     <th>SL</th>
                                     <th>Order No(s)</th>
@@ -556,7 +1135,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
                                     <th>Order Date</th>
                                     <th colspan="2">Action</th>
                                   </tr>
-                                </thead>
                                 <tbody>
                                   <?php
                                   // Fetch grouped pending orders
@@ -619,11 +1197,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
             <?php 
               if ($_SESSION['role'] == 'Admin' || (isset($access['courier']) && $access['courier'] == 1)) {
                 ?>
-                    <div class="col-md-4 mt-4 mt-md-0">
+                    <div class="col-lg-4 mt-4 mt-md-0">
                       <!-- Latest parcel Card -->
                       <div class="card p-3">
                         <div class="card-body">
-                          <h1 class="py-3 mb-0">Latest Parcel</h1>
+                          <h1 class="chart-title mb-1">Latest Parcel</h1>
                           <p>
                             List of latest parcels
                           </p><br>
@@ -690,7 +1268,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
       
       <!-- Header -->
       <div class="modal-header bg-dark text-white ">
-        <h5 class="modal-title fw-bold">ðŸ“Š Fraud Checker</h5>
+        <h5 class="modal-title fw-bold">🔊 Fraud Checker</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
@@ -753,12 +1331,255 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
   </div>
 </div>
 
-
-
-
 <!--------------------------->
 <!-- END MAIN AREA -->
 <!--------------------------->
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Sales Trend Chart
+  const salesTrendCtx = document.getElementById('salesTrendChart');
+  if (salesTrendCtx) {
+    const salesTrendData = <?php echo json_encode($dailySalesData); ?>;
+    
+    new Chart(salesTrendCtx, {
+      type: 'line',
+      data: {
+        labels: salesTrendData.map(item => item.date),
+        datasets: [
+          {
+            label: 'Revenue (৳)',
+            data: salesTrendData.map(item => item.revenue),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Orders',
+            data: salesTrendData.map(item => item.orders),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.y !== null) {
+                  if (context.dataset.label === 'Revenue (৳)') {
+                    label += '৳' + context.parsed.y.toLocaleString();
+                  } else {
+                    label += context.parsed.y;
+                  }
+                }
+                return label;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            title: {
+              display: true,
+              text: 'Revenue (৳)'
+            }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            title: {
+              display: true,
+              text: 'Orders'
+            },
+            grid: {
+              drawOnChartArea: false,
+            },
+          },
+        }
+      }
+    });
+  }
+
+  // Payment Methods Chart
+  const paymentMethodCtx = document.getElementById('paymentMethodChart');
+  if (paymentMethodCtx) {
+    const paymentMethodData = <?php echo json_encode($paymentMethodsData); ?>;
+    
+    new Chart(paymentMethodCtx, {
+      type: 'doughnut',
+      data: {
+        labels: paymentMethodData.map(item => item.name),
+        datasets: [{
+          data: paymentMethodData.map(item => item.amount),
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.9)',
+            'rgba(16, 185, 129, 0.9)',
+            'rgba(245, 158, 11, 0.9)',
+            'rgba(239, 68, 68, 0.9)',
+            'rgba(139, 92, 246, 0.9)'
+          ],
+          borderColor: '#fff',
+          borderWidth: 3,
+          hoverOffset: 15
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '65%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 15,
+              font: {
+                size: 13,
+                weight: '600'
+              },
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 13 },
+            callbacks: {
+              label: function(context) {
+                const value = context.parsed;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                return context.label + ': ৳' + value.toLocaleString() + ' (' + percentage + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Top Products Chart
+  const topProductsCtx = document.getElementById('topProductsChart');
+  if (topProductsCtx) {
+    const topProductsData = <?php echo json_encode($topProductsData); ?>;
+    
+    new Chart(topProductsCtx, {
+      type: 'bar',
+      data: {
+        labels: topProductsData.map(item => item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name),
+        datasets: [{
+          label: 'Sales (৳)',
+          data: topProductsData.map(item => item.sales),
+          backgroundColor: '#8b5cf6',
+          borderColor: '#7c3aed',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Sales: ৳' + context.parsed.y.toLocaleString();
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '৳' + value.toLocaleString();
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // City-wise Sales Chart
+  const cityWiseCtx = document.getElementById('cityWiseChart');
+  if (cityWiseCtx) {
+    const cityWiseData = <?php echo json_encode($cityWiseData); ?>;
+    
+    new Chart(cityWiseCtx, {
+      type: 'bar',
+      data: {
+        labels: cityWiseData.map(item => item.city),
+        datasets: [{
+          label: 'Revenue (৳)',
+          data: cityWiseData.map(item => item.revenue),
+          backgroundColor: '#f59e0b',
+          borderColor: '#d97706',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Revenue: ৳' + context.parsed.x.toLocaleString();
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '৳' + value.toLocaleString();
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+</script>
 
 <script>
       function checkDelete(event) {
@@ -781,70 +1602,56 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
       }
 </script>
 
-
-
 <script>
-function checkFraud(phone) {
-    // Reset modal
-    document.getElementById("fraudPhone").textContent = phone;
-    document.getElementById("fraudTableBody").innerHTML = "<tr><td colspan='4' class='text-center'>Loading...</td></tr>";
-    document.getElementById("fraudTotal").textContent = "Loading...";
-    document.getElementById("fraudSuccess").textContent = "Loading...";
-    document.getElementById("fraudCancel").textContent = "Loading...";
+  function checkFraud(phone) {
+      // Reset modal
+      document.getElementById("fraudPhone").textContent = phone;
+      document.getElementById("fraudTableBody").innerHTML = "<tr><td colspan='4' class='text-center'>Loading...</td></tr>";
+      document.getElementById("fraudTotal").textContent = "Loading...";
+      document.getElementById("fraudSuccess").textContent = "Loading...";
+      document.getElementById("fraudCancel").textContent = "Loading...";
 
-    // Show modal
-    var fraudModal = new bootstrap.Modal(document.getElementById('fraudModal'));
-    fraudModal.show();
+      // Show modal
+      var fraudModal = new bootstrap.Modal(document.getElementById('fraudModal'));
+      fraudModal.show();
 
-    // Prepare form data
-    const formData = new FormData();
-    formData.append('phone', phone);
+      // Prepare form data
+      const formData = new FormData();
+      formData.append('phone', phone);
 
-    fetch('fraud_api.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        // Handle API errors
-        if (data.error) {
-            document.getElementById("fraudTableBody").innerHTML = `<tr><td colspan='4' class='text-danger'>${data.error}</td></tr>`;
-            document.getElementById("fraudTotal").textContent = "0";
-            document.getElementById("fraudSuccess").textContent = "0";
-            document.getElementById("fraudCancel").textContent = "0";
-            return;
-        }
+      fetch('fraud_api.php', {
+          method: 'POST',
+          body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+          // Handle API errors
+          if (data.error) {
+              document.getElementById("fraudTableBody").innerHTML = `<tr><td colspan='4' class='text-danger'>${data.error}</td></tr>`;
+              document.getElementById("fraudTotal").textContent = "0";
+              document.getElementById("fraudSuccess").textContent = "0";
+              document.getElementById("fraudCancel").textContent = "0";
+              return;
+          }
 
-        // Update summary cards
-        document.getElementById("fraudTotal").textContent = data.total_parcels ?? 0;
-        document.getElementById("fraudSuccess").textContent = data.total_delivered ?? 0;
-        document.getElementById("fraudCancel").textContent = data.total_cancel ?? 0;
+          // Update summary cards
+          document.getElementById("fraudTotal").textContent = data.total_parcels ?? 0;
+          document.getElementById("fraudSuccess").textContent = data.total_delivered ?? 0;
+          document.getElementById("fraudCancel").textContent = data.total_cancel ?? 0;
 
-        // Define fixed courier list
-        const couriers = ["Pathao", "Steadfast", "Redx", "PaperFly"];
-        let tbody = '';
+          // Define fixed courier list
+          const couriers = ["Pathao", "Steadfast", "Redx", "PaperFly"];
+          let tbody = '';
 
-        // couriers.forEach(courier => {
-        //     const c = data.apis[courier] || { total: 0, success: 0, cancel: 0 };
-        //     let displayName = courier === "PaperFly" ? "Paperfly" : courier;
-        //     tbody += `
-        //         <tr>
-        //             <td>${displayName}</td>
-        //             <td>${c.total ?? 0}</td>
-        //             <td>${c.success ?? 0}</td>
-        //             <td>${c.cancel ?? 0}</td>
-        //         </tr>`;
-        // });
-
-        // Update table
-        document.getElementById("fraudTableBody").innerHTML = tbody;
-    })
-    .catch(err => {
-        document.getElementById("fraudTableBody").innerHTML = `<tr><td colspan='4' class='text-danger'>Error: ${err}</td></tr>`;
-        document.getElementById("fraudTotal").textContent = "0";
-        document.getElementById("fraudSuccess").textContent = "0";
-        document.getElementById("fraudCancel").textContent = "0";
-    });
-}
+          // Update table
+          document.getElementById("fraudTableBody").innerHTML = tbody;
+      })
+      .catch(err => {
+          document.getElementById("fraudTableBody").innerHTML = `<tr><td colspan='4' class='text-danger'>Error: ${err}</td></tr>`;
+          document.getElementById("fraudTotal").textContent = "0";
+          document.getElementById("fraudSuccess").textContent = "0";
+          document.getElementById("fraudCancel").textContent = "0";
+      });
+  }
 </script>
 <?php require 'footer.php'; ?>
