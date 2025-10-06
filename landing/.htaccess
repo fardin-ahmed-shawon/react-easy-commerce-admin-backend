@@ -1,7 +1,7 @@
 RewriteEngine On
 
 # RewriteBase https://multaan.com/landing/
-RewriteBase /test/easy_tech_solutions/react_easy_commerce/landing/
+RewriteBase /test/easy_tech_solutions/react-easy-commerce-admin-backend/landing/
 
 # Landing without slug
 RewriteRule ^$ index.php [L]
