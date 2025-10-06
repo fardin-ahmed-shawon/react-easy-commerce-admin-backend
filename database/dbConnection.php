@@ -2,9 +2,8 @@
 $servername = "localhost";
 
 //--------------------------------------------------------------------
-
 // For local development ---------------------------------------------
-$site_link = "http://localhost/test/easy_tech_solutions/react_easy_commerce/";
+$site_link = "http://localhost/test/easy_tech_solutions/react-easy-commerce-admin-backend/";
 $username = "root";
 $password = "";
 $database_name = "react_easy_commerce_v9_4";
