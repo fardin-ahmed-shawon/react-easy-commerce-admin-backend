@@ -39,12 +39,6 @@
                     <a class="nav-link" href="viewProduct.php">View Product</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="create-landing-page.php">Create Landing Page</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="landing-page-list.php">Landing Page List</a>
-                  </li>
-                  <li class="nav-item">
                     <a class="nav-link" href="sizes.php">Sizes</a>
                   </li>
                 </ul>
@@ -68,6 +62,25 @@
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="deleteCategory.php">Delete Category</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <?php endif; ?>
+
+            <?php if (isset($access['product']) && $access['product'] == 1): ?>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#landing" aria-expanded="false" aria-controls="landing">
+                <span class="menu-title">Landing Pages</span>
+                <i class="mdi mdi-book-open-page-variant-outline menu-icon"></i>
+              </a>
+              <div class="collapse" id="landing">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="create-landing-page.php">Create Landing Page</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="landing-page-list.php">Landing Page List</a>
                   </li>
                 </ul>
               </div>
@@ -135,6 +148,29 @@
                 <i class="mdi mdi-account-question menu-icon"></i>
               </a>
             </li>
+
+            <?php 
+              if ($_SESSION['role'] == 'Admin') {
+            ?>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#blogs" aria-expanded="false" aria-controls="brands">
+                <span class="menu-title">Blogs</span>
+                <i class="mdi mdi-post-outline menu-icon"></i>
+              </a>
+              <div class="collapse" id="blogs">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="add-blog.php">Add Blog</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="blogs.php">All Blogs</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <?php
+              }
+            ?>
 
             <?php if (isset($access['orders']) && $access['orders'] == 1): ?>
             <li class="nav-item">
