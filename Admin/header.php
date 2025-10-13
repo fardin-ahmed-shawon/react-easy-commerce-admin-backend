@@ -43,6 +43,11 @@ $pageAccessMap = [
     'addProduct.php'          => 'product',
     'viewProduct.php'         => 'product',
     'sizes.php'               => 'product',
+
+    'create-landing-page.php' => 'product',
+    'edit-landing-page.php'   => 'product',
+    'editLanding.php'         => 'product',
+    'landing-page-list.php'   => 'product',
  
     'insertCategory.php'      => 'categories',
     'viewCategory.php'        => 'categories',

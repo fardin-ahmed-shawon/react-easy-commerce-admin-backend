@@ -44,6 +44,27 @@
                 </ul>
               </div>
             </li>
+
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#customized" aria-expanded="false" aria-controls="customized">
+                <span class="menu-title">Customize Product</span>
+                <i class="mdi mdi-tshirt-crew-outline menu-icon"></i>
+              </a>
+              <div class="collapse" id="customized">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="create-customize-product.php">Create Product</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="customized-product-list.php">Product List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="customized-orders.php">View Orders</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+
             <?php endif; ?>
             
             <?php if (isset($access['categories']) && $access['categories'] == 1): ?>
