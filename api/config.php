@@ -6,10 +6,10 @@ header('Pragma: no-cache'); // HTTP 1.0
 header('Expires: 0'); // Proxies
 
 // your React app origin
-//header("Access-Control-Allow-Origin: https://multaan.com/");
+//header("Access-Control-Allow-Origin: https://example.com/");
 
 $allowed_origins = [
-    "https://clothdrob.com/",
+    "https://react-easy-commere.easytechsolutions.xyz/",
     "http://localhost:5173/"
 ];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
