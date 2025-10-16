@@ -59,6 +59,9 @@
                     <a class="nav-link" href="customized-product-list.php">Product List</a>
                   </li>
                   <li class="nav-item">
+                    <a class="nav-link" href="create-customized-category.php">Categories</a>
+                  </li>
+                  <li class="nav-item">
                     <a class="nav-link" href="customized-orders.php">View Orders</a>
                   </li>
                 </ul>

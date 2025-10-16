@@ -1,162 +1,180 @@
 <?php
-$current_page = basename($_SERVER['PHP_SELF']); // Get the current page name
-$page_title = 'Customized Product List'; // Set the page title
+$current_page = basename($_SERVER['PHP_SELF']);
+$page_title = 'Customized Product List';
+require 'header.php';
 ?>
-<?php require 'header.php'; ?>
 
-<!--------------------------->
-<!-- START MAIN AREA -->
-<!--------------------------->
 <div class="content-wrapper">
   <div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="page-header">
-        <h3 class="page-title">
-            <span class="page-title-icon bg-gradient-primary text-white me-2">
-                <i class="mdi mdi-tshirt-crew-outline"></i>
-            </span> Customized Product List
-        </h3>
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+      <h3 class="page-title mb-0">
+        <span class="page-title-icon bg-gradient-primary text-white me-2">
+          <i class="mdi mdi-tshirt-crew-outline"></i>
+        </span> Customized Product List
+      </h3>
+      <a href="create_customized_product.php" class="btn btn-primary">
+        <i class="mdi mdi-plus"></i> Add New Product
+      </a>
     </div>
 
-    <!-- Product Cards -->
+    <!-- optional search (simple) -->
+    <form method="get" class="mb-4 row gx-2 gy-2 align-items-center">
+      <div class="col-4">
+        <input type="text" name="q" class="form-control" placeholder="Search title or code" value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q'], ENT_QUOTES) : ''; ?>">
+      </div>
+      <div class="col-3">
+        <select name="category" class="form-control">
+          <option value="">All Categories</option>
+          <?php
+          $catRes = mysqli_query($conn, "SELECT id, category_name FROM customized_category ORDER BY category_name ASC");
+          while ($c = mysqli_fetch_assoc($catRes)) {
+            $sel = (isset($_GET['category']) && $_GET['category'] == $c['id']) ? 'selected' : '';
+            echo "<option value=\"" . htmlspecialchars($c['id']) . "\" $sel>" . htmlspecialchars($c['category_name']) . "</option>";
+          }
+          ?>
+        </select>
+      </div>
+      <div class="col-3">
+        <button class="btn btn-sm btn-dark p-3 px-4" type="submit">Filter</button>
+      </div>
+    </form>
+
     <div class="row">
       <?php
-      // Dummy product data
-      $products = [
-        [
-          'id' => 1,
-          'name' => 'Wireless Headphones',
-          'description' => 'Premium noise-canceling headphones with 30-hour battery life',
-          'price' => 149.99,
-          'image' => 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop',
-          'category' => 'Electronics',
-          'stock' => 45
-        ],
-        [
-          'id' => 2,
-          'name' => 'Smart Watch',
-          'description' => 'Fitness tracking smartwatch with heart rate monitor',
-          'price' => 299.99,
-          'image' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop',
-          'category' => 'Electronics',
-          'stock' => 32
-        ],
-        [
-          'id' => 3,
-          'name' => 'Leather Backpack',
-          'description' => 'Stylish genuine leather backpack with laptop compartment',
-          'price' => 89.99,
-          'image' => 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop',
-          'category' => 'Accessories',
-          'stock' => 18
-        ],
-        [
-          'id' => 4,
-          'name' => 'Running Shoes',
-          'description' => 'Lightweight running shoes with superior cushioning',
-          'price' => 129.99,
-          'image' => 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop',
-          'category' => 'Footwear',
-          'stock' => 67
-        ],
-        [
-          'id' => 5,
-          'name' => 'Portable Speaker',
-          'description' => 'Waterproof Bluetooth speaker with 360° sound',
-          'price' => 79.99,
-          'image' => 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop',
-          'category' => 'Electronics',
-          'stock' => 54
-        ],
-        [
-          'id' => 6,
-          'name' => 'Sunglasses',
-          'description' => 'UV protection polarized sunglasses',
-          'price' => 59.99,
-          'image' => 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop',
-          'category' => 'Accessories',
-          'stock' => 89
-        ],
-        [
-          'id' => 7,
-          'name' => 'Coffee Maker',
-          'description' => 'Programmable coffee maker with thermal carafe',
-          'price' => 119.99,
-          'image' => 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=400&h=400&fit=crop',
-          'category' => 'Home & Kitchen',
-          'stock' => 23
-        ],
-        [
-          'id' => 8,
-          'name' => 'Yoga Mat',
-          'description' => 'Non-slip eco-friendly yoga mat with carrying strap',
-          'price' => 34.99,
-          'image' => 'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=400&h=400&fit=crop',
-          'category' => 'Sports',
-          'stock' => 41
-        ]
-      ];
+      // Build query with optional filters
+      $where = [];
+      $params = [];
 
-      // Loop through products and display them
-      foreach ($products as $product):
+      if (!empty($_GET['q'])) {
+        $q = '%' . $_GET['q'] . '%';
+        $where[] = "(p.product_title LIKE ? OR p.product_code LIKE ?)";
+        $params[] = $q;
+        $params[] = $q;
+      }
+      if (!empty($_GET['category'])) {
+        $where[] = "p.category_id = ?";
+        $params[] = intval($_GET['category']);
+      }
+
+      $sql = "SELECT p.*, c.category_name
+              FROM customized_products p
+              LEFT JOIN customized_category c ON p.category_id = c.id";
+
+      if ($where) {
+        $sql .= " WHERE " . implode(" AND ", $where);
+      }
+
+      $sql .= " ORDER BY p.id DESC";
+
+      // Prepared statement
+      $stmt = mysqli_prepare($conn, $sql);
+      if ($stmt) {
+        if (!empty($params)) {
+          // build types string
+          $types = '';
+          foreach ($params as $pt) {
+            $types .= is_int($pt) ? 'i' : 's';
+          }
+          mysqli_stmt_bind_param($stmt, $types, ...$params);
+        }
+        mysqli_stmt_execute($stmt);
+        $res = mysqli_stmt_get_result($stmt);
+      } else {
+        // fallback when prepare fails
+        $res = mysqli_query($conn, $sql);
+      }
+
+      if ($res && mysqli_num_rows($res) > 0):
+        while ($row = mysqli_fetch_assoc($res)):
+          $img = !empty($row['product_img']) ? htmlspecialchars($row['product_img']) : 'assets/img/placeholder.png';
       ?>
         <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-          <div class="card h-100 shadow-sm">
-            <img src="<?php echo $product['image']; ?>" class="card-img-top" alt="<?php echo $product['name']; ?>" style="height: 250px; object-fit: cover;">
+          <div class="card h-100 shadow-sm border-0">
+            <img src="<?php echo $img; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($row['product_title']); ?>" style="height:250px; object-fit:cover;">
+
             <div class="card-body d-flex flex-column">
-              <span class="badge badge-primary mb-2" style="width: fit-content;">Customized</span>
-              <h5 class="card-title"><?php echo $product['name']; ?></h5>
-              <p class="card-text text-muted"><?php echo $product['description']; ?></p>
+              <span class="badge bg-gradient-primary mb-2" style="width:fit-content;">
+                <?php echo htmlspecialchars($row['category_name'] ?? 'Uncategorized'); ?>
+              </span>
+
+              <h5 class="card-title fw-bold text-dark"><?php echo htmlspecialchars($row['product_title']); ?></h5>
+
+              <p class="card-text text-muted mb-2" style="min-height:48px; overflow:hidden;">
+                <?php echo htmlspecialchars(mb_substr(strip_tags($row['product_description']),0,80)); ?><?php echo (mb_strlen($row['product_description'])>80)?'...':''; ?>
+              </p>
+
               <div class="mt-auto">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h4 class="text-primary mb-0">৳ <?php echo number_format($product['price'], 2); ?></h4>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <small class="text-muted">Advance: ৳ <?php echo number_format(intval($row['advance_amount']), 2); ?></small>
+                  <small class="text-muted">Code: <?php echo htmlspecialchars($row['product_code'] ?? '-'); ?></small>
                 </div>
-                <div class="btn-group d-flex gap-2" role="group">
-                  <button type="button" class="btn btn-sm btn-dark mb-0 rounded" onclick="viewProduct(<?php echo $product['id']; ?>)">
-                    Edit
-                  </button>
-                  <button type="button" class="btn btn-sm btn-danger rounded">
-                    Delete
+
+                <div class="d-flex gap-2">
+                  
+                  <a href="edit-customized-product.php?id=<?php echo $row['id']; ?>" class="btn btn-dark mb-0">
+                    <i class="mdi mdi-pencil"></i> Edit
+                  </a>
+                  <button class="btn btn-danger" onclick="confirmDelete(<?php echo $row['id']; ?>)">
+                    <i class="mdi mdi-delete"></i> Delete
                   </button>
                 </div>
+                
               </div>
             </div>
           </div>
         </div>
-      <?php endforeach; ?>
+      <?php
+        endwhile;
+      else:
+      ?>
+        <div class="col-12 text-center py-5">
+          <h5 class="text-muted">No customized products found.</h5>
+          <a href="create_customized_product.php" class="btn btn-primary mt-3">Add Product</a>
+        </div>
+      <?php endif; ?>
+
     </div>
   </div>
 </div>
 
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function viewProduct(productId) {
-  alert('Viewing product #' + productId);
-  // Add your view product logic here
-}
-
-function addToCart(productId) {
-  alert('Product #' + productId + ' added to cart!');
-  // Add your add to cart logic here
+function confirmDelete(id) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "This product will be permanently deleted!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // call delete endpoint
+      fetch('delete_customized_product.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ id: id })
+      })
+      .then(res => res.json())
+      .then(json => {
+        if (json.success) {
+          Swal.fire({ icon: 'success', title: 'Deleted', text: json.message, timer: 1200, showConfirmButton: false })
+            .then(() => location.reload());
+        } else {
+          Swal.fire('Error', json.message || 'Could not delete', 'error');
+        }
+      })
+      .catch(() => Swal.fire('Error','Request failed','error'));
+    }
+  });
 }
 </script>
 
 <style>
-.card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-
-.btn-group {
-  gap: 5px;
-}
+.card { transition: transform .25s ease, box-shadow .25s ease; border-radius: 10px; }
+.card:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
 </style>
-
-<!--------------------------->
-<!-- END MAIN AREA -->
-<!--------------------------->
 
 <?php require 'footer.php'; ?>

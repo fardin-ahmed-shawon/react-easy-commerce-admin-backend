@@ -1,6 +1,6 @@
 <?php
-$current_page = basename($_SERVER['PHP_SELF']); // Get the current page name
-$page_title = 'Create Customize Product'; // Set the page title
+$current_page = basename($_SERVER['PHP_SELF']);
+$page_title = 'Edit Customize Product';
 require 'header.php';
 
 // ---------- Helpers ----------
@@ -17,10 +17,8 @@ function compressImageServer($source, $destination, $quality = 70)
     } elseif ($mime == 'image/gif') {
         $image = imagecreatefromgif($source);
     } else {
-        // unsupported type, move without compression
         return move_uploaded_file($source, $destination) ? $destination : false;
     }
-    // For PNG keep transparency
     if ($mime == 'image/png') {
         imagepng($image, $destination);
     } else {
@@ -37,95 +35,103 @@ function generateSlug($string)
     return rtrim($slug, '-');
 }
 
-// ---------- Form handling ----------
-$product_added_status = null;
+// ---------- Fetch existing product ----------
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    echo "<script>Swal.fire('Error','Invalid Product ID','error').then(()=>window.location='customized-products.php');</script>";
+    exit;
+}
+
+$id = intval($_GET['id']);
+$res = mysqli_query($conn, "SELECT * FROM customized_products WHERE id = $id LIMIT 1");
+if (!$res || mysqli_num_rows($res) === 0) {
+    echo "<script>Swal.fire('Error','Product not found','error').then(()=>window.location='customized-product-list.php');</script>";
+    exit;
+}
+$product = mysqli_fetch_assoc($res);
+
+// ---------- Handle update ----------
+$status_msg = null;
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // collect and sanitize
     $product_title = trim($_POST['product_title'] ?? '');
     $category_id = intval($_POST['product_main_ctg'] ?? 0);
     $product_code = trim($_POST['product_code'] ?? '');
     $advance_amount = trim($_POST['advance_amount'] ?? '');
     $description = $_POST['description'] ?? '';
 
-    // basic validation
     if ($product_title === '') $errors[] = 'Product title is required.';
     if ($category_id <= 0) $errors[] = 'Please choose a main category.';
-    // advance amount can be optional but numeric if provided
     if ($advance_amount !== '' && !is_numeric($advance_amount)) $errors[] = 'Advance amount must be a number.';
 
-    // handle image upload
-    $product_img_path = '';
-    if (isset($_FILES['product_img']) && $_FILES['product_img']['error'] !== UPLOAD_ERR_NO_FILE) {
-        if ($_FILES['product_img']['error'] === UPLOAD_ERR_OK) {
-            $tmp_name = $_FILES['product_img']['tmp_name'];
-            $orig_name = $_FILES['product_img']['name'];
-            $ext = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
-            $allowed = ['jpg','jpeg','png','gif','webp'];
-            if (!in_array($ext, $allowed)) {
-                $errors[] = 'Unsupported image type. Use jpg, png, gif or webp.';
-            } else {
-                // ensure directory
-                $dir = __DIR__ . '/uploads/customized_products/';
-                if (!file_exists($dir)) mkdir($dir, 0777, true);
+    $product_img_path = $product['product_img']; // keep existing
 
-                $new_name = uniqid('prod_', true) . '.' . $ext;
-                $destination = $dir . $new_name;
-
-                // Try server-side compression/save. If getimagesize fails (maybe client compressed), fallback to move_uploaded_file
-                if (!compressImageServer($tmp_name, $destination, 75)) {
-                    // fallback move
-                    if (!move_uploaded_file($tmp_name, $destination)) {
-                        $errors[] = 'Failed to save uploaded image.';
-                    }
-                }
-                // store relative path for DB
-                $product_img_path = 'uploads/customized_products/' . $new_name;
-            }
+    // handle image upload (optional)
+    if (isset($_FILES['product_img']) && $_FILES['product_img']['error'] === UPLOAD_ERR_OK) {
+        $tmp_name = $_FILES['product_img']['tmp_name'];
+        $orig_name = $_FILES['product_img']['name'];
+        $ext = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
+        $allowed = ['jpg','jpeg','png','gif','webp'];
+        if (!in_array($ext, $allowed)) {
+            $errors[] = 'Unsupported image type. Use jpg, png, gif or webp.';
         } else {
-            $errors[] = 'Image upload error.';
+            $dir = __DIR__ . '/uploads/customized_products/';
+            if (!file_exists($dir)) mkdir($dir, 0777, true);
+            $new_name = uniqid('prod_', true) . '.' . $ext;
+            $destination = $dir . $new_name;
+
+            if (!compressImageServer($tmp_name, $destination, 75)) {
+                if (!move_uploaded_file($tmp_name, $destination)) {
+                    $errors[] = 'Failed to save uploaded image.';
+                }
+            }
+            // delete old image if exists
+            if ($product['product_img'] && file_exists(__DIR__ . '/' . $product['product_img'])) {
+                @unlink(__DIR__ . '/' . $product['product_img']);
+            }
+            $product_img_path = 'uploads/customized_products/' . $new_name;
         }
-    } else {
-        $errors[] = 'Product image is required.';
     }
 
     if (empty($errors)) {
-        // prepare values
         $product_title_db = mysqli_real_escape_string($conn, $product_title);
         $product_code_db = mysqli_real_escape_string($conn, $product_code);
         $advance_amount_db = ($advance_amount === '') ? 0 : intval($advance_amount);
         $description_db = mysqli_real_escape_string($conn, $description);
-        $slug = generateSlug($product_title);
 
-        // ensure slug uniqueness (append number if exists)
-        $base_slug = $slug;
-        $i = 1;
-        while (true) {
-            $check = mysqli_query($conn, "SELECT id FROM customized_products WHERE product_slug = '" . mysqli_real_escape_string($conn, $slug) . "' LIMIT 1");
-            if (mysqli_num_rows($check) > 0) {
-                $slug = $base_slug . '-' . $i;
-                $i++;
-            } else break;
-        }
-
-        $sql = "INSERT INTO customized_products 
-            (product_title, category_id, advance_amount, product_code, product_description, product_img, product_slug) 
-            VALUES ('$product_title_db', '$category_id', '$advance_amount_db', '$product_code_db', '$description_db', '$product_img_path', '$slug')";
-        if (mysqli_query($conn, $sql)) {
-            $product_added_status = "Product added successfully!";
-            // clear POST to avoid sticky values after success
-            $_POST = [];
-        } else {
-            $product_added_status = "Error: " . mysqli_error($conn);
-            // if insert failed, optionally unlink the uploaded file
-            if ($product_img_path && file_exists(__DIR__ . '/' . $product_img_path)) {
-                @unlink(__DIR__ . '/' . $product_img_path);
+        // regenerate slug only if title changed
+        $slug = $product['product_slug'];
+        if ($product_title !== $product['product_title']) {
+            $slug = generateSlug($product_title);
+            $base_slug = $slug;
+            $i = 1;
+            while (true) {
+                $check = mysqli_query($conn, "SELECT id FROM customized_products WHERE product_slug = '" . mysqli_real_escape_string($conn, $slug) . "' AND id != $id LIMIT 1");
+                if (mysqli_num_rows($check) > 0) {
+                    $slug = $base_slug . '-' . $i;
+                    $i++;
+                } else break;
             }
         }
+
+        $sql = "UPDATE customized_products SET 
+            product_title='$product_title_db',
+            category_id='$category_id',
+            advance_amount='$advance_amount_db',
+            product_code='$product_code_db',
+            product_description='$description_db',
+            product_img='$product_img_path',
+            product_slug='$slug'
+            WHERE id=$id";
+
+        if (mysqli_query($conn, $sql)) {
+            $status_msg = "Product updated successfully!";
+            $product = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM customized_products WHERE id=$id"));
+        } else {
+            $status_msg = "Error: " . mysqli_error($conn);
+        }
     } else {
-        // join errors for display
-        $product_added_status = "Error: " . implode(' | ', $errors);
+        $status_msg = "Error: " . implode(' | ', $errors);
     }
 }
 ?>
@@ -164,108 +170,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h3 class="page-title">
             <span class="page-title-icon bg-gradient-primary text-white me-2">
                 <i class="mdi mdi-tshirt-crew-outline"></i>
-            </span> Customize Product
+            </span> Edit Customize Product
         </h3>
     </div>
     <div class="row">
         <div class="p-4" style="background: #fff; max-width: 1200px; margin: auto; border-radius: 10px;">
             <div class="content">
                 <?php
-                if (isset($product_added_status)) {
-                    // Use same SweetAlert pattern you used earlier
-                    $icon = (strpos($product_added_status, 'Error') === false) ? 'success' : 'error';
-                    $title = (strpos($product_added_status, 'Error') === false) ? 'Success!' : 'Error!';
+                if (isset($status_msg)) {
+                    $icon = (strpos($status_msg, 'Error') === false) ? 'success' : 'error';
+                    $title = (strpos($status_msg, 'Error') === false) ? 'Success!' : 'Error!';
                     echo "<script>
                         Swal.fire({
                             icon: '" . $icon . "',
                             title: '" . addslashes($title) . "',
-                            text: '" . addslashes($product_added_status) . "',
+                            text: '" . addslashes($status_msg) . "',
                             confirmButtonColor: '#3085d6',
                             confirmButtonText: 'OK'
                         }).then(function(){";
-                    if ($icon === 'success') {
-                        // keep user on same page but clear form; or redirect - I keep on same page
-                        echo "window.location = window.location.href;";
-                    }
+                    if ($icon === 'success') echo "window.location='customized-products.php';";
                     echo "});
                     </script>";
                 }
                 ?>
 
-                <br>
-                <h1 class="text-center">Create Customize Product</h1>
+                <h1 class="text-center mb-4">Edit Customize Product</h1>
 
-                <form action="" method="post" enctype="multipart/form-data" id="customProdForm">
+                <form action="" method="post" enctype="multipart/form-data">
                     <div class="user-details full-input-box">
                         <div class="row">
                             <div class="col-md-8">
-                                <!-- title -->
                                 <div class="input-box">
                                     <label class="details">Product Title *</label>
-                                    <input name="product_title" type="text" placeholder="Enter your product title" required
-                                           value="<?php echo htmlspecialchars($_POST['product_title'] ?? '', ENT_QUOTES); ?>">
-                                </div>
-                                <!-- Main Category -->
-                                <div class="input-box">
-                                <label class="details">Choose Main Category *</label>
-                                <select id="main_ctg_name" name="product_main_ctg" required>
-                                    <option value="">Select Main Category</option>
-                                    <?php
-                                    $result = mysqli_query($conn, "SELECT id, category_name FROM customized_category ORDER BY category_name ASC");
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        $category_id = htmlspecialchars($row['id'], ENT_QUOTES, 'UTF-8');
-                                        $category_name = htmlspecialchars($row['category_name'], ENT_QUOTES, 'UTF-8');
-                                        $selected = (isset($_POST['product_main_ctg']) && intval($_POST['product_main_ctg']) === intval($row['id'])) ? 'selected' : '';
-                                        echo "<option value='$category_id' $selected>$category_name</option>";
-                                    }
-                                    ?>
-                                </select>
+                                    <input name="product_title" type="text" value="<?php echo htmlspecialchars($product['product_title']); ?>" required>
                                 </div>
 
-                                <!-- product code -->
                                 <div class="input-box">
-                                <label class="details">Product Code</label>
-                                <input name="product_code" type="text" placeholder="Enter your product code"
-                                       value="<?php echo htmlspecialchars($_POST['product_code'] ?? '', ENT_QUOTES); ?>">
+                                    <label class="details">Choose Main Category *</label>
+                                    <select id="main_ctg_name" name="product_main_ctg" required>
+                                        <option value="">Select Main Category</option>
+                                        <?php
+                                        $cats = mysqli_query($conn, "SELECT id, category_name FROM customized_category ORDER BY category_name ASC");
+                                        while ($row = mysqli_fetch_assoc($cats)) {
+                                            $selected = ($product['category_id'] == $row['id']) ? 'selected' : '';
+                                            echo "<option value='{$row['id']}' $selected>{$row['category_name']}</option>";
+                                        }
+                                        ?>
+                                    </select>
                                 </div>
-                                <!-- Advance Amount -->
+
+                                <div class="input-box">
+                                    <label class="details">Product Code</label>
+                                    <input name="product_code" type="text" value="<?php echo htmlspecialchars($product['product_code']); ?>">
+                                </div>
+
                                 <div class="input-box">
                                     <label class="details">Advance Amount</label>
-                                    <input name="advance_amount" type="text" placeholder="Enter advance amount"
-                                           value="<?php echo htmlspecialchars($_POST['advance_amount'] ?? '', ENT_QUOTES); ?>">
+                                    <input name="advance_amount" type="text" value="<?php echo htmlspecialchars($product['advance_amount']); ?>">
                                 </div>
-                                <!-- Description -->
+
                                 <div class="mb-3">
                                     <label for="description" class="form-label">Description *</label>
-                                    <textarea name="description" id="description" class="form-control" rows="10" placeholder="Write your blog content..."><?php echo htmlspecialchars($_POST['description'] ?? '', ENT_QUOTES); ?></textarea>
+                                    <textarea name="description" id="description" class="form-control" rows="10"><?php echo htmlspecialchars($product['product_description']); ?></textarea>
                                 </div>
                             </div>
+
                             <div class="col-md-4">
                                 <div class="upload-box">
-                                    <label for="product_img">Attach Product Image *</label>
-                                    <small>(Recommended size: 1000 x 1000)</small>
+                                    <label for="product_img">Change Product Image (optional)</label>
+                                    <small>(Leave empty to keep current)</small>
+                                    <input type="file" name="product_img" id="product_img" class="form-control" accept="image/*">
 
-                                    <input type="file" name="product_img" id="product_img" class="form-control" accept="image/*" required>
-
-                                    <img id="previewImage" src="" class="img-preview d-none" alt="Preview">
+                                    <?php if ($product['product_img']) { ?>
+                                        <img id="previewImage" src="<?php echo htmlspecialchars($product['product_img']); ?>" class="img-preview" alt="Current Image">
+                                    <?php } else { ?>
+                                        <img id="previewImage" src="" class="img-preview d-none" alt="Preview">
+                                    <?php } ?>
                                     <small id="imgNote" class="form-text text-muted"></small>
                                 </div>
 
-                                <!-- Client-side resize/compress + preview -->
+                                <!-- Client-side preview compression (same as add page) -->
                                 <script>
                                     const fileInput = document.getElementById('product_img');
                                     const preview = document.getElementById('previewImage');
                                     const imgNote = document.getElementById('imgNote');
-
                                     function dataURLtoFile(dataurl, filename) {
                                         const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
-                                        const bstr = atob(arr[1]);
-                                        let n = bstr.length;
-                                        const u8arr = new Uint8Array(n);
-                                        while (n--) u8arr[n] = bstr.charCodeAt(n);
+                                        const bstr = atob(arr[1]); let n = bstr.length;
+                                        const u8arr = new Uint8Array(n); while (n--) u8arr[n] = bstr.charCodeAt(n);
                                         return new File([u8arr], filename, {type: mime});
                                     }
-
                                     function compressAndPreview(file, maxW = 1200, maxH = 1200, quality = 0.8) {
                                         return new Promise((resolve, reject) => {
                                             const img = new Image();
@@ -274,41 +268,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 img.onload = function() {
                                                     let canvas = document.createElement('canvas');
                                                     let w = img.width, h = img.height;
-                                                    // calculate size
                                                     if (w > maxW || h > maxH) {
                                                         const ratio = Math.min(maxW / w, maxH / h);
-                                                        w = Math.round(w * ratio);
-                                                        h = Math.round(h * ratio);
+                                                        w = Math.round(w * ratio); h = Math.round(h * ratio);
                                                     }
-                                                    canvas.width = w;
-                                                    canvas.height = h;
+                                                    canvas.width = w; canvas.height = h;
                                                     const ctx = canvas.getContext('2d');
                                                     ctx.drawImage(img, 0, 0, w, h);
-                                                    // default to jpeg
                                                     const mime = (file.type === 'image/png') ? 'image/png' : 'image/jpeg';
                                                     const dataURL = canvas.toDataURL(mime, quality);
                                                     const newFile = dataURLtoFile(dataURL, file.name);
                                                     resolve({dataURL, newFile});
                                                 };
-                                                img.onerror = reject;
-                                                img.src = e.target.result;
+                                                img.onerror = reject; img.src = e.target.result;
                                             };
-                                            reader.onerror = reject;
-                                            reader.readAsDataURL(file);
+                                            reader.onerror = reject; reader.readAsDataURL(file);
                                         });
                                     }
-
                                     fileInput.addEventListener('change', async function(e) {
                                         const file = e.target.files[0];
                                         if (!file) return;
-                                        // compress client-side for preview and smaller upload
                                         try {
                                             imgNote.textContent = 'Processing image...';
-                                            const {dataURL, newFile} = await compressAndPreview(file, 1200, 1200, 0.8);
+                                            const {dataURL, newFile} = await compressAndPreview(file);
                                             preview.src = dataURL;
                                             preview.classList.remove('d-none');
                                             imgNote.textContent = 'Preview generated. Image will be uploaded in compressed form.';
-                                            // Replace file in input with compressed file using DataTransfer
                                             const dt = new DataTransfer();
                                             dt.items.add(newFile);
                                             fileInput.files = dt.files;
@@ -322,9 +307,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                     </div>
-                    <!-- Submit button -->
+
                     <div class="button mb-0">
-                        <input type="submit" value="Add Product" class="btn btn-primary">
+                        <input type="submit" value="Update Product" class="btn btn-primary">
                     </div>
                 </form>
             </div>
