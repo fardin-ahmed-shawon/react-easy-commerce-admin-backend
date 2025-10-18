@@ -341,3 +341,12 @@ CREATE TABLE customized_orders (
     order_visibility VARCHAR(50) DEFAULT 'Show',
     FOREIGN KEY (product_id) REFERENCES customized_products(id) ON DELETE CASCADE
 );
+
+CREATE TABLE customized_payments (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    order_amount INT NOT NULL,
+    paid_amount INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES customized_orders(id) ON DELETE CASCADE
+);

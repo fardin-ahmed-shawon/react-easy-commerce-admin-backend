@@ -191,6 +191,7 @@ $page_title = 'Customized Orders';
   #orderModal {
     z-index: 999999999;
   }
+
   .modal-overlay {
     display: none;
     position: fixed;
@@ -214,7 +215,7 @@ $page_title = 'Customized Orders';
     border-radius: 12px;
     max-width: 600px;
     width: 100%;
-    
+
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   }
 
@@ -234,7 +235,7 @@ $page_title = 'Customized Orders';
     align-items: center;
     position: sticky;
     top: 0;
-     z-index: 99999;
+    z-index: 99999;
   }
 
   .modal-header h2 {
@@ -359,6 +360,10 @@ $page_title = 'Customized Orders';
       border-radius: 8px;
     }
   }
+
+  .table-responsive {
+    max-height: 800px;
+  }
 </style>
 
 <?php
@@ -366,15 +371,49 @@ $page_title = 'Customized Orders';
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["update_status"])) {
   $id = intval($_POST["order_id"]);
   $new_status = $conn->real_escape_string($_POST["new_status"]);
-  
+
   $update_sql = "UPDATE customized_orders SET order_status = '$new_status' WHERE id = $id";
-  
+
   if ($conn->query($update_sql)) {
     $msg = "Order status updated successfully!";
   } else {
     $msg = "Error: " . $conn->error;
   }
 }
+
+
+// Insert Payment Info
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_payment_info"])) {
+  $order_id = intval($_POST["order_id"]);
+  $order_amount = $conn->real_escape_string($_POST["order_amount"]);
+  $paid_amount = $conn->real_escape_string($_POST["paid_amount"]);
+
+  // Check if payment exists
+  $check_sql = "SELECT id FROM customized_payments WHERE order_id = '$order_id'";
+  $check_result = $conn->query($check_sql);
+
+  if ($check_result && $check_result->num_rows > 0) {
+    // Update existing record
+    $update_sql = "UPDATE customized_payments 
+                   SET order_amount = '$order_amount', paid_amount = '$paid_amount' 
+                   WHERE order_id = '$order_id'";
+    $query = $conn->query($update_sql);
+  } else {
+    // Insert new record
+    $insert_sql = "INSERT INTO customized_payments (order_id, order_amount, paid_amount)
+                   VALUES ('$order_id', '$order_amount', '$paid_amount')";
+    $query = $conn->query($insert_sql);
+  }
+
+  if ($query) {
+    $msg_ = "Payment Information Saved or Updated Successfully.";
+  } else {
+    $msg_ = "Error: " . $conn->error;
+  }
+}
+
+
+
 
 // Search & Filter Logic
 $search_query = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
@@ -510,7 +549,8 @@ if ($result->num_rows > 0) {
     </div>
   </div>
 
-  <br><hr><br>
+  <br>
+  <hr><br>
 
   <!-- Filter Form -->
   <div class="card mb-4">
@@ -587,11 +627,16 @@ if ($result->num_rows > 0) {
               echo '<td>' . htmlspecialchars($row['payment_method']) . '</td>';
               echo '<td><span class="status-badge ' . $status_class . '">' . $row['order_status'] . '</span></td>';
               echo '<td>';
-              echo '<button class="action-btn btn btn-info btn-sm" onclick="openModal(' . $row['id'] . ')">View</button>';
+
+              ?>
+              
+              <button class="action-btn btn btn-info btn-sm" onclick="openModal(<?php echo $row['id']; ?>, <?php echo get_customized_order_amount($row['id']); ?>, <?php echo get_customized_paid_amount($row['id']); ?>)">View</button>
+
+              <?php
               echo '</td>';
 
               echo '<td>';
-              echo '<a class="action-btn btn btn-dark btn-sm" href="customized_invoice.php?order_no='.$row['order_no'].'">Invoice</a>';
+              echo '<a class="action-btn btn btn-dark btn-sm" href="customized_invoice.php?order_no=' . $row['order_no'] . '">Invoice</a>';
               echo '</td>';
 
               echo '</tr>';
@@ -704,8 +749,28 @@ if ($result->num_rows > 0) {
             <span class="info-label">Account Number</span>
             <span class="info-value" id="modalAccNumber"></span>
           </div>
+
         </div>
       </div>
+
+      <!-- Payment Information Form -->
+      <form method="POST" action="" class="form-control">
+        <input type="hidden" name="order_id" id="2modalOrderId">
+        <div class="form-group">
+          <label for=""><b>Order Amount</b></label>
+          <input class="form-control" type="number" name="order_amount" id="order_amount">
+        </div>
+
+        <div class="form-group">
+          <label for=""><b>Paid Amount</b></label>
+          <input class="form-control" type="number" name="paid_amount" id="paid_amount">
+        </div>
+
+        <button type="submit" name="add_payment_info" class="btn btn-success mt-3">Save</button>
+      </form>
+      <!-- End -->
+
+      <br>
 
       <div class="modal-section">
         <h3>Order Note</h3>
@@ -722,12 +787,17 @@ if ($result->num_rows > 0) {
 <script>
   const ordersData = <?php echo json_encode($ordersData); ?>;
 
-  function openModal(orderId) {
+  function openModal(orderId, orderAmount, paidAmount) {
     const modal = document.getElementById('orderModal');
     const order = ordersData.find(o => o.id == orderId);
-    
+
     if (order) {
       document.getElementById('modalOrderId').value = order.id;
+      document.getElementById('2modalOrderId').value = order.id;
+      
+      document.getElementById('order_amount').value = orderAmount || '';
+      document.getElementById('paid_amount').value = paidAmount || '';
+
       document.getElementById('modalOrderNo').textContent = '#' + order.order_no;
       document.getElementById('modalCurrentStatus').textContent = order.order_status;
       document.getElementById('modalFullName').textContent = order.user_full_name;
@@ -743,7 +813,7 @@ if ($result->num_rows > 0) {
       document.getElementById('modalTransactionId').textContent = order.transaction_id || 'N/A';
       document.getElementById('modalAccNumber').textContent = order.acc_number || 'N/A';
       document.getElementById('modalOrderNote').textContent = order.order_note || 'No notes';
-      
+
       modal.classList.add('active');
     }
   }

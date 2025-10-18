@@ -19,6 +19,9 @@ $orderRes = $stmtOrder->get_result();
 $order = $orderRes->fetch_assoc();
 if (!$order) die('Order not found.');
 
+// Generate Invoice Number
+$invoice_no = 'INV-' . str_pad($order['id'], 6, '0', STR_PAD_LEFT);
+
 // Get product details
 $productId = $order['product_id'];
 $stmtProduct = $conn->prepare("SELECT cp.product_title, cp.advance_amount, cc.category_name 
@@ -38,7 +41,18 @@ $websitePhone   = $webInfoRow['phone'] ?? 'N/A';
 $websiteEmail   = $webInfoRow['email'] ?? 'N/A';
 $websiteAddress = $webInfoRow['address'] ?? 'N/A';
 
-// Calculate amount
+// Fetch payment info
+$orderId = $order['id'];
+$paymentQuery = $conn->prepare("SELECT SUM(order_amount) AS total_order, SUM(paid_amount) AS total_paid FROM customized_payments WHERE order_id = ?");
+$paymentQuery->bind_param("i", $orderId);
+$paymentQuery->execute();
+$paymentResult = $paymentQuery->get_result()->fetch_assoc();
+
+$total_order_amount = (float)($paymentResult['total_order'] ?? $product['advance_amount']);
+$total_paid_amount  = (float)($paymentResult['total_paid'] ?? 0);
+$due_amount = $total_order_amount - $total_paid_amount;
+
+// Calculate product advance amount
 $advance_amount = (float)($product['advance_amount'] ?? 0);
 ?>
 <!DOCTYPE html>
@@ -46,7 +60,7 @@ $advance_amount = (float)($product['advance_amount'] ?? 0);
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Invoice <?php echo htmlspecialchars($order_no); ?></title>
+<title>Invoice <?php echo htmlspecialchars($invoice_no); ?></title>
 <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="assets/vendors/mdi/css/materialdesignicons.min.css">
 <style>
@@ -69,10 +83,10 @@ body { background:#f7f8fa; }
 .status-processing { background: #dbeafe; color: #1e40af; }
 .status-completed { background: #d1fae5; color: #065f46; }
 .status-cancelled { background: #fee2e2; color: #991b1b; }
+.summary-table td { padding: 6px 0; }
 @media print {
     body { background: white; }
-    .btn-dark { display: none; }
-    .action-buttons { display: none; }
+    .btn-dark, .action-buttons { display: none; }
 }
 </style>
 </head>
@@ -84,7 +98,8 @@ body { background:#f7f8fa; }
         <div style="text-align:center; margin-bottom: 30px;">
             <?php if(!empty($websiteLogo)) echo '<img src="'.htmlspecialchars($websiteLogo).'" style="width:80px; margin-bottom: 10px;">'; ?>
             <h2 style="margin:8px 0 4px;">INVOICE</h2>
-            <h4 style="margin:0 0 6px; color: #3b82f6;">Order #<?php echo htmlspecialchars($order['order_no']); ?></h4>
+            <h4 style="margin:0 0 6px; color: #3b82f6;">Invoice #: <?php echo htmlspecialchars($invoice_no); ?></h4>
+            <small style="color:#64748b;">Order #: <?php echo htmlspecialchars($order['order_no']); ?></small><br>
             <?php 
             $status_class = 'status-' . strtolower(str_replace(' ', '_', $order['order_status']));
             echo '<span class="status-badge ' . $status_class . '">' . htmlspecialchars($order['order_status']) . '</span>';
@@ -138,7 +153,7 @@ body { background:#f7f8fa; }
                     <tr>
                         <th>Product</th>
                         <th class="text-center">Category</th>
-                        <th class="text-right">Advance Amount</th>
+                        <th class="text-right">Amount (৳)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -148,11 +163,19 @@ body { background:#f7f8fa; }
                             <?php if(!empty($order['order_note'])) echo '<br><small style="color: #64748b;">Note: ' . htmlspecialchars($order['order_note']) . '</small>'; ?>
                         </td>
                         <td class="text-center"><?php echo htmlspecialchars($product['category_name'] ?? 'N/A'); ?></td>
-                        <td class="text-right"><strong>৳ <?php echo number_format($advance_amount, 2); ?></strong></td>
+                        <td class="text-right"><strong>৳ <?php echo number_format($total_order_amount, 2); ?></strong></td>
+                    </tr>
+                    <tr style="background: #f1f5f9;">
+                        <td colspan="2" class="text-right"><strong>Paid Amount</strong></td>
+                        <td class="text-right text-success"><strong>৳ <?php echo number_format($total_paid_amount, 2); ?></strong></td>
+                    </tr>
+                    <tr style="background: #fee2e2;">
+                        <td colspan="2" class="text-right"><strong>Unpaid / Due Amount</strong></td>
+                        <td class="text-right text-danger"><strong>৳ <?php echo number_format($due_amount, 2); ?></strong></td>
                     </tr>
                     <tr style="background: #1e293b; color: white;">
-                        <td colspan="2" class="text-right"><strong>TOTAL AMOUNT</strong></td>
-                        <td class="text-right"><strong>৳ <?php echo number_format($advance_amount, 2); ?></strong></td>
+                        <td colspan="2" class="text-right"><strong>Total Order Amount</strong></td>
+                        <td class="text-right"><strong>৳ <?php echo number_format($total_order_amount, 2); ?></strong></td>
                     </tr>
                 </tbody>
             </table>
@@ -187,7 +210,7 @@ async function downloadPDF() {
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
         
         pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth, pdfHeight);
-        pdf.save('Invoice_<?php echo htmlspecialchars($order_no); ?>.pdf');
+        pdf.save('Invoice_<?php echo htmlspecialchars($invoice_no); ?>.pdf');
     } catch(e) {
         alert('Error generating PDF. Please try again.');
         console.error(e);

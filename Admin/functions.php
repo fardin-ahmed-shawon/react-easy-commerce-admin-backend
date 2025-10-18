@@ -441,4 +441,22 @@ function is_shipping_charge_free($invoice_no = '') {
     return $row['free_shipping'] ?? 0;
 }
 
+
+// For Customized Orders
+function get_customized_order_amount($order_id = '') {
+    global $conn;
+    $sql = "SELECT order_amount FROM customized_payments WHERE order_id = '$order_id'";
+    $result = $conn->query($sql);
+    $row = $result->fetch_assoc();
+    return $row['order_amount'] ?? 0;
+}
+
+function get_customized_paid_amount($order_id = '') {
+    global $conn;
+    $sql = "SELECT paid_amount FROM customized_payments WHERE order_id = '$order_id'";
+    $result = $conn->query($sql);
+    $row = $result->fetch_assoc();
+    return $row['paid_amount'] ?? 0;
+}
+
 ?>
