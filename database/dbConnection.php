@@ -9,10 +9,10 @@ $password = "";
 $database_name = "react_easy_commerce_v9_5";
 
 // For production -----------------------------------------------------
-// $site_link = "https://react-easy-commere.easytechsolutions.xyz/";
-// $username = "easytec3";
-// $password = "T9y9*5uO2kwU#G";
-// $database_name = "easytec3_easy_commerce_react";
+// $site_link = "https://arentertainment.com.bd/";
+// $username = "arentert";
+// $password = "2p2zNQ19h(pF#U";
+// $database_name = "arentert_easy_commerce";
 
 //---------------------------------------------------------------------
 

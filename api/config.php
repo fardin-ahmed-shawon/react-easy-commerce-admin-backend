@@ -9,7 +9,7 @@ header('Expires: 0'); // Proxies
 //header("Access-Control-Allow-Origin: https://example.com/");
 
 $allowed_origins = [
-    "https://react-easy-commere.easytechsolutions.xyz/",
+    "https://arentertainment.com.bd/",
     "http://localhost:5173/"
 ];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
