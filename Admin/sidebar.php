@@ -53,7 +53,7 @@
               <div class="collapse" id="customized">
                 <ul class="nav flex-column sub-menu">
                   <li class="nav-item">
-                    <a class="nav-link" href="create-customize-product.php">Create Product</a>
+                    <a class="nav-link" href="create-customize-product.php">Add Product</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="customized-product-list.php">Product List</a>

@@ -449,7 +449,7 @@ if ($result->num_rows > 0) {
     <h3 class="page-title">
       <span class="page-title-icon bg-gradient-primary text-white me-2">
         <i class="mdi mdi-tshirt-crew-outline"></i>
-      </span> Customized Orders Management
+      </span> Customized Orders
     </h3>
   </div>
 
@@ -568,7 +568,7 @@ if ($result->num_rows > 0) {
             <th>Date</th>
             <th>Payment</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th colspan="2">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -589,6 +589,11 @@ if ($result->num_rows > 0) {
               echo '<td>';
               echo '<button class="action-btn btn btn-info btn-sm" onclick="openModal(' . $row['id'] . ')">View</button>';
               echo '</td>';
+
+              echo '<td>';
+              echo '<a class="action-btn btn btn-dark btn-sm" href="customized_invoice.php?order_no='.$row['order_no'].'">Invoice</a>';
+              echo '</td>';
+
               echo '</tr>';
             }
           } else {
@@ -709,7 +714,7 @@ if ($result->num_rows > 0) {
     </div>
 
     <div class="modal-footer">
-      <button type="button" class="modal-btn btn-secondary" onclick="closeModal()">Close</button>
+      <button type="button" class="modal-btn btn-dark" onclick="closeModal()">Close</button>
     </div>
   </div>
 </div>

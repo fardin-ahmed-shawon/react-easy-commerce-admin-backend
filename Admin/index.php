@@ -499,6 +499,10 @@ while($row = $cityWiseResult->fetch_assoc()) {
   .badge-success { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; }
   .badge-purple { background: linear-gradient(135deg, #e9d5ff, #d8b4fe); color: #6b21a8; }
   .badge-dark { background: linear-gradient(135deg, #e2e8f0, #cbd5e1); color: #334155; }
+  .badge-danger {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+  }
 </style>
 
 <!--------------------------->
@@ -667,7 +671,7 @@ while($row = $cityWiseResult->fetch_assoc()) {
               <div class="col-xl-3 col-md-6" onclick="window.location.href='pendingOrders.php';" style="cursor: pointer;">
                 <div class="stats-card stats-gradient-warning">
                   <div class="stats-icon">
-                    <i class="mdi mdi-cart-arrow-down"></i>
+                    <i class="mdi mdi-clock-outline"></i>
                   </div>
                   <div class="stats-content">
                     <h6 class="stats-label">Pending Orders</h6>
@@ -686,9 +690,9 @@ while($row = $cityWiseResult->fetch_assoc()) {
 
               <!-- Approved Orders -->
               <div class="col-xl-3 col-md-6" onclick="window.location.href='viewOrders.php';" style="cursor: pointer;">
-                <div class="stats-card stats-gradient-info">
+                <div class="stats-card stats-gradient-dark">
                   <div class="stats-icon">
-                    <i class="mdi mdi-cart-arrow-up"></i>
+                    <i class="mdi mdi-cart-check"></i>
                   </div>
                   <div class="stats-content">
                     <h6 class="stats-label">Approved Orders</h6>
@@ -711,7 +715,7 @@ while($row = $cityWiseResult->fetch_assoc()) {
               <div class="col-xl-3 col-md-6" onclick="window.location.href='makeInvoice.php';" style="cursor: pointer;">
                 <div class="stats-card stats-gradient-info">
                   <div class="stats-icon">
-                    <i class="mdi mdi-cart-outline"></i>
+                    <i class="mdi mdi-progress-clock"></i>
                   </div>
                   <div class="stats-content">
                     <h6 class="stats-label">Processing Orders</h6>
@@ -753,7 +757,7 @@ while($row = $cityWiseResult->fetch_assoc()) {
               <div class="col-xl-3 col-md-6" onclick="window.location.href='makeInvoice.php?search_query=&from_date=&to_date=&main_ctg=&filter=Completed';" style="cursor: pointer;">
                 <div class="stats-card stats-gradient-success">
                   <div class="stats-icon">
-                    <i class="mdi mdi-cart-check"></i>
+                    <i class="mdi mdi-check-circle-outline"></i>
                   </div>
                   <div class="stats-content">
                     <h6 class="stats-label">Delivered Orders</h6>
@@ -772,9 +776,9 @@ while($row = $cityWiseResult->fetch_assoc()) {
 
               <!-- Cancelled Orders -->
               <div class="col-xl-3 col-md-6" onclick="window.location.href='makeInvoice.php?search_query=&from_date=&to_date=&main_ctg=&filter=Canceled';" style="cursor: pointer;">
-                <div class="stats-card stats-gradient-dark">
+                <div class="stats-card stats-gradient-danger">
                   <div class="stats-icon">
-                    <i class="mdi mdi-cart-remove"></i>
+                    <i class="mdi mdi-close-circle-outline"></i>
                   </div>
                   <div class="stats-content">
                     <h6 class="stats-label">Cancelled Orders</h6>
@@ -787,7 +791,7 @@ while($row = $cityWiseResult->fetch_assoc()) {
                       ?>
                     </h2>
                   </div>
-                  <div class="stats-badge badge-dark">Cancelled</div>
+                  <div class="stats-badge badge-danger">Cancelled</div>
                 </div>
               </div>
               <?php } ?>
