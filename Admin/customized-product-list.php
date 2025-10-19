@@ -12,7 +12,7 @@ require 'header.php';
           <i class="mdi mdi-tshirt-crew-outline"></i>
         </span> Customized Product List
       </h3>
-      <a href="create_customized_product.php" class="btn btn-primary">
+      <a href="create-customize-product.php" class="btn btn-primary">
         <i class="mdi mdi-plus"></i> Add New Product
       </a>
     </div>
@@ -93,9 +93,13 @@ require 'header.php';
             <img src="<?php echo $img; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($row['product_title']); ?>" style="height:250px; object-fit:cover;">
 
             <div class="card-body d-flex flex-column">
-              <span class="badge bg-gradient-primary mb-2" style="width:fit-content;">
-                <?php echo htmlspecialchars($row['category_name'] ?? 'Uncategorized'); ?>
-              </span>
+
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-gradient-primary mb-2" style="width:fit-content;">
+                  <?php echo htmlspecialchars($row['category_name'] ?? 'Uncategorized'); ?>
+                </span>
+                <small class="text-muted">Code: <?php echo htmlspecialchars($row['product_code'] ?? '-'); ?></small>
+              </div>
 
               <h5 class="card-title fw-bold text-dark"><?php echo htmlspecialchars($row['product_title']); ?></h5>
 
@@ -106,7 +110,7 @@ require 'header.php';
               <div class="mt-auto">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <small class="text-muted">Advance: ৳ <?php echo number_format(intval($row['advance_amount']), 2); ?></small>
-                  <small class="text-muted">Code: <?php echo htmlspecialchars($row['product_code'] ?? '-'); ?></small>
+                  <small class="text-muted">Price: <?php echo htmlspecialchars($row['price'] ?? '-'); ?></small>
                 </div>
 
                 <div class="d-flex gap-2">
@@ -129,7 +133,7 @@ require 'header.php';
       ?>
         <div class="col-12 text-center py-5">
           <h5 class="text-muted">No customized products found.</h5>
-          <a href="create_customized_product.php" class="btn btn-primary mt-3">Add Product</a>
+          <a href="create-customize-product.php" class="btn btn-primary mt-3">Add Product</a>
         </div>
       <?php endif; ?>
 

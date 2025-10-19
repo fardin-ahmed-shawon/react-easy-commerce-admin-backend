@@ -35,6 +35,47 @@ function generateSlug($string)
     return rtrim($slug, '-');
 }
 
+function handleImageUpload($fileInputName, $oldImagePath, &$errors) {
+    $img_path = $oldImagePath; // keep existing by default
+    
+    if (isset($_FILES[$fileInputName]) && $_FILES[$fileInputName]['error'] === UPLOAD_ERR_OK) {
+        $tmp_name = $_FILES[$fileInputName]['tmp_name'];
+        $orig_name = $_FILES[$fileInputName]['name'];
+        $ext = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
+        $allowed = ['jpg','jpeg','png','gif','webp'];
+        
+        if (!in_array($ext, $allowed)) {
+            $errors[] = "Unsupported image type for $fileInputName. Use jpg, png, gif or webp.";
+        } else {
+            $dir = __DIR__ . '/uploads/customized_products/';
+            if (!file_exists($dir)) mkdir($dir, 0777, true);
+            
+            $new_name = uniqid('prod_', true) . '.' . $ext;
+            $destination = $dir . $new_name;
+
+            if (!compressImageServer($tmp_name, $destination, 75)) {
+                if (!move_uploaded_file($tmp_name, $destination)) {
+                    $errors[] = "Failed to save uploaded image: $fileInputName.";
+                } else {
+                    // Delete old image if exists
+                    if ($oldImagePath && file_exists(__DIR__ . '/' . $oldImagePath)) {
+                        @unlink(__DIR__ . '/' . $oldImagePath);
+                    }
+                    $img_path = 'uploads/customized_products/' . $new_name;
+                }
+            } else {
+                // Delete old image if exists
+                if ($oldImagePath && file_exists(__DIR__ . '/' . $oldImagePath)) {
+                    @unlink(__DIR__ . '/' . $oldImagePath);
+                }
+                $img_path = 'uploads/customized_products/' . $new_name;
+            }
+        }
+    }
+    
+    return $img_path;
+}
+
 // ---------- Fetch existing product ----------
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     echo "<script>Swal.fire('Error','Invalid Product ID','error').then(()=>window.location='customized-products.php');</script>";
@@ -56,6 +97,7 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_title = trim($_POST['product_title'] ?? '');
     $category_id = intval($_POST['product_main_ctg'] ?? 0);
+    $price = trim($_POST['price'] ?? '0');
     $product_code = trim($_POST['product_code'] ?? '');
     $advance_amount = trim($_POST['advance_amount'] ?? '');
     $description = $_POST['description'] ?? '';
@@ -64,38 +106,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($category_id <= 0) $errors[] = 'Please choose a main category.';
     if ($advance_amount !== '' && !is_numeric($advance_amount)) $errors[] = 'Advance amount must be a number.';
 
-    $product_img_path = $product['product_img']; // keep existing
-
-    // handle image upload (optional)
-    if (isset($_FILES['product_img']) && $_FILES['product_img']['error'] === UPLOAD_ERR_OK) {
-        $tmp_name = $_FILES['product_img']['tmp_name'];
-        $orig_name = $_FILES['product_img']['name'];
-        $ext = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
-        $allowed = ['jpg','jpeg','png','gif','webp'];
-        if (!in_array($ext, $allowed)) {
-            $errors[] = 'Unsupported image type. Use jpg, png, gif or webp.';
-        } else {
-            $dir = __DIR__ . '/uploads/customized_products/';
-            if (!file_exists($dir)) mkdir($dir, 0777, true);
-            $new_name = uniqid('prod_', true) . '.' . $ext;
-            $destination = $dir . $new_name;
-
-            if (!compressImageServer($tmp_name, $destination, 75)) {
-                if (!move_uploaded_file($tmp_name, $destination)) {
-                    $errors[] = 'Failed to save uploaded image.';
-                }
-            }
-            // delete old image if exists
-            if ($product['product_img'] && file_exists(__DIR__ . '/' . $product['product_img'])) {
-                @unlink(__DIR__ . '/' . $product['product_img']);
-            }
-            $product_img_path = 'uploads/customized_products/' . $new_name;
-        }
-    }
+    // Handle all 4 image uploads
+    $product_img_path = handleImageUpload('product_img', $product['product_img'], $errors);
+    $product_img2_path = handleImageUpload('product_img2', $product['product_img2'] ?? '', $errors);
+    $product_img3_path = handleImageUpload('product_img3', $product['product_img3'] ?? '', $errors);
+    $product_img4_path = handleImageUpload('product_img4', $product['product_img4'] ?? '', $errors);
 
     if (empty($errors)) {
         $product_title_db = mysqli_real_escape_string($conn, $product_title);
         $product_code_db = mysqli_real_escape_string($conn, $product_code);
+        $price_db = ($price === '') ? 0 : intval($price);
         $advance_amount_db = ($advance_amount === '') ? 0 : intval($advance_amount);
         $description_db = mysqli_real_escape_string($conn, $description);
 
@@ -117,10 +137,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "UPDATE customized_products SET 
             product_title='$product_title_db',
             category_id='$category_id',
+            price='$price_db',
             advance_amount='$advance_amount_db',
             product_code='$product_code_db',
             product_description='$description_db',
             product_img='$product_img_path',
+            product_img2='$product_img2_path',
+            product_img3='$product_img3_path',
+            product_img4='$product_img4_path',
             product_slug='$slug'
             WHERE id=$id";
 
@@ -154,14 +178,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         padding: 1.5rem;
         text-align: center;
         background: #f9fafb;
+        margin-bottom: 20px;
     }
     .img-preview {
         width: 100%;
-        height: 220px;
+        height: 200px;
         object-fit: cover;
         border-radius: 8px;
         margin-top: 10px;
         border: 1px solid #e2e8f0;
+    }
+    .image-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    @media (max-width: 768px) {
+        .image-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
@@ -188,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             confirmButtonColor: '#3085d6',
                             confirmButtonText: 'OK'
                         }).then(function(){";
-                    if ($icon === 'success') echo "window.location='customized-products.php';";
+                    if ($icon === 'success') echo "window.location='customized-product-list.php';";
                     echo "});
                     </script>";
                 }
@@ -220,6 +255,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
 
                                 <div class="input-box">
+                                    <label class="details">Price *</label>
+                                    <input name="price" type="text" value="<?php echo htmlspecialchars($product['price']); ?>" required>
+                                </div>
+
+                                <div class="input-box">
                                     <label class="details">Product Code</label>
                                     <input name="product_code" type="text" value="<?php echo htmlspecialchars($product['product_code']); ?>">
                                 </div>
@@ -236,74 +276,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
                             <div class="col-md-4">
-                                <div class="upload-box">
-                                    <label for="product_img">Change Product Image (optional)</label>
-                                    <small>(Leave empty to keep current)</small>
-                                    <input type="file" name="product_img" id="product_img" class="form-control" accept="image/*">
+                                <h5 class="mb-3">Product Images</h5>
+                                <!-- <div class="image-grid"> -->
+                                    <!-- Image 1 -->
+                                    <div class="upload-box">
+                                        <label for="product_img">Image 1</label>
+                                        <small class="d-block">(Leave empty to keep current)</small>
+                                        <input type="file" name="product_img" id="product_img" class="form-control" accept="image/*">
+                                        <?php if (!empty($product['product_img'])) { ?>
+                                            <img id="previewImage1" src="<?php echo htmlspecialchars($product['product_img']); ?>" class="img-preview" alt="Current Image 1">
+                                        <?php } else { ?>
+                                            <img id="previewImage1" src="" class="img-preview d-none" alt="Preview 1">
+                                        <?php } ?>
+                                        <small id="imgNote1" class="form-text text-muted"></small>
+                                    </div>
 
-                                    <?php if ($product['product_img']) { ?>
-                                        <img id="previewImage" src="<?php echo htmlspecialchars($product['product_img']); ?>" class="img-preview" alt="Current Image">
-                                    <?php } else { ?>
-                                        <img id="previewImage" src="" class="img-preview d-none" alt="Preview">
-                                    <?php } ?>
-                                    <small id="imgNote" class="form-text text-muted"></small>
-                                </div>
+                                    <!-- Image 2 -->
+                                    <div class="upload-box">
+                                        <label for="product_img2">Image 2</label>
+                                        <small class="d-block">(Optional)</small>
+                                        <input type="file" name="product_img2" id="product_img2" class="form-control" accept="image/*">
+                                        <?php if (!empty($product['product_img2'])) { ?>
+                                            <img id="previewImage2" src="<?php echo htmlspecialchars($product['product_img2']); ?>" class="img-preview" alt="Current Image 2">
+                                        <?php } else { ?>
+                                            <img id="previewImage2" src="" class="img-preview d-none" alt="Preview 2">
+                                        <?php } ?>
+                                        <small id="imgNote2" class="form-text text-muted"></small>
+                                    </div>
 
-                                <!-- Client-side preview compression (same as add page) -->
-                                <script>
-                                    const fileInput = document.getElementById('product_img');
-                                    const preview = document.getElementById('previewImage');
-                                    const imgNote = document.getElementById('imgNote');
-                                    function dataURLtoFile(dataurl, filename) {
-                                        const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
-                                        const bstr = atob(arr[1]); let n = bstr.length;
-                                        const u8arr = new Uint8Array(n); while (n--) u8arr[n] = bstr.charCodeAt(n);
-                                        return new File([u8arr], filename, {type: mime});
-                                    }
-                                    function compressAndPreview(file, maxW = 1200, maxH = 1200, quality = 0.8) {
-                                        return new Promise((resolve, reject) => {
-                                            const img = new Image();
-                                            const reader = new FileReader();
-                                            reader.onload = function(e) {
-                                                img.onload = function() {
-                                                    let canvas = document.createElement('canvas');
-                                                    let w = img.width, h = img.height;
-                                                    if (w > maxW || h > maxH) {
-                                                        const ratio = Math.min(maxW / w, maxH / h);
-                                                        w = Math.round(w * ratio); h = Math.round(h * ratio);
-                                                    }
-                                                    canvas.width = w; canvas.height = h;
-                                                    const ctx = canvas.getContext('2d');
-                                                    ctx.drawImage(img, 0, 0, w, h);
-                                                    const mime = (file.type === 'image/png') ? 'image/png' : 'image/jpeg';
-                                                    const dataURL = canvas.toDataURL(mime, quality);
-                                                    const newFile = dataURLtoFile(dataURL, file.name);
-                                                    resolve({dataURL, newFile});
-                                                };
-                                                img.onerror = reject; img.src = e.target.result;
-                                            };
-                                            reader.onerror = reject; reader.readAsDataURL(file);
-                                        });
-                                    }
-                                    fileInput.addEventListener('change', async function(e) {
-                                        const file = e.target.files[0];
-                                        if (!file) return;
-                                        try {
-                                            imgNote.textContent = 'Processing image...';
-                                            const {dataURL, newFile} = await compressAndPreview(file);
-                                            preview.src = dataURL;
-                                            preview.classList.remove('d-none');
-                                            imgNote.textContent = 'Preview generated. Image will be uploaded in compressed form.';
-                                            const dt = new DataTransfer();
-                                            dt.items.add(newFile);
-                                            fileInput.files = dt.files;
-                                        } catch (err) {
-                                            imgNote.textContent = 'Preview failed. Original file will be uploaded.';
-                                            preview.src = URL.createObjectURL(file);
-                                            preview.classList.remove('d-none');
-                                        }
-                                    });
-                                </script>
+                                    <!-- Image 3 -->
+                                    <div class="upload-box">
+                                        <label for="product_img3">Image 3</label>
+                                        <small class="d-block">(Optional)</small>
+                                        <input type="file" name="product_img3" id="product_img3" class="form-control" accept="image/*">
+                                        <?php if (!empty($product['product_img3'])) { ?>
+                                            <img id="previewImage3" src="<?php echo htmlspecialchars($product['product_img3']); ?>" class="img-preview" alt="Current Image 3">
+                                        <?php } else { ?>
+                                            <img id="previewImage3" src="" class="img-preview d-none" alt="Preview 3">
+                                        <?php } ?>
+                                        <small id="imgNote3" class="form-text text-muted"></small>
+                                    </div>
+
+                                    <!-- Image 4 -->
+                                    <div class="upload-box">
+                                        <label for="product_img4">Image 4</label>
+                                        <small class="d-block">(Optional)</small>
+                                        <input type="file" name="product_img4" id="product_img4" class="form-control" accept="image/*">
+                                        <?php if (!empty($product['product_img4'])) { ?>
+                                            <img id="previewImage4" src="<?php echo htmlspecialchars($product['product_img4']); ?>" class="img-preview" alt="Current Image 4">
+                                        <?php } else { ?>
+                                            <img id="previewImage4" src="" class="img-preview d-none" alt="Preview 4">
+                                        <?php } ?>
+                                        <small id="imgNote4" class="form-text text-muted"></small>
+                                    </div>
+                                <!-- </div> -->
                             </div>
                         </div>
                     </div>
@@ -317,7 +343,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<!-- TinyMCE (original full plugin list) -->
+<!-- Client-side Image Compression Script -->
+<script>
+    function dataURLtoFile(dataurl, filename) {
+        const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) u8arr[n] = bstr.charCodeAt(n);
+        return new File([u8arr], filename, {type: mime});
+    }
+
+    function compressAndPreview(file, maxW = 1200, maxH = 1200, quality = 0.8) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.onload = function() {
+                    let canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if (w > maxW || h > maxH) {
+                        const ratio = Math.min(maxW / w, maxH / h);
+                        w = Math.round(w * ratio);
+                        h = Math.round(h * ratio);
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const mime = (file.type === 'image/png') ? 'image/png' : 'image/jpeg';
+                    const dataURL = canvas.toDataURL(mime, quality);
+                    const newFile = dataURLtoFile(dataURL, file.name);
+                    resolve({dataURL, newFile});
+                };
+                img.onerror = reject;
+                img.src = e.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function setupImageUpload(inputId, previewId, noteId) {
+        const fileInput = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        const imgNote = document.getElementById(noteId);
+
+        fileInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                imgNote.textContent = 'Processing image...';
+                const {dataURL, newFile} = await compressAndPreview(file, 1200, 1200, 0.8);
+                preview.src = dataURL;
+                preview.classList.remove('d-none');
+                imgNote.textContent = 'Preview ready';
+                
+                const dt = new DataTransfer();
+                dt.items.add(newFile);
+                fileInput.files = dt.files;
+            } catch (err) {
+                imgNote.textContent = 'Preview failed. Original will be uploaded.';
+                preview.src = URL.createObjectURL(file);
+                preview.classList.remove('d-none');
+            }
+        });
+    }
+
+    // Setup all 4 image uploads
+    setupImageUpload('product_img', 'previewImage1', 'imgNote1');
+    setupImageUpload('product_img2', 'previewImage2', 'imgNote2');
+    setupImageUpload('product_img3', 'previewImage3', 'imgNote3');
+    setupImageUpload('product_img4', 'previewImage4', 'imgNote4');
+</script>
+
+<!-- TinyMCE -->
 <script src="https://cdn.tiny.cloud/1/sdr5uoo5rpy0lj4pgi7slnbboispfgfuzed4bmb4ivrvyiqq/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 <script>
   tinymce.init({

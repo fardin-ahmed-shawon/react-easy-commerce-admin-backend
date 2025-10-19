@@ -60,6 +60,8 @@ if ($action == 'get-customized-products') {
 
             "category" => $row['category_name'],
 
+            "price" => $row['price'],
+
             "category_slug" => $row['category_slug'],
 
             "advance_amount" => $row['advance_amount'],
