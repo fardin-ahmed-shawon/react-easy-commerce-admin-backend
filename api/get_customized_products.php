@@ -56,6 +56,12 @@ if ($action == 'get-customized-products') {
             // Image with base URL check
             "img" => $row['product_img'] ? $site_link . 'Admin/' . $row['product_img'] : "",
 
+            "img2" => $row['product_img2'] ? $site_link . 'Admin/' . $row['product_img2'] : "",
+
+            "img3" => $row['product_img3'] ? $site_link . 'Admin/' . $row['product_img3'] : "",
+
+            "img4" => $row['product_img4'] ? $site_link . 'Admin/' . $row['product_img4'] : "",
+
             "title" => $row['product_title'],
 
             "category" => $row['category_name'],
