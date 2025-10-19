@@ -45,9 +45,9 @@ if ($action == 'place-customized-order') {
 
     $sql = "INSERT INTO customized_orders (
         user_id, user_full_name, user_phone, user_email, user_address,
-        city_address, order_no, product_id, payment_method, acc_number,
+        city_address, jersey_name, jersey_num, jersey_type, jersey_size, order_no, product_id, payment_method, acc_number,
         transaction_id, order_note, order_status, order_visibility
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 'Show')";
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 'Show')";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -56,7 +56,7 @@ if ($action == 'place-customized-order') {
     }
 
     // Correct type string (12 parameters): i = int, s = string
-    $bind_types = "issssssissss";
+    $bind_types = "issssssisssissss";
 
     $bind_params = [
         $order['user_id'] ?? 0,
@@ -65,6 +65,12 @@ if ($action == 'place-customized-order') {
         $order['user_email'] ?? '',
         $order['user_address'] ?? '',
         $order['city_address'] ?? '',
+
+        $order['jersey_name'] ?? '',
+        $order['jersey_num'] ?? '',
+        $order['jersey_type'] ?? '',
+        $order['size'] ?? '',
+
         $order['order_no'] ?? '',
         $order['product_id'] ?? 0,
         $order['payment_method'] ?? 'Cash On Delivery',

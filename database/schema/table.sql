@@ -312,11 +312,15 @@ CREATE TABLE customized_category (
 CREATE TABLE customized_products (
     id INT PRIMARY KEY AUTO_INCREMENT,
     product_title VARCHAR(255) NOT NULL,
+    price INT NOT NULL,
     category_id INT NOT NULL,
     advance_amount INT NOT NULL,
     product_code VARCHAR(255),
     product_description TEXT,
     product_img VARCHAR(255),
+    product_img2 VARCHAR(255),
+    product_img3 VARCHAR(255),
+    product_img4 VARCHAR(255),
     product_slug VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES customized_category(id) ON DELETE CASCADE
@@ -330,6 +334,12 @@ CREATE TABLE customized_orders (
     user_email VARCHAR(100) NOT NULL,
     user_address TEXT NOT NULL,
     city_address VARCHAR(50) NOT NULL,
+
+    jercy_name VARCHAR(100) NOT NULL,
+    jercy_num INT NOT NULL,
+    jersey_type VARCHAR(100) NOT NULL,
+    jersey_size VARCHAR(10) NOT NULL,
+
     order_no VARCHAR(50) NOT NULL,
     product_id INT NOT NULL,
     payment_method VARCHAR(50) NOT NULL,
