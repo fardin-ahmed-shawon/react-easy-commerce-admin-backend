@@ -458,6 +458,10 @@ $sql = "SELECT
   co.user_email,
   co.user_address,
   co.city_address,
+  co.jersey_name,
+  co.jersey_num,
+  co.jersey_type,
+  co.jersey_size,
   co.product_id,
   co.payment_method,
   co.acc_number,
@@ -466,6 +470,7 @@ $sql = "SELECT
   co.order_date,
   co.order_status,
   cp.product_title,
+  cp.price,
   cp.advance_amount,
   cc.category_name
 FROM customized_orders co
@@ -723,6 +728,28 @@ if ($result->num_rows > 0) {
             <span class="info-label">Category</span>
             <span class="info-value" id="modalCategory"></span>
           </div>
+
+          <div class="info-item">
+            <span class="info-label">Jersey Name</span>
+            <span class="info-value" id="modaljerseyname"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Jersey Number</span>
+            <span class="info-value" id="modaljerseynum"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Jersey Type</span>
+            <span class="info-value" id="modaljerseytype"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Jersey Size</span>
+            <span class="info-value" id="modaljerseysize"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Unit Price</span>
+            <span class="info-value" style="color: #3b82f6;" id="modalprice"></span>
+          </div>
+
           <div class="info-item">
             <span class="info-label">Advance Amount</span>
             <span class="info-value" style="color: #3b82f6;" id="modalAdvance"></span>
@@ -805,9 +832,17 @@ if ($result->num_rows > 0) {
       document.getElementById('modalEmail').textContent = order.user_email;
       document.getElementById('modalCity').textContent = order.city_address;
       document.getElementById('modalAddress').textContent = order.user_address;
+
+      document.getElementById('modalprice').textContent = '৳ ' + new Intl.NumberFormat('en-BD').format(order.price);
+
+      document.getElementById('modaljerseyname').textContent = order.jersey_name;
+      document.getElementById('modaljerseynum').textContent = order.jersey_num;
+      document.getElementById('modaljerseytype').textContent = order.jersey_type;
+      document.getElementById('modaljerseysize').textContent = order.jersey_size;
+
       document.getElementById('modalProduct').textContent = order.product_title || 'N/A';
       document.getElementById('modalCategory').textContent = order.category_name || 'N/A';
-      document.getElementById('modalAdvance').textContent = '৳' + new Intl.NumberFormat('en-BD').format(order.advance_amount);
+      document.getElementById('modalAdvance').textContent = '৳ ' + new Intl.NumberFormat('en-BD').format(order.advance_amount);
       document.getElementById('modalOrderDate').textContent = new Date(order.order_date).toLocaleDateString('en-BD');
       document.getElementById('modalPaymentMethod').textContent = order.payment_method;
       document.getElementById('modalTransactionId').textContent = order.transaction_id || 'N/A';
