@@ -278,10 +278,20 @@
 
             <?php if (isset($access['courier']) && $access['courier'] == 1): ?>
             <li class="nav-item">
-              <a class="nav-link" href="courier.php">
+              <a class="nav-link" data-bs-toggle="collapse" href="#couriers" aria-expanded="false" aria-controls="couriers">
                 <span class="menu-title">Courier</span>
                 <i class="mdi mdi-truck menu-icon"></i>
               </a>
+              <div class="collapse" id="couriers">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="courier.php">Steadfast</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="pathao-courier-list.php">Pathao</a>
+                  </li>
+                </ul>
+              </div>
             </li>
             <?php endif; ?>
             

@@ -4,8 +4,8 @@ $servername = "localhost";
 //--------------------------------------------------------------------
 // For local development ---------------------------------------------
 $site_link = "http://localhost/test/easy_tech_solutions/react-easy-commerce-admin-backend/";
-$username = "root";
-$password = "";
+$db_username = "root";
+$db_password = "";
 $database_name = "react_easy_commerce_v9_5";
 
 // For production -----------------------------------------------------
@@ -17,7 +17,7 @@ $database_name = "react_easy_commerce_v9_5";
 //---------------------------------------------------------------------
 
 // Create connection
-$conn = mysqli_connect($servername, $username, $password, $database_name);
+$conn = mysqli_connect($servername, $db_username, $db_password, $database_name);
 
 // Check connection
 if ($conn->connect_error) {
