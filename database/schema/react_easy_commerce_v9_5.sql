@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 13, 2025 at 11:52 AM
+-- Generation Time: Oct 22, 2025 at 06:11 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `react_easy_commerce_v9_4`
+-- Database: `react_easy_commerce_v9_5`
 --
 
 -- --------------------------------------------------------
@@ -87,6 +87,129 @@ CREATE TABLE `coupon` (
 INSERT INTO `coupon` (`id`, `coupon_name`, `coupon_code`, `coupon_discount`, `free_shipping`, `created_at`) VALUES
 (1, 'Flat 15%', 'WGZWPAYXN4', '15', 0, '2025-08-30 11:43:37'),
 (2, 'Flat 25%', 'RKKXSO50PQ', '25', 0, '2025-08-30 12:08:06');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `customized_category`
+--
+
+CREATE TABLE `customized_category` (
+  `id` int(11) NOT NULL,
+  `category_name` varchar(100) NOT NULL,
+  `category_slug` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `customized_category`
+--
+
+INSERT INTO `customized_category` (`id`, `category_name`, `category_slug`, `created_at`) VALUES
+(1, 'AR Special Kit', 'ar-special-kit', '2025-10-16 08:56:05'),
+(2, 'Cricket', 'cricket', '2025-10-16 08:56:14'),
+(3, 'Football', 'football', '2025-10-16 08:56:19'),
+(4, 'Badminton', 'badminton', '2025-10-16 08:56:24');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `customized_orders`
+--
+
+CREATE TABLE `customized_orders` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `user_full_name` varchar(255) NOT NULL,
+  `user_phone` varchar(20) NOT NULL,
+  `user_email` varchar(100) DEFAULT NULL,
+  `user_address` text NOT NULL,
+  `city_address` varchar(50) DEFAULT NULL,
+  `jersey_name` varchar(100) DEFAULT NULL,
+  `jersey_num` int(11) DEFAULT NULL,
+  `jersey_type` varchar(100) DEFAULT NULL,
+  `jersey_size` varchar(10) DEFAULT NULL,
+  `order_no` varchar(50) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `payment_method` varchar(50) NOT NULL,
+  `acc_number` varchar(50) DEFAULT NULL,
+  `transaction_id` varchar(50) DEFAULT NULL,
+  `order_note` text NOT NULL,
+  `order_date` datetime DEFAULT current_timestamp(),
+  `order_status` varchar(50) DEFAULT 'Pending',
+  `order_visibility` varchar(50) DEFAULT 'Show'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `customized_orders`
+--
+
+INSERT INTO `customized_orders` (`id`, `user_id`, `user_full_name`, `user_phone`, `user_email`, `user_address`, `city_address`, `jersey_name`, `jersey_num`, `jersey_type`, `jersey_size`, `order_no`, `product_id`, `payment_method`, `acc_number`, `transaction_id`, `order_note`, `order_date`, `order_status`, `order_visibility`) VALUES
+(1, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', NULL, NULL, '', NULL, 'ORD-1760771926278-532', 1, 'Cash On Delivery', '', '', 'No additional notes', '2025-10-18 13:12:31', 'Completed', 'Show'),
+(2, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', NULL, NULL, '', NULL, 'ORD-1760772040284-464', 2, 'bKash', '01898989898', '3258XYZXYZ', 'etsryghf', '2025-10-18 13:14:25', 'Processing', 'Show'),
+(3, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', NULL, NULL, '', NULL, 'ORD-1760783946378-623', 2, 'bKash', '0187423656', 'uireghf83452', 'x-50', '2025-10-18 16:39:06', 'Pending', 'Show'),
+(4, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi', 'Dhaka', NULL, NULL, '', NULL, 'ORD-1760783979579-941', 1, 'Cash On Delivery', '', '', 'L-20', '2025-10-18 16:39:39', 'Cancelled', 'Show'),
+(5, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', NULL, NULL, '', NULL, 'ORD-1760785316538-319', 1, 'Cash On Delivery', '', '', 'No additional notes', '2025-10-18 17:01:56', 'Processing', 'Show'),
+(6, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', NULL, NULL, '', NULL, 'ORD-1760785340649-273', 1, 'Cash On Delivery', '', '', 'No additional notes', '2025-10-18 17:02:20', 'Pending', 'Show'),
+(7, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', 'Fardin', 55, 'Half-Sleeve', 'M', 'ORD-1760877020929-103', 5, 'Cash On Delivery', '', '', 'X-1', '2025-10-19 18:30:20', 'Pending', 'Show'),
+(8, 0, 'Fardin Ahmed', '01944667461', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', 'Tanvin', 55, 'Half-Sleeve', 'M', 'ORD-1760942307767-782', 5, 'Cash On Delivery', '', '', 'No additional notes', '2025-10-20 12:38:27', 'Pending', 'Show'),
+(9, 0, 'Fardin Ahmed', '01944667441', '', 'Dhanmondi', 'Keraniganj', 'Tanvin', 55, 'Half-Sleeve', '', 'ORD-1760942341864-386', 5, 'Cash On Delivery', '', '', '1pc', '2025-10-20 12:39:01', 'Cancelled', 'Show'),
+(10, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', 'Tanvin', 55, 'Full-Sleeve', 'XS', 'ORD-1760943101954-719', 5, 'Cash On Delivery', '', '', 'No additional notes', '2025-10-20 12:51:41', 'Pending', 'Show');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `customized_payments`
+--
+
+CREATE TABLE `customized_payments` (
+  `id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `order_amount` int(11) NOT NULL,
+  `paid_amount` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `customized_payments`
+--
+
+INSERT INTO `customized_payments` (`id`, `order_id`, `order_amount`, `paid_amount`, `created_at`) VALUES
+(2, 2, 25000, 5000, '2025-10-18 12:14:54'),
+(4, 6, 26500, 0, '2025-10-18 12:31:09'),
+(5, 10, 570, 300, '2025-10-20 06:56:42');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `customized_products`
+--
+
+CREATE TABLE `customized_products` (
+  `id` int(11) NOT NULL,
+  `product_title` varchar(255) NOT NULL,
+  `category_id` int(11) NOT NULL,
+  `price` int(11) NOT NULL DEFAULT 0,
+  `advance_amount` int(11) NOT NULL,
+  `product_code` varchar(255) DEFAULT NULL,
+  `product_description` text DEFAULT NULL,
+  `product_img` varchar(255) DEFAULT NULL,
+  `product_img2` varchar(255) DEFAULT NULL,
+  `product_img3` varchar(255) DEFAULT NULL,
+  `product_img4` varchar(255) DEFAULT NULL,
+  `product_slug` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `customized_products`
+--
+
+INSERT INTO `customized_products` (`id`, `product_title`, `category_id`, `price`, `advance_amount`, `product_code`, `product_description`, `product_img`, `product_img2`, `product_img3`, `product_img4`, `product_slug`, `created_at`) VALUES
+(1, 'Black Pink Football Kit', 3, 620, 0, 'FC25', '<h3>Specifications</h3>\r\n<div>\r\n<ul style=\"list-style-type: none;\">\r\n<li>✔ Fully Digital Sublimation Printed.</li>\r\n<li>✔ Regular Fit.</li>\r\n<li>✔ Drop Shoulder Sleeve.</li>\r\n<li>✔ Crew Neck.</li>\r\n<li>✔ Twin Needle Topstitch Sewing.</li>\r\n<li>✔ High-Performance Lurex Mesh Fabric.</li>\r\n<li>✔ 145-150 GSM.</li>\r\n<li>✔ Circular Hem.</li>\r\n<li>✔ With Customized Name And Number.</li>\r\n<li>✔ Knitted Elastic Collar, Bottom Rib and Cuffs.</li>\r\n</ul>\r\n</div>', 'uploads/customized_products/prod_68f0c2b0b0a800.07730302.jpeg', 'uploads/customized_products/prod_68f4cb055bbeb3.11106676.jpeg', 'uploads/customized_products/prod_68f4bf3cb7c534.13285279.jpeg', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'black-pink-football-kit', '2025-10-16 10:02:24'),
+(2, 'Black White Badminton Jercy', 4, 580, 5000, 'BDM7132543', '<h3 class=\"mb-2\">Specificationss</h3>\r\n<div class=\"product-description\">\r\n<ul>\r\n<li>✔ Fully Digital Sublimation Printed.</li>\r\n<li>✔ Regular Fit.</li>\r\n<li>✔ Drop Shoulder Sleeve.</li>\r\n<li>✔ Crew Neck.</li>\r\n<li>✔ Twin Needle Topstitch Sewing.</li>\r\n<li>✔ High-Performance Lurex Mesh Fabric.</li>\r\n<li>✔ 145-150 GSM.</li>\r\n<li>✔ Circular Hem.</li>\r\n<li>✔ With Customized Name And Number.</li>\r\n<li>✔ Knitted Elastic Collar, Bottom Rib and Cuffs.</li>\r\n</ul>\r\n</div>', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'uploads/customized_products/prod_68f4bf3cb7c534.13285279.jpeg', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'uploads/customized_products/prod_68f0c2b0b0a800.07730302.jpeg', 'black-white-badminton-jercy', '2025-10-16 10:05:17'),
+(4, 'Blue White Special Kit', 1, 700, 0, 'AR784', '<p style=\"list-style-type: disc;\">✔ Fully Digital Sublimation Printed.</p>\r\n<p style=\"list-style-type: disc;\">✔ Regular Fit.</p>\r\n<p style=\"list-style-type: disc;\">✔ Drop Shoulder Sleeve.</p>\r\n<p style=\"list-style-type: disc;\">✔ Crew Neck.</p>\r\n<p style=\"list-style-type: disc;\">✔ Twin Needle Topstitch Sewing.</p>\r\n<p style=\"list-style-type: disc;\">✔ High-Performance Lurex Mesh Fabric.</p>\r\n<p style=\"list-style-type: disc;\">✔ 145-150 GSM.</p>\r\n<p style=\"list-style-type: disc;\">✔ Circular Hem.</p>\r\n<p style=\"list-style-type: disc;\">✔ With Customized Name And Number.</p>\r\n<p style=\"list-style-type: disc;\">✔ Knitted Elastic Collar, Bottom Rib and Cuffs.</p>', 'uploads/customized_products/prod_68f4bf3cb7c534.13285279.jpeg', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'uploads/customized_products/prod_68f0c2b0b0a800.07730302.jpeg', 'uploads/customized_products/prod_68f4cb055bbeb3.11106676.jpeg', 'blue-white-special-kit', '2025-10-19 10:36:44'),
+(5, 'AR Badminton Jersey Kit', 4, 570, 0, 'AR43645', '<p style=\"list-style-type: disc;\">✔ Fully Digital Sublimation Printed.</p>\r\n<p style=\"list-style-type: disc;\">✔ Regular Fit.</p>\r\n<p style=\"list-style-type: disc;\">✔ Drop Shoulder Sleeve.</p>\r\n<p style=\"list-style-type: disc;\">✔ Crew Neck.</p>\r\n<p style=\"list-style-type: disc;\">✔ Twin Needle Topstitch Sewing.</p>\r\n<p style=\"list-style-type: disc;\">✔ High-Performance Lurex Mesh Fabric.</p>\r\n<p style=\"list-style-type: disc;\">✔ 145-150 GSM.</p>\r\n<p style=\"list-style-type: disc;\">✔ Circular Hem.</p>\r\n<p style=\"list-style-type: disc;\">✔ With Customized Name And Number.</p>\r\n<p style=\"list-style-type: disc;\">✔ Knitted Elastic Collar, Bottom Rib and Cuffs.</p>', 'uploads/customized_products/prod_68f4cb055bbeb3.11106676.jpeg', 'uploads/customized_products/prod_68f4cb05699f85.67773444.jpeg', 'uploads/customized_products/prod_68f4cb055bbeb3.11106676.jpeg', 'uploads/customized_products/prod_68f4cb05699f85.67773444.jpeg', 'ar-badminton-jersey-kit', '2025-10-19 11:27:01');
 
 -- --------------------------------------------------------
 
@@ -280,6 +403,13 @@ CREATE TABLE `order_discount_list` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `order_discount_list`
+--
+
+INSERT INTO `order_discount_list` (`id`, `invoice_no`, `total_order_amount`, `total_discount_amount`, `free_shipping`, `created_at`) VALUES
+(3, 'INV-68PP9G1B8', 485.00, 0.00, 0, '2025-10-21 17:57:30');
+
 -- --------------------------------------------------------
 
 --
@@ -306,6 +436,13 @@ CREATE TABLE `order_info` (
   `order_status` varchar(50) DEFAULT 'Pending',
   `order_visibility` varchar(50) DEFAULT 'Show'
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `order_info`
+--
+
+INSERT INTO `order_info` (`order_no`, `user_id`, `user_full_name`, `user_phone`, `user_email`, `user_address`, `city_address`, `invoice_no`, `product_id`, `product_title`, `product_quantity`, `product_size`, `total_price`, `payment_method`, `order_note`, `order_date`, `order_status`, `order_visibility`) VALUES
+(3, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi, Dhaka, Bangladesh', 'Inside Dhaka', 'INV-68PP9G1B8', 6, 'Mens Premium Blank T-shirt', 1, '', 485, 'Cash On Delivery', NULL, '2025-10-21 17:57:30', 'Processing', 'Show');
 
 -- --------------------------------------------------------
 
@@ -355,6 +492,44 @@ CREATE TABLE `parcel_info` (
   `tracking_code` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pathao_acc_info`
+--
+
+CREATE TABLE `pathao_acc_info` (
+  `id` int(11) NOT NULL,
+  `client_id` varchar(100) NOT NULL,
+  `client_secret` varchar(255) NOT NULL,
+  `username` varchar(150) NOT NULL,
+  `password` varchar(150) NOT NULL,
+  `grant_type` varchar(50) DEFAULT 'password',
+  `store_id` varchar(100) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pathao_parcel_info`
+--
+
+CREATE TABLE `pathao_parcel_info` (
+  `id` int(11) NOT NULL,
+  `invoice_no` varchar(100) NOT NULL,
+  `consignment_id` varchar(255) DEFAULT NULL,
+  `delivery_fee` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pathao_parcel_info`
+--
+
+INSERT INTO `pathao_parcel_info` (`id`, `invoice_no`, `consignment_id`, `delivery_fee`, `created_at`) VALUES
+(1, 'INV-68PP9G1B8', 'DA211025SN9LPC', 110, '2025-10-21 11:57:49');
 
 -- --------------------------------------------------------
 
@@ -748,6 +923,34 @@ ALTER TABLE `coupon`
   ADD UNIQUE KEY `coupon_code` (`coupon_code`);
 
 --
+-- Indexes for table `customized_category`
+--
+ALTER TABLE `customized_category`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `category_name` (`category_name`);
+
+--
+-- Indexes for table `customized_orders`
+--
+ALTER TABLE `customized_orders`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Indexes for table `customized_payments`
+--
+ALTER TABLE `customized_payments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `order_id` (`order_id`);
+
+--
+-- Indexes for table `customized_products`
+--
+ALTER TABLE `customized_products`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `category_id` (`category_id`);
+
+--
 -- Indexes for table `discount`
 --
 ALTER TABLE `discount`
@@ -824,6 +1027,18 @@ ALTER TABLE `page_access`
 --
 ALTER TABLE `parcel_info`
   ADD PRIMARY KEY (`parcel_id`);
+
+--
+-- Indexes for table `pathao_acc_info`
+--
+ALTER TABLE `pathao_acc_info`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `pathao_parcel_info`
+--
+ALTER TABLE `pathao_parcel_info`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `payment_info`
@@ -934,6 +1149,30 @@ ALTER TABLE `coupon`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `customized_category`
+--
+ALTER TABLE `customized_category`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `customized_orders`
+--
+ALTER TABLE `customized_orders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `customized_payments`
+--
+ALTER TABLE `customized_payments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `customized_products`
+--
+ALTER TABLE `customized_products`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT for table `discount`
 --
 ALTER TABLE `discount`
@@ -979,13 +1218,13 @@ ALTER TABLE `main_category`
 -- AUTO_INCREMENT for table `order_discount_list`
 --
 ALTER TABLE `order_discount_list`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `order_info`
 --
 ALTER TABLE `order_info`
-  MODIFY `order_no` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `order_no` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `page_access`
@@ -998,6 +1237,18 @@ ALTER TABLE `page_access`
 --
 ALTER TABLE `parcel_info`
   MODIFY `parcel_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pathao_acc_info`
+--
+ALTER TABLE `pathao_acc_info`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pathao_parcel_info`
+--
+ALTER TABLE `pathao_parcel_info`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `payment_info`
@@ -1086,6 +1337,24 @@ ALTER TABLE `website_info`
 --
 ALTER TABLE `admin_info`
   ADD CONSTRAINT `admin_info_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `customized_orders`
+--
+ALTER TABLE `customized_orders`
+  ADD CONSTRAINT `customized_orders_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `customized_products` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `customized_payments`
+--
+ALTER TABLE `customized_payments`
+  ADD CONSTRAINT `customized_payments_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `customized_orders` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `customized_products`
+--
+ALTER TABLE `customized_products`
+  ADD CONSTRAINT `customized_products_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `customized_category` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `features`
