@@ -10,8 +10,8 @@ $database_name = "react_easy_commerce_v9_5";
 
 // For production -----------------------------------------------------
 // $site_link = "https://arentertainment.com.bd/";
-// $username = "arentert";
-// $password = "2p2zNQ19h(pF#U";
+// $db_username = "arentert";
+// $db_password = "2p2zNQ19h(pF#U";
 // $database_name = "arentert_easy_commerce";
 
 //---------------------------------------------------------------------
