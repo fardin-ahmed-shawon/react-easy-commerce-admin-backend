@@ -269,10 +269,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <input name="advance_amount" type="text" value="<?php echo htmlspecialchars($product['advance_amount']); ?>">
                                 </div>
 
+                                <!-- -->
+                                <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+                                <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+                                <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
                                 <div class="mb-3">
                                     <label for="description" class="form-label">Description *</label>
                                     <textarea name="description" id="description" class="form-control" rows="10"><?php echo htmlspecialchars($product['product_description']); ?></textarea>
                                 </div>
+                                <script>
+                                $('#summernote1').summernote({
+                                    placeholder: 'Write description here',
+                                    tabsize: 2,
+                                    height: 200
+                                });
+                                </script>
                             </div>
 
                             <div class="col-md-4">

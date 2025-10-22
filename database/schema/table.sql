@@ -360,3 +360,47 @@ CREATE TABLE customized_payments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES customized_orders(id) ON DELETE CASCADE
 );
+
+
+-- Mockup Product Section
+CREATE TABLE mockup_category (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    category_name VARCHAR(100) UNIQUE NOT NULL,
+    category_slug VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE mockup_products (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_title VARCHAR(255) NOT NULL,
+    category_id INT NOT NULL,
+    product_code VARCHAR(255),
+    product_description TEXT,
+    product_img VARCHAR(255),
+    product_img2 VARCHAR(255),
+    product_img3 VARCHAR(255),
+    product_img4 VARCHAR(255),
+    product_slug VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES mockup_category(id) ON DELETE CASCADE
+);
+
+CREATE TABLE mockup_orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    user_full_name varchar(255) NOT NULL,
+    user_phone VARCHAR(20) NOT NULL,
+    user_email VARCHAR(100) NOT NULL,
+    user_address TEXT NOT NULL,
+    city_address VARCHAR(50) NOT NULL,
+    team_name VARCHAR(100) NOT NULL,
+    quantity INT NOT NULL,
+    order_no VARCHAR(50) NOT NULL,
+    product_id INT NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    order_note TEXT NOT NULL,
+    order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    order_status VARCHAR(50) DEFAULT 'Pending',
+    order_visibility VARCHAR(50) DEFAULT 'Show',
+    FOREIGN KEY (product_id) REFERENCES mockup_products(id) ON DELETE CASCADE
+);

@@ -68,6 +68,29 @@
               </div>
             </li>
 
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#mockup" aria-expanded="false" aria-controls="mockup">
+                <span class="menu-title">Mockup</span>
+                <i class="mdi mdi-alpha-m-box-outline menu-icon"></i>
+              </a>
+              <div class="collapse" id="mockup">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="add-mockup.php">Add Mockup</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="mockup-list.php">Mockup List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="mockup-categories.php">Categories</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="mockup-orders.php">View Orders</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+
             <?php endif; ?>
             
             <?php if (isset($access['categories']) && $access['categories'] == 1): ?>
