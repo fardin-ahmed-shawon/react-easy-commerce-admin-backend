@@ -266,10 +266,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                            value="<?php echo htmlspecialchars($_POST['advance_amount'] ?? '', ENT_QUOTES); ?>">
                                 </div>
                                 <!-- Description -->
-                                <div class="mb-3">
-                                    <label for="description" class="form-label">Description *</label>
-                                    <textarea name="description" id="description" class="form-control" rows="10" placeholder="Write your blog content..."><?php echo htmlspecialchars($_POST['description'] ?? '', ENT_QUOTES); ?></textarea>
+                                <!-- -->
+                                <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+                                <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+                                <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+                                <div class="input-box mb-3"> 
+                                    <label class="details">Product Description *</label>
+                                    <textarea id="summernote1" rows="4" name="description" cols="58" class="mytextarea"> </textarea>
                                 </div>
+                                <br><br>
+                                <script>
+                                $('#summernote1').summernote({
+                                    placeholder: 'Write description here',
+                                    tabsize: 2,
+                                    height: 200
+                                });
+                                </script>
                             </div>
                             <div class="col-md-4">
                                 <h5 class="mb-3">Product Images</h5>
@@ -396,27 +408,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     setupImageUpload('product_img2', 'previewImage2', 'imgNote2');
     setupImageUpload('product_img3', 'previewImage3', 'imgNote3');
     setupImageUpload('product_img4', 'previewImage4', 'imgNote4');
-</script>
-
-<!-- TinyMCE -->
-<script src="https://cdn.tiny.cloud/1/sdr5uoo5rpy0lj4pgi7slnbboispfgfuzed4bmb4ivrvyiqq/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-<script>
-  tinymce.init({
-    selector: 'textarea',
-    plugins: [
-      'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-      'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
-    ],
-    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-    tinycomments_mode: 'embedded',
-    tinycomments_author: 'Author name',
-    mergetags_list: [
-      { value: 'First.Name', title: 'First Name' },
-      { value: 'Email', title: 'Email' },
-    ],
-    ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
-    uploadcare_public_key: 'd7e5639eab9525d12cbc',
-  });
 </script>
 
 <?php require 'footer.php'; ?>
