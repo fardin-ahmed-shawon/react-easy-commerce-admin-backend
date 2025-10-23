@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 22, 2025 at 06:11 AM
+-- Generation Time: Oct 23, 2025 at 08:56 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -154,7 +154,8 @@ INSERT INTO `customized_orders` (`id`, `user_id`, `user_full_name`, `user_phone`
 (7, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', 'Fardin', 55, 'Half-Sleeve', 'M', 'ORD-1760877020929-103', 5, 'Cash On Delivery', '', '', 'X-1', '2025-10-19 18:30:20', 'Pending', 'Show'),
 (8, 0, 'Fardin Ahmed', '01944667461', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', 'Tanvin', 55, 'Half-Sleeve', 'M', 'ORD-1760942307767-782', 5, 'Cash On Delivery', '', '', 'No additional notes', '2025-10-20 12:38:27', 'Pending', 'Show'),
 (9, 0, 'Fardin Ahmed', '01944667441', '', 'Dhanmondi', 'Keraniganj', 'Tanvin', 55, 'Half-Sleeve', '', 'ORD-1760942341864-386', 5, 'Cash On Delivery', '', '', '1pc', '2025-10-20 12:39:01', 'Cancelled', 'Show'),
-(10, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', 'Tanvin', 55, 'Full-Sleeve', 'XS', 'ORD-1760943101954-719', 5, 'Cash On Delivery', '', '', 'No additional notes', '2025-10-20 12:51:41', 'Pending', 'Show');
+(10, 0, 'Fardin Ahmed', '01944667441', 'fardin@gmail.com', 'Dhanmondi', 'Keraniganj', 'Tanvin', 55, 'Full-Sleeve', 'XS', 'ORD-1760943101954-719', 5, 'Cash On Delivery', '', '', 'No additional notes', '2025-10-20 12:51:41', 'Pending', 'Show'),
+(11, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi', 'Dhaka', 'Tanvin', 55, 'Half-Sleeve', 'L', 'ORD-1761201677106-26', 2, 'bKash', '01898989898', '3258XYZXYZ', 'No additional notes', '2025-10-23 12:41:17', 'Pending', 'Show');
 
 -- --------------------------------------------------------
 
@@ -207,7 +208,7 @@ CREATE TABLE `customized_products` (
 
 INSERT INTO `customized_products` (`id`, `product_title`, `category_id`, `price`, `advance_amount`, `product_code`, `product_description`, `product_img`, `product_img2`, `product_img3`, `product_img4`, `product_slug`, `created_at`) VALUES
 (1, 'Black Pink Football Kit', 3, 620, 0, 'FC25', '<h3>Specifications</h3>\r\n<div>\r\n<ul style=\"list-style-type: none;\">\r\n<li>✔ Fully Digital Sublimation Printed.</li>\r\n<li>✔ Regular Fit.</li>\r\n<li>✔ Drop Shoulder Sleeve.</li>\r\n<li>✔ Crew Neck.</li>\r\n<li>✔ Twin Needle Topstitch Sewing.</li>\r\n<li>✔ High-Performance Lurex Mesh Fabric.</li>\r\n<li>✔ 145-150 GSM.</li>\r\n<li>✔ Circular Hem.</li>\r\n<li>✔ With Customized Name And Number.</li>\r\n<li>✔ Knitted Elastic Collar, Bottom Rib and Cuffs.</li>\r\n</ul>\r\n</div>', 'uploads/customized_products/prod_68f0c2b0b0a800.07730302.jpeg', 'uploads/customized_products/prod_68f4cb055bbeb3.11106676.jpeg', 'uploads/customized_products/prod_68f4bf3cb7c534.13285279.jpeg', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'black-pink-football-kit', '2025-10-16 10:02:24'),
-(2, 'Black White Badminton Jercy', 4, 580, 5000, 'BDM7132543', '<h3 class=\"mb-2\">Specificationss</h3>\r\n<div class=\"product-description\">\r\n<ul>\r\n<li>✔ Fully Digital Sublimation Printed.</li>\r\n<li>✔ Regular Fit.</li>\r\n<li>✔ Drop Shoulder Sleeve.</li>\r\n<li>✔ Crew Neck.</li>\r\n<li>✔ Twin Needle Topstitch Sewing.</li>\r\n<li>✔ High-Performance Lurex Mesh Fabric.</li>\r\n<li>✔ 145-150 GSM.</li>\r\n<li>✔ Circular Hem.</li>\r\n<li>✔ With Customized Name And Number.</li>\r\n<li>✔ Knitted Elastic Collar, Bottom Rib and Cuffs.</li>\r\n</ul>\r\n</div>', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'uploads/customized_products/prod_68f4bf3cb7c534.13285279.jpeg', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'uploads/customized_products/prod_68f0c2b0b0a800.07730302.jpeg', 'black-white-badminton-jercy', '2025-10-16 10:05:17'),
+(2, 'Black White Badminton Jercy', 4, 580, 580, 'BDM7132543', '<p><b>Specifications</b></p><p></p><ul></ul><p></p><p style=\"font-size: 16px;\"></p><ul></ul><p></p><p>✔ Fully Digital Sublimation Printed.</p><p>✔ Regular Fit.</p><p>✔ Drop Shoulder Sleeve.</p><p>✔ Crew Neck.</p><p>✔ Twin Needle Topstitch Sewing.</p><p>✔ High-Performance Lurex Mesh Fabric.</p><p>✔ 145-150 GSM.</p><p>✔ Circular Hem.</p><p>✔ With Customized Name And Number.</p><p>✔ Knitted Elastic Collar, Bottom Rib and Cuffs.</p>', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'uploads/customized_products/prod_68f4bf3cb7c534.13285279.jpeg', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'uploads/customized_products/prod_68f0c2b0b0a800.07730302.jpeg', 'black-white-badminton-jercy', '2025-10-16 10:05:17'),
 (4, 'Blue White Special Kit', 1, 700, 0, 'AR784', '<p style=\"list-style-type: disc;\">✔ Fully Digital Sublimation Printed.</p>\r\n<p style=\"list-style-type: disc;\">✔ Regular Fit.</p>\r\n<p style=\"list-style-type: disc;\">✔ Drop Shoulder Sleeve.</p>\r\n<p style=\"list-style-type: disc;\">✔ Crew Neck.</p>\r\n<p style=\"list-style-type: disc;\">✔ Twin Needle Topstitch Sewing.</p>\r\n<p style=\"list-style-type: disc;\">✔ High-Performance Lurex Mesh Fabric.</p>\r\n<p style=\"list-style-type: disc;\">✔ 145-150 GSM.</p>\r\n<p style=\"list-style-type: disc;\">✔ Circular Hem.</p>\r\n<p style=\"list-style-type: disc;\">✔ With Customized Name And Number.</p>\r\n<p style=\"list-style-type: disc;\">✔ Knitted Elastic Collar, Bottom Rib and Cuffs.</p>', 'uploads/customized_products/prod_68f4bf3cb7c534.13285279.jpeg', 'uploads/customized_products/prod_68f0c35d5bfcf8.19549116.jpeg', 'uploads/customized_products/prod_68f0c2b0b0a800.07730302.jpeg', 'uploads/customized_products/prod_68f4cb055bbeb3.11106676.jpeg', 'blue-white-special-kit', '2025-10-19 10:36:44'),
 (5, 'AR Badminton Jersey Kit', 4, 570, 0, 'AR43645', '<p style=\"list-style-type: disc;\">✔ Fully Digital Sublimation Printed.</p>\r\n<p style=\"list-style-type: disc;\">✔ Regular Fit.</p>\r\n<p style=\"list-style-type: disc;\">✔ Drop Shoulder Sleeve.</p>\r\n<p style=\"list-style-type: disc;\">✔ Crew Neck.</p>\r\n<p style=\"list-style-type: disc;\">✔ Twin Needle Topstitch Sewing.</p>\r\n<p style=\"list-style-type: disc;\">✔ High-Performance Lurex Mesh Fabric.</p>\r\n<p style=\"list-style-type: disc;\">✔ 145-150 GSM.</p>\r\n<p style=\"list-style-type: disc;\">✔ Circular Hem.</p>\r\n<p style=\"list-style-type: disc;\">✔ With Customized Name And Number.</p>\r\n<p style=\"list-style-type: disc;\">✔ Knitted Elastic Collar, Bottom Rib and Cuffs.</p>', 'uploads/customized_products/prod_68f4cb055bbeb3.11106676.jpeg', 'uploads/customized_products/prod_68f4cb05699f85.67773444.jpeg', 'uploads/customized_products/prod_68f4cb055bbeb3.11106676.jpeg', 'uploads/customized_products/prod_68f4cb05699f85.67773444.jpeg', 'ar-badminton-jersey-kit', '2025-10-19 11:27:01');
 
@@ -387,6 +388,90 @@ INSERT INTO `main_category` (`main_ctg_id`, `main_ctg_name`, `main_ctg_des`, `ma
 (2, 'Womens Fashion', 'All The Women\'s Product You Will Find Here', '../img/compressed_67dc35b5a0fc5-square.png', 'womens-fashion'),
 (4, 'Gadget & Electronics', 'All The Gadget & Electronics Product You Will Find Here', '../img/compressed_compressed_tech-gift-for-him-2022-metapod.webp', 'gadget-electronics'),
 (5, 'Home Appliances', 'All The Home Appliances Product You Will Find Here', '../img/compressed_home appliances 01_AdobeStock_329321873.jpeg', 'home-appliances');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `mockup_category`
+--
+
+CREATE TABLE `mockup_category` (
+  `id` int(11) NOT NULL,
+  `category_name` varchar(100) NOT NULL,
+  `category_slug` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `mockup_category`
+--
+
+INSERT INTO `mockup_category` (`id`, `category_name`, `category_slug`, `created_at`) VALUES
+(1, 'AR Mockup Kit', 'ar-mockup-kit', '2025-10-22 09:37:22'),
+(2, 'Cricket Jersey Designs', 'cricket-jersey-designs', '2025-10-22 09:46:22'),
+(3, 'Football Jersey Designs', 'football-jersey-designs', '2025-10-22 09:46:30'),
+(4, 'Badminton Jersey Designs', 'badminton-jersey-designs', '2025-10-22 09:47:22');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `mockup_orders`
+--
+
+CREATE TABLE `mockup_orders` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `user_full_name` varchar(255) NOT NULL,
+  `user_phone` varchar(20) NOT NULL,
+  `user_email` varchar(100) DEFAULT NULL,
+  `user_address` text DEFAULT NULL,
+  `city_address` varchar(50) DEFAULT NULL,
+  `team_name` varchar(100) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `order_no` varchar(50) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
+  `order_note` text DEFAULT NULL,
+  `order_date` datetime DEFAULT current_timestamp(),
+  `order_status` varchar(50) DEFAULT 'Pending',
+  `order_visibility` varchar(50) DEFAULT 'Show'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `mockup_orders`
+--
+
+INSERT INTO `mockup_orders` (`id`, `user_id`, `user_full_name`, `user_phone`, `user_email`, `user_address`, `city_address`, `team_name`, `quantity`, `order_no`, `product_id`, `payment_method`, `order_note`, `order_date`, `order_status`, `order_visibility`) VALUES
+(2, 0, 'Fardin Shawon', '01944667441', '', 'Apishpara, Ati Bazar, Dhaka', 'Dhaka', 'Team Feluda', 1, 'MOCK-1234', 2, 'Cash On Delivery', 'Delivery ', '2025-10-23 12:29:16', 'Pending', 'Show'),
+(3, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi', 'Dhaka', 'Team XYZ', 2, 'MOCK-1761200998320-691', 2, 'Cash On Delivery', 'No note', '2025-10-23 12:29:58', 'Processing', 'Show'),
+(4, 0, 'Fardin Ahmed', '01944667491', '', 'Dhanmondi', 'Keraniganj', 'Team Billa', 5, 'MOCK-1761201559041-854', 2, 'Cash On Delivery', 'No note', '2025-10-23 12:39:19', 'Completed', 'Show');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `mockup_products`
+--
+
+CREATE TABLE `mockup_products` (
+  `id` int(11) NOT NULL,
+  `product_title` varchar(255) NOT NULL,
+  `category_id` int(11) NOT NULL,
+  `product_code` varchar(255) DEFAULT NULL,
+  `product_description` text DEFAULT NULL,
+  `product_img` varchar(255) DEFAULT NULL,
+  `product_img2` varchar(255) DEFAULT NULL,
+  `product_img3` varchar(255) DEFAULT NULL,
+  `product_img4` varchar(255) DEFAULT NULL,
+  `product_slug` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `mockup_products`
+--
+
+INSERT INTO `mockup_products` (`id`, `product_title`, `category_id`, `product_code`, `product_description`, `product_img`, `product_img2`, `product_img3`, `product_img4`, `product_slug`, `created_at`) VALUES
+(2, 'Football Jersey Mockup Design', 3, 'BDM7132543', '<ul><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">Fully Digital Sublimation Printed.</li><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">Regular Fit.</li><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">Drop Shoulder Sleeve.</li><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">Crew Neck.</li><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">Twin Needle Topstitch Sewing.</li><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">High-Performance Lurex Mesh Fabric.</li><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">145-150 GSM.</li><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">Circular Hem.</li><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">With Customized Name And Number.</li><li style=\"font-family: Poppins, sans-serif; list-style: disc;\">Knitted Elastic Collar, Bottom Rib and Cuffs.</li></ul>', 'uploads/mockup_products/mockup_68f8b68791f6b2.65011616.jpeg', '', '', '', 'football-jersey-mockup-design', '2025-10-22 10:48:39');
 
 -- --------------------------------------------------------
 
@@ -1003,6 +1088,27 @@ ALTER TABLE `main_category`
   ADD PRIMARY KEY (`main_ctg_id`);
 
 --
+-- Indexes for table `mockup_category`
+--
+ALTER TABLE `mockup_category`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `category_name` (`category_name`);
+
+--
+-- Indexes for table `mockup_orders`
+--
+ALTER TABLE `mockup_orders`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Indexes for table `mockup_products`
+--
+ALTER TABLE `mockup_products`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `category_id` (`category_id`);
+
+--
 -- Indexes for table `order_discount_list`
 --
 ALTER TABLE `order_discount_list`
@@ -1158,7 +1264,7 @@ ALTER TABLE `customized_category`
 -- AUTO_INCREMENT for table `customized_orders`
 --
 ALTER TABLE `customized_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `customized_payments`
@@ -1213,6 +1319,24 @@ ALTER TABLE `landing_pages`
 --
 ALTER TABLE `main_category`
   MODIFY `main_ctg_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `mockup_category`
+--
+ALTER TABLE `mockup_category`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `mockup_orders`
+--
+ALTER TABLE `mockup_orders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `mockup_products`
+--
+ALTER TABLE `mockup_products`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `order_discount_list`
@@ -1373,6 +1497,18 @@ ALTER TABLE `gallery`
 --
 ALTER TABLE `landing_pages`
   ADD CONSTRAINT `landing_pages_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `product_info` (`product_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `mockup_orders`
+--
+ALTER TABLE `mockup_orders`
+  ADD CONSTRAINT `mockup_orders_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `mockup_products` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `mockup_products`
+--
+ALTER TABLE `mockup_products`
+  ADD CONSTRAINT `mockup_products_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `mockup_category` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `page_access`
