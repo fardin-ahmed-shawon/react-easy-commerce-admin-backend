@@ -46,7 +46,7 @@ if ($action === 'place-mockup-order') {
         exit();
     }
 
-    // SQL insert for mockup_orders table
+    // Corrected SQL query
     $sql = "INSERT INTO mockup_orders (
                 user_id,
                 user_full_name,
@@ -73,8 +73,8 @@ if ($action === 'place-mockup-order') {
         exit();
     }
 
-    // Bind parameters (integer and string types)
-    $bind_types = "issssssisis"; // corresponds to the 11 placeholders before fixed status/visibility
+    // 12 parameters only
+    $bind_types = "issssssisiss";
 
     $bind_params = [
         $order['user_id'] ?? 0,
@@ -91,7 +91,6 @@ if ($action === 'place-mockup-order') {
         $order['order_note'] ?? ''
     ];
 
-    // Bind parameters safely
     if (!$stmt->bind_param($bind_types, ...$bind_params)) {
         echo json_encode([
             "success" => false,
@@ -101,13 +100,11 @@ if ($action === 'place-mockup-order') {
         exit();
     }
 
-    // ✅ Execute the statement
     if ($stmt->execute()) {
-        $order_id = $conn->insert_id;
         echo json_encode([
             "success" => true,
             "message" => "Order placed successfully!",
-            "order_id" => $order_id,
+            "order_id" => $conn->insert_id,
             "order_no" => $order['order_no'] ?? ''
         ]);
     } else {
@@ -120,7 +117,6 @@ if ($action === 'place-mockup-order') {
     $stmt->close();
     exit();
 }
-
 //////////////////////////////////////////////////////////////////////////////////////
 // ============================ INVALID ACTION =====================================
 //////////////////////////////////////////////////////////////////////////////////////
