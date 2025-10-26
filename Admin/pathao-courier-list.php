@@ -71,8 +71,8 @@ $page_title = 'Pathao Courier'; // Set the page title
                     if ($result->num_rows > 0) {
                       while ($row = $result->fetch_assoc()) {
                     
-                        //$parcel_status = get_parcel_status($row['invoice_no']);
-                        $parcel_status = "";
+                        $parcel_status = get_parcel_status($row['invoice_no']);
+                        //$parcel_status = "";
 
                         echo "<tr>
                           <td>{$sl}</td>
