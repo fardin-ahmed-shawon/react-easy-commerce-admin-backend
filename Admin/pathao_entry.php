@@ -11,13 +11,13 @@ if (empty($invoice_no) || $invoice_no == '') {
 //////////////////////////////////////////////////////////
 // Sandbox //////////////////////////////////////////////
 
-// $base_url = "https://courier-api-sandbox.pathao.com";
-// $client_id = "7N1aMJQbWm";
-// $client_secret = "wRcaibZkUdSNz2EI9ZyuXLlNrnAv0TdPUPXMnD39";
-// $username = "test@pathao.com";
-// $password = "lovePathao";
-// $grant_type = "password";
-// $store_id = "107467";
+$base_url = "https://courier-api-sandbox.pathao.com";
+$client_id = "7N1aMJQbWm";
+$client_secret = "wRcaibZkUdSNz2EI9ZyuXLlNrnAv0TdPUPXMnD39";
+$username = "test@pathao.com";
+$password = "lovePathao";
+$grant_type = "password";
+$store_id = "107467";
 
 // END //////////////////////////////////////////////
 ////////////////////////////////////////////////////
@@ -26,13 +26,13 @@ if (empty($invoice_no) || $invoice_no == '') {
 //////////////////////////////////////////////////
 // Production ///////////////////////////////////
 
-$base_url = "https://api-hermes.pathao.com";
-$client_id = "olej0GzbjN";
-$client_secret = "jjMgo2VTdaS9mzsSXhXli6QTocDRGgS9d7FXoEN3";
-$username = "rintu.syl.bd@gmail.com";
-$password = "@Rintupathao2025";
-$grant_type = "password";
-$store_id = "107467";
+// $base_url = "https://api-hermes.pathao.com";
+// $client_id = "olej0GzbjN";
+// $client_secret = "jjMgo2VTdaS9mzsSXhXli6QTocDRGgS9d7FXoEN3";
+// $username = "rintu.syl.bd@gmail.com";
+// $password = "@Rintupathao2025";
+// $grant_type = "password";
+// $store_id = "107467";
 
 // END //////////////////////////////////////////////
 ////////////////////////////////////////////////////
