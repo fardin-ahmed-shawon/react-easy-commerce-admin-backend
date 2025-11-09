@@ -516,7 +516,7 @@ function create_pathao_consignment($invoice_no = '') {
     }
 
     // Fetch Customer Information
-    $sql = "SELECT user_full_name, user_phone, user_address, total_price, payment_method 
+    $sql = "SELECT user_full_name, user_phone, user_address, SUM(total_price) as total_price, payment_method 
             FROM order_info WHERE invoice_no = '$invoice_no'";
     $result = mysqli_query($conn, $sql);
     
@@ -528,9 +528,14 @@ function create_pathao_consignment($invoice_no = '') {
     $recipient_name = $data['user_full_name'];
     $recipient_phone = $data['user_phone'];
     $recipient_address = $data['user_address'];
-    $order_amount = $data['total_price'];
     $payment_method = $data['payment_method'];
+    $order_amount = $data['total_price'];
     // END
+
+    // Add shipping charge with order amount
+    $order_amount += find_shipping_charge($invoice_no);
+    // Deduct Discount amount from order amount
+    $order_amount -= calculate_discount_amount($invoice_no);
 
     // Determine amount to collect
     $amount_to_collect = ($payment_method == "Cash On Delivery") ? $order_amount : 0;
