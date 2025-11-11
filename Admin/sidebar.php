@@ -232,6 +232,26 @@
                 </ul>
               </div>
             </li>
+
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#sales-reports" aria-expanded="false" aria-controls="sales-reports">
+                <span class="menu-title">Sales Reports</span>
+                <i class="mdi mdi-chart-line menu-icon"></i>
+              </a>
+              <div class="collapse" id="sales-reports">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="daily-sales-report.php">Daily Sales</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="monthly-sales-report.php">Monthly Sales</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="yearly-sales-report.php">Yearly Sales</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
             <?php endif; ?>
 
             <?php if (isset($access['inventory']) && $access['inventory'] == 1): ?>

@@ -315,8 +315,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                         <!-- product code -->
                         <div class="input-box">
-                          <label class="details">Product Code</label>
-                          <input name="product_code" type="text" placeholder="Enter your product code">
+                          <label class="details">SKU</label>
+                          <input name="product_code" type="text" placeholder="Enter your product SKU">
                         </div>
                         <!-- product type -->
                         <div class="input-box">

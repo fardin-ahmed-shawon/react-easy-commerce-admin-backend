@@ -46,7 +46,7 @@ $page_title = 'View Products';
               <td>ID</td>
               <td>Image</td>
               <td>Title</td>
-              <td>Code</td>
+              <td>SKU</td>
               <td>Main Category</td>
               <td>Sub Category</td>
               <td>Available Quantity</td>
