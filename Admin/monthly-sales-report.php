@@ -168,10 +168,10 @@ if ($prev_stats['total_revenue'] > 0) {
 
     /* Page Header */
     .modern-header {
-        background: white;
-        padding: 24px;
+        /* background: white; */
+        padding: 24px 0;
         border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
+        /* box-shadow: var(--shadow-sm); */
         margin-bottom: 24px;
         display: flex;
         justify-content: space-between;
@@ -182,7 +182,7 @@ if ($prev_stats['total_revenue'] > 0) {
 
     .modern-header h1 {
         font-size: 24px;
-        font-weight: 600;
+        font-weight: 800;
         color: var(--gray-900);
         margin: 0;
         display: flex;
@@ -607,7 +607,7 @@ if ($prev_stats['total_revenue'] > 0) {
     <div class="month-filter-container">
         <form method="GET" action="" class="month-filter-form">
             <div class="form-group-modern">
-                <label>Select Month</label>
+                <label><b>Select Month</b></label>
                 <input type="month" name="month" value="<?php echo $selected_month; ?>" max="<?php echo date('Y-m'); ?>" required>
             </div>
             <div class="btn-actions">
@@ -684,19 +684,19 @@ if ($prev_stats['total_revenue'] > 0) {
     <!-- Charts -->
     <div class="charts-grid">
         <div class="chart-card" style="grid-column: span 2;">
-            <h3>Daily Sales Trend</h3>
+            <h4><b>Daily Sales Trend</b></h4>
             <div class="chart-wrapper">
                 <canvas id="dailySalesChart"></canvas>
             </div>
         </div>
         <div class="chart-card">
-            <h3>Order Status</h3>
+            <h4><b>Order Status</b></h4>
             <div class="chart-wrapper">
                 <canvas id="statusChart"></canvas>
             </div>
         </div>
         <div class="chart-card">
-            <h3>Payment Methods</h3>
+            <h4><b>Payment Methods</b></h4>
             <div class="chart-wrapper">
                 <canvas id="paymentChart"></canvas>
             </div>
@@ -706,7 +706,7 @@ if ($prev_stats['total_revenue'] > 0) {
     <!-- Top Products -->
     <div class="table-card">
         <div class="table-header">
-            <h3>Top 10 Products</h3>
+            <h3><b>Top 10 Products</b></h3>
         </div>
         <div class="table-responsive-modern">
             <table class="modern-table" id="productsTable">
@@ -753,7 +753,7 @@ if ($prev_stats['total_revenue'] > 0) {
     <!-- Top Customers -->
     <div class="table-card">
         <div class="table-header">
-            <h3>Top 10 Customers</h3>
+            <h3><b>Top 10 Customers</b></h3>
         </div>
         <div class="table-responsive-modern">
             <table class="modern-table" id="customersTable">
@@ -799,7 +799,7 @@ if ($prev_stats['total_revenue'] > 0) {
     <!-- Full Order Details -->
     <div class="table-card">
         <div class="table-header">
-            <h3>All Order Details</h3>
+            <h3><b>All Order Details</b></h3>
         </div>
         <div class="table-responsive-modern">
             <table class="modern-table" id="ordersTable">

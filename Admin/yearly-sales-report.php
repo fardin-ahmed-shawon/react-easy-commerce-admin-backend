@@ -202,10 +202,10 @@ foreach ($monthly_data as $month => $data) {
 
     /* Page Header */
     .modern-header {
-        background: white;
-        padding: 24px;
+        /* background: white; */
+        padding: 24px 0;
         border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
+        /* box-shadow: var(--shadow-sm); */
         margin-bottom: 24px;
         display: flex;
         justify-content: space-between;
@@ -216,7 +216,7 @@ foreach ($monthly_data as $month => $data) {
 
     .modern-header h1 {
         font-size: 24px;
-        font-weight: 600;
+        font-weight: 800;
         color: var(--gray-900);
         margin: 0;
         display: flex;
@@ -716,7 +716,7 @@ foreach ($monthly_data as $month => $data) {
     <div class="year-filter-container">
         <form method="GET" action="" class="year-filter-form">
             <div class="form-group-modern">
-                <label>Select Year</label>
+                <label><b>Select Year</b></label>
                 <select name="year" required>
                     <?php
                     $current_year = date('Y');
@@ -855,25 +855,25 @@ foreach ($monthly_data as $month => $data) {
     <!-- Charts -->
     <div class="charts-grid">
         <div class="chart-card full-width">
-            <h3>Monthly Revenue & Orders Trend</h3>
+            <h4><b>Monthly Revenue & Orders Trend</b></h4>
             <div class="chart-wrapper">
                 <canvas id="monthlyTrendChart"></canvas>
             </div>
         </div>
         <div class="chart-card">
-            <h3>Quarterly Performance</h3>
+            <h4><b>Quarterly Performance</b></h4>
             <div class="chart-wrapper">
                 <canvas id="quarterlyChart"></canvas>
             </div>
         </div>
         <div class="chart-card">
-            <h3>Payment Methods Distribution</h3>
+            <h4><b>Payment Methods Distribution</b></h4>
             <div class="chart-wrapper">
                 <canvas id="paymentChart"></canvas>
             </div>
         </div>
         <div class="chart-card">
-            <h3>Order Status Breakdown</h3>
+            <h4><b>Order Status Breakdown</b></h4>
             <div class="chart-wrapper">
                 <canvas id="statusChart"></canvas>
             </div>
@@ -883,7 +883,7 @@ foreach ($monthly_data as $month => $data) {
     <!-- Top Products -->
     <div class="table-card">
         <div class="table-header">
-            <h3>Top 20 Products of <?php echo $selected_year; ?></h3>
+            <h3><b>Top 20 Products of <?php echo $selected_year; ?></b></h3>
         </div>
         <div class="table-responsive-modern">
             <table class="modern-table" id="productsTable">
@@ -930,7 +930,7 @@ foreach ($monthly_data as $month => $data) {
     <!-- Top Customers -->
     <div class="table-card">
         <div class="table-header">
-            <h3>Top 20 Customers of <?php echo $selected_year; ?></h3>
+            <h3><b>Top 20 Customers of <?php echo $selected_year; ?></b></h3>
         </div>
         <div class="table-responsive-modern">
             <table class="modern-table" id="customersTable">
@@ -979,7 +979,7 @@ foreach ($monthly_data as $month => $data) {
     <!-- Monthly Breakdown Table -->
     <div class="table-card">
         <div class="table-header">
-            <h3>Monthly Breakdown for <?php echo $selected_year; ?></h3>
+            <h3><b>Monthly Breakdown for <?php echo $selected_year; ?></b></h3>
         </div>
         <div class="table-responsive-modern">
             <table class="modern-table" id="monthlyTable">
@@ -1011,7 +1011,7 @@ foreach ($monthly_data as $month => $data) {
                         <td><?php echo number_format($percentage, 1); ?>%</td>
                     </tr>
                     <?php endfor; ?>
-                    <tr style="background: var(--gray-50); font-weight: 600;">
+                    <tr style="background: var(--dark); font-weight: 600;">
                         <td><strong>TOTAL</strong></td>
                         <td><?php echo number_format($stats['total_orders']); ?></td>
                         <td><?php echo number_format($stats['total_items']); ?></td>

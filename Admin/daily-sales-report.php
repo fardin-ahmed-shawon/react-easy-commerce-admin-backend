@@ -140,10 +140,10 @@ while ($row = $products_result->fetch_assoc()) {
 
     /* Page Header */
     .modern-header {
-        background: white;
-        padding: 24px;
+        /* background: white; */
+        padding: 24px 0;
         border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
+        /* box-shadow: var(--shadow-sm); */
         margin-bottom: 24px;
         display: flex;
         justify-content: space-between;
@@ -154,7 +154,7 @@ while ($row = $products_result->fetch_assoc()) {
 
     .modern-header h1 {
         font-size: 24px;
-        font-weight: 600;
+        font-weight: 800;
         color: var(--gray-900);
         margin: 0;
         display: flex;
@@ -588,7 +588,7 @@ while ($row = $products_result->fetch_assoc()) {
     <div class="date-filter-container">
         <form method="GET" action="" class="date-filter-form">
             <div class="form-group-modern">
-                <label>Select Date</label>
+                <label><b>Select Date</b></label>
                 <input type="date" name="date" value="<?php echo $selected_date; ?>" max="<?php echo date('Y-m-d'); ?>" required>
             </div>
             <div class="btn-actions">
@@ -666,7 +666,7 @@ while ($row = $products_result->fetch_assoc()) {
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 mt-4 mt-md-0">
             <div class="card card-body">
                 <h4><b>Order Status</b></h4>
                 <div>
@@ -679,7 +679,7 @@ while ($row = $products_result->fetch_assoc()) {
     <!-- Top Products -->
     <div class="table-card">
         <div class="table-header">
-            <h3>Top 5 Products</h3>
+            <h3><b>Top 5 Products</b></h3>
         </div>
         <div class="table-responsive-modern">
             <table class="modern-table">
@@ -723,7 +723,7 @@ while ($row = $products_result->fetch_assoc()) {
     <!-- Order Details (Per Product) -->
     <div class="table-card">
         <div class="table-header">
-            <h3>Order Details</h3>
+            <h3><b>Order Details</b></h3>
         </div>
         <div class="table-responsive-modern">
             <table class="modern-table" id="ordersTable">
