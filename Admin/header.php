@@ -112,7 +112,7 @@ if (isset($pageAccessMap[$current_page])) {
     <!-- Layout styles -->
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- End layout styles -->
-    <link rel="shortcut icon" href="assets/images/favicon.png" />
+    <link rel="shortcut icon" href="img/dokanx-fav-white.png" />
 
     <!-- Custom CSS-->
     <link rel="stylesheet" href="css/form.css">

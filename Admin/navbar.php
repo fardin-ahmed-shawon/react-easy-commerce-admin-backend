@@ -20,8 +20,17 @@
             <h4 style="font-weight: 700; letter-spacing: -1px;"><?php echo $websiteName; ?>.</h4>
             <p style="font-size: 13px; font-style: italic; margin-top: -13px; margin-bottom: 0;">Admin Panel</p>
           </a>
-          <a class="navbar-brand brand-logo-mini" href="index.php">
-            <img src="assets/images/logo-mini.svg" alt="logo" />
+          <style>
+              .navbar .navbar-brand-wrapper .navbar-brand.brand-logo-mini img,
+              .navbar .navbar-brand-wrapper .navbar-brand img {
+                  max-width: 35px;
+                  max-height: 35px;
+                  width: 35px;
+                  height: 35px;
+              }
+          </style>
+          <a class="navbar-brand brand-logo-mini px-3" href="index.php">
+            <img src="img/dokanx-fav-black.png" alt="logo" />
           </a>
         </div>
         <div class="navbar-menu-wrapper d-flex align-items-stretch">

@@ -15,7 +15,7 @@ if (isset($_COOKIE['remember_user']) && !isset($_SESSION['admin'])) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DokanX - Admin Login</title>
-  <link rel="shortcut icon" href="assets/images/favicon.png" />
+  <link rel="shortcut icon" href="img/dokanx-fav-white.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -794,7 +794,7 @@ if (isset($_COOKIE['remember_user']) && !isset($_SESSION['admin'])) {
       <div class="particles" id="particles"></div>
       <div class="brand-content">
         <div class="brand-logo">
-          DOKAN<span>X</span>
+          <img style="width: 200px" src="img/dokanx-white.png"/>
         </div>
         <div class="brand-tagline">Admin Dashboard</div>
         
@@ -829,7 +829,7 @@ if (isset($_COOKIE['remember_user']) && !isset($_SESSION['admin'])) {
       <div class="login-form-wrapper">
         <div class="login-header-mobile">
           <div class="brand-logo-mobile">
-            DOKAN<span>X</span>
+            <img style="width: 150px" src="img/dokanx-black.png"/>
           </div>
 
           <h1 class="login-title">Welcome Back</h1>
