@@ -15,7 +15,12 @@ $page_title = 'View Orders';
   <br>
 
   <div class="row">
-    <h1>Active Orders</h1>
+    <div class="d-flex justify-content-between">
+      <h1>Active Orders</h1>
+      <div>
+      <a class="btn btn-dark" href="order-management.php">Manage Orders <span class="mdi mdi-order-alphabetical-ascending"></span></a>
+      </div>
+    </div>
     <div style="overflow-y: auto;">
       <table class="table table-under-bordered">
         <thead>
@@ -63,6 +68,7 @@ $page_title = 'View Orders';
                 $orders[$invoice]['products'][] = [
                     'title' => $row['product_title'],
                     'size' => $row['product_size'],
+                    'color' => $row['product_color'],
                     'quantity' => $row['product_quantity'],
                     'price' => $row['total_price']
                 ];
@@ -87,8 +93,12 @@ $page_title = 'View Orders';
                         <td>
                           <ul>";
                           foreach ($order['products'] as $p) {
-                              echo "<li>{$p['title']} ({$p['size']}) - Qty: {$p['quantity']} - {$p['price']} Tk</li>";
-                          }
+                            $size  = !empty($p['size']) ? " ({$p['size']})" : '';
+                            $color = !empty($p['color']) ? " ({$p['color']})" : '';
+                        
+                            echo "<li>{$p['title']}{$size}{$color} - Qty: {$p['quantity']} - {$p['price']} Tk</li>";
+                        }
+                        
                 echo      "</ul>
                         </td>
                         <td>{$order['total_price']} Tk</td>

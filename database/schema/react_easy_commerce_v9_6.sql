@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 13, 2025 at 11:52 AM
+-- Generation Time: Nov 13, 2025 at 03:53 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `react_easy_commerce_v9_4`
+-- Database: `react_easy_commerce_v9_6`
 --
 
 -- --------------------------------------------------------
@@ -64,6 +64,28 @@ CREATE TABLE `blogs` (
 INSERT INTO `blogs` (`id`, `blog_title`, `blog_description`, `blog_img`, `created_at`) VALUES
 (2, 'The Future of E-Commerce: How AI and Automation Are Changing Online Shopping', '<p><span style=\"font-size: 14pt;\">Discover the latest techniques successful e-commerce businesses are using to increase conversions and average order value. From AI-driven personalization to mobile-first checkout design, this article reveals the tools and tactics that can take your online store to the next level. </span></p>\r\n<p>&nbsp;</p>\r\n<ul>\r\n<li data-start=\"564\" data-end=\"822\">E-commerce is evolving faster than ever.</li>\r\n<li data-start=\"564\" data-end=\"822\">Learn how artificial intelligence,&nbsp;chatbots, and automated marketing systems are transforming.</li>\r\n<li data-start=\"564\" data-end=\"822\">How customers browse, buy, and interact with brands.</li>\r\n<li data-start=\"564\" data-end=\"822\">How your business can stay ahead of the curve.</li>\r\n</ul>', 'blog_68e77f308ae834.41929499.jpg', '2025-10-05 12:58:47'),
 (3, '5 Proven Strategies to Boost Your Online Store Sales in 2025', '<p><span style=\"font-size: 14pt;\">Discover the latest techniques successful e-commerce businesses are using to increase conversions and average order value. From AI-driven personalization to mobile-first checkout design, this article reveals the tools and tactics that can take your online store to the next level. </span></p>\r\n<p>&nbsp;</p>\r\n<ul>\r\n<li data-start=\"564\" data-end=\"822\">E-commerce is evolving faster than ever.</li>\r\n<li data-start=\"564\" data-end=\"822\">Learn how artificial intelligence,&nbsp;chatbots, and automated marketing systems are transforming.</li>\r\n<li data-start=\"564\" data-end=\"822\">How customers browse, buy, and interact with brands.</li>\r\n<li data-start=\"564\" data-end=\"822\">How your business can stay ahead of the curve.</li>\r\n</ul>', 'blog_68e77f20b71a48.72131867.jpg', '2025-10-05 13:14:09');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `color_labels`
+--
+
+CREATE TABLE `color_labels` (
+  `id` int(11) NOT NULL,
+  `color_label` varchar(50) NOT NULL,
+  `color_hex` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `color_labels`
+--
+
+INSERT INTO `color_labels` (`id`, `color_label`, `color_hex`) VALUES
+(4, 'Red', '#e70d0d'),
+(5, 'Blue', '#0a89eb'),
+(6, 'Black', '#000000'),
+(7, 'Orange', '#ff881a');
 
 -- --------------------------------------------------------
 
@@ -280,6 +302,13 @@ CREATE TABLE `order_discount_list` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `order_discount_list`
+--
+
+INSERT INTO `order_discount_list` (`id`, `invoice_no`, `total_order_amount`, `total_discount_amount`, `free_shipping`, `created_at`) VALUES
+(1, 'INV-68Z7PYVO7', 1450.00, 0.00, 0, '2025-11-13 14:32:00');
+
 -- --------------------------------------------------------
 
 --
@@ -299,6 +328,7 @@ CREATE TABLE `order_info` (
   `product_title` varchar(255) NOT NULL,
   `product_quantity` int(11) NOT NULL,
   `product_size` varchar(50) DEFAULT 'Default',
+  `product_color` text DEFAULT NULL,
   `total_price` int(11) NOT NULL,
   `payment_method` varchar(50) NOT NULL,
   `order_note` text DEFAULT NULL,
@@ -306,6 +336,16 @@ CREATE TABLE `order_info` (
   `order_status` varchar(50) DEFAULT 'Pending',
   `order_visibility` varchar(50) DEFAULT 'Show'
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `order_info`
+--
+
+INSERT INTO `order_info` (`order_no`, `user_id`, `user_full_name`, `user_phone`, `user_email`, `user_address`, `city_address`, `invoice_no`, `product_id`, `product_title`, `product_quantity`, `product_size`, `product_color`, `total_price`, `payment_method`, `order_note`, `order_date`, `order_status`, `order_visibility`) VALUES
+(1, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi', '', 'INV-68Z7PYVO7', 1, 'Mens Premium Shirt - Designer Edition', 1, 'M', NULL, 1450, 'Cash On Delivery', NULL, '2025-11-13 14:32:00', 'Processing', 'Show'),
+(2, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi', 'Outside Dhaka', 'INV-68Z7YUHVV', 18, 'Women Premium Tops -Parishas', 3, 'Default', NULL, 2580, 'Cash On Delivery', NULL, '2025-11-13 14:56:33', 'Processing', 'Show'),
+(3, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi', 'Inside Dhaka', 'INV-68Z8E37LS', 18, 'Women Premium Tops -Parishas', 1, '20', 'Red', 860, 'Cash On Delivery', NULL, '2025-11-13 15:39:13', 'Processing', 'Show'),
+(4, 0, 'Fardin Ahmed Shawon', '01944667441', '', 'Mohammadpur, Dhaka', 'Inside Dhaka', 'INV-68ZB9XAYF', 18, 'Women Premium Tops -Parishas', 1, '30', 'Blue', 860, 'Cash On Delivery', NULL, '2025-11-13 20:29:53', 'Processing', 'Show');
 
 -- --------------------------------------------------------
 
@@ -359,6 +399,37 @@ CREATE TABLE `parcel_info` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `pathao_acc_info`
+--
+
+CREATE TABLE `pathao_acc_info` (
+  `id` int(11) NOT NULL,
+  `client_id` varchar(100) NOT NULL,
+  `client_secret` varchar(255) NOT NULL,
+  `username` varchar(150) NOT NULL,
+  `password` varchar(150) NOT NULL,
+  `grant_type` varchar(50) DEFAULT 'password',
+  `store_id` varchar(100) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pathao_parcel_info`
+--
+
+CREATE TABLE `pathao_parcel_info` (
+  `id` int(11) NOT NULL,
+  `invoice_no` varchar(100) NOT NULL,
+  `consignment_id` varchar(255) DEFAULT NULL,
+  `delivery_fee` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `payment_info`
 --
 
@@ -374,6 +445,33 @@ CREATE TABLE `payment_info` (
   `payment_date` datetime DEFAULT current_timestamp(),
   `payment_status` varchar(50) DEFAULT 'Unpaid'
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_color_list`
+--
+
+CREATE TABLE `product_color_list` (
+  `id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `color` varchar(50) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_color_list`
+--
+
+INSERT INTO `product_color_list` (`id`, `product_id`, `color`, `created_at`) VALUES
+(3, 18, 'Red', '2025-09-03 16:48:49'),
+(4, 18, 'Blue', '2025-09-03 16:48:49'),
+(5, 18, 'Black', '2025-09-03 16:48:49'),
+(21, 12, 'Red', '2025-09-10 19:48:39'),
+(22, 12, 'Blue', '2025-09-10 19:48:39'),
+(23, 12, 'Black', '2025-09-10 19:48:39'),
+(24, 6, 'Blue', '2025-09-23 16:12:28'),
+(25, 6, 'Black', '2025-09-23 16:12:28');
 
 -- --------------------------------------------------------
 
@@ -721,7 +819,7 @@ CREATE TABLE `website_info` (
 --
 
 INSERT INTO `website_info` (`id`, `name`, `logo`, `logo_size`, `fav`, `address`, `inside_location`, `inside_delivery_charge`, `outside_delivery_charge`, `phone`, `wp_api_num`, `messenger_username`, `acc_num`, `email`, `fb_link`, `insta_link`, `twitter_link`, `yt_link`, `location`, `vdo_location`, `banner_one`, `banner_two`, `shop_banner`, `about_banner`, `contact_banner`, `faq_banner`, `term_banner`, `privacy_banner`, `shipping_banner`, `top_banner_ad_content`) VALUES
-(1, 'Easy Tech', '', '120', '', 'Dhaka, Bangladesh', 'Dhaka', 80, 150, '01XXXXXXXXX', '1XXXXXXXXX', '', '01XXXXXXXXX', 'example@gmail.com', '#', '#', '#', '#', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d58433.58839526138!2d90.35775996504786!3d23.743839015450195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755bf6de2c3b19b%3A0xeeef7eec6d1d012a!2sEasy%20Tech%20Solutions!5e0!3m2!1sen!2sbd!4v1752511116922!5m2!1sen!2sbd', '', 'uploads/ss3.jpg', 'uploads/ss2.jpg', '', '', '', '', '', '', '', 'Get 25% off on your purchase! Use this coupon code RKKXSO50PQ on the Checkout Page');
+(1, 'Easy Tech', 'uploads/black logo_transparent.png', '120', '', 'Dhaka, Bangladesh', 'Dhaka', 80, 150, '01XXXXXXXXX', '1XXXXXXXXX', '', '01XXXXXXXXX', 'example@gmail.com', '#', '#', '#', '#', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d58433.58839526138!2d90.35775996504786!3d23.743839015450195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755bf6de2c3b19b%3A0xeeef7eec6d1d012a!2sEasy%20Tech%20Solutions!5e0!3m2!1sen!2sbd!4v1752511116922!5m2!1sen!2sbd', '', 'uploads/ss3.jpg', 'uploads/ss2.jpg', '', '', '', '', '', '', '', 'Get 25% off on your purchase! Use this coupon code RKKXSO50PQ on the Checkout Page');
 
 --
 -- Indexes for dumped tables
@@ -738,6 +836,12 @@ ALTER TABLE `admin_info`
 -- Indexes for table `blogs`
 --
 ALTER TABLE `blogs`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `color_labels`
+--
+ALTER TABLE `color_labels`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -826,11 +930,30 @@ ALTER TABLE `parcel_info`
   ADD PRIMARY KEY (`parcel_id`);
 
 --
+-- Indexes for table `pathao_acc_info`
+--
+ALTER TABLE `pathao_acc_info`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `pathao_parcel_info`
+--
+ALTER TABLE `pathao_parcel_info`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `payment_info`
 --
 ALTER TABLE `payment_info`
   ADD PRIMARY KEY (`serial_no`),
   ADD UNIQUE KEY `order_no` (`order_no`);
+
+--
+-- Indexes for table `product_color_list`
+--
+ALTER TABLE `product_color_list`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `product_id` (`product_id`);
 
 --
 -- Indexes for table `product_info`
@@ -928,6 +1051,12 @@ ALTER TABLE `blogs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT for table `color_labels`
+--
+ALTER TABLE `color_labels`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `coupon`
 --
 ALTER TABLE `coupon`
@@ -979,13 +1108,13 @@ ALTER TABLE `main_category`
 -- AUTO_INCREMENT for table `order_discount_list`
 --
 ALTER TABLE `order_discount_list`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `order_info`
 --
 ALTER TABLE `order_info`
-  MODIFY `order_no` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `order_no` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `page_access`
@@ -1000,10 +1129,28 @@ ALTER TABLE `parcel_info`
   MODIFY `parcel_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `pathao_acc_info`
+--
+ALTER TABLE `pathao_acc_info`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pathao_parcel_info`
+--
+ALTER TABLE `pathao_parcel_info`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `payment_info`
 --
 ALTER TABLE `payment_info`
   MODIFY `serial_no` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `product_color_list`
+--
+ALTER TABLE `product_color_list`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `product_info`
@@ -1110,6 +1257,12 @@ ALTER TABLE `landing_pages`
 --
 ALTER TABLE `page_access`
   ADD CONSTRAINT `page_access_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `product_color_list`
+--
+ALTER TABLE `product_color_list`
+  ADD CONSTRAINT `product_color_list_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `product_info` (`product_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `product_size_list`

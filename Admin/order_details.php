@@ -169,6 +169,7 @@ $order = $orders[0]; // First row for summary
                         <th><b>Product</b></th>
                         <th><b>Quantity</b></th>
                         <th><b>Size</b></th>
+                        <th><b>Color</b></th>
                         <th><b>Unit Price</b></th>
                         <th><b>Total Price</b></th>
                     </tr>
@@ -186,24 +187,25 @@ $order = $orders[0]; // First row for summary
                         <td><?= htmlspecialchars($row['product_title']) ?></td>
                         <td><?= $row['product_quantity'] ?></td>
                         <td><?= htmlspecialchars($row['product_size']) ?></td>
+                        <td><?= htmlspecialchars($row['product_color'] ?? 'Default') ?></td>
                         <td>৳ <?= number_format($unit_price) ?></td>
                         <td>৳ <?= number_format((float)$row['total_price'], 2) ?></td>
                     </tr>
                     <?php endforeach; ?>
                     <tr>
-                        <td colspan="6" class="text-end"><strong>Total Amount:</strong></td>
+                        <td colspan="7" class="text-end"><strong>Total Amount:</strong></td>
                         <td><strong>৳ <?= number_format((float)$total, 2) ?></strong></td>
                     </tr>
                     <tr>
-                        <td colspan="6" class="text-end"><strong>Discount Amount:</strong></td>
+                        <td colspan="7" class="text-end"><strong>Discount Amount:</strong></td>
                         <td><strong>৳ <?= number_format((float)calculate_discount_amount($invoice_no), 2) ?></strong></td>
                     </tr>
                     <tr>
-                        <td colspan="6" class="text-end"><strong>Shipping Charge:</strong></td>
+                        <td colspan="7" class="text-end"><strong>Shipping Charge:</strong></td>
                         <td><strong>৳ <?= number_format((float)find_shipping_charge($invoice_no), 2) ?></strong></td>
                     </tr>
                     <tr>
-                        <td colspan="6" class="text-end"><strong>Final Amount:</strong></td>
+                        <td colspan="7" class="text-end"><strong>Final Amount:</strong></td>
                         <td>
                             <strong>৳ <?= number_format((float)$total + (float)find_shipping_charge($invoice_no) - (float)calculate_discount_amount($invoice_no), 2) ?></strong>
                         </td>

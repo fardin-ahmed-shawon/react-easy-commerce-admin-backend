@@ -320,8 +320,11 @@ body {
             $subtotal += (float)$item['total_price'];
             
             $itemName = htmlspecialchars($item['product_title']);
-            if(!empty($item['product_size']) && $item['product_size'] != 'N/A') {
+            if(!empty($item['product_size']) && $item['product_size'] != 'Default') {
                 $itemName .= ' (' . htmlspecialchars($item['product_size']) . ')';
+            }
+            if(!empty($item['product_color']) && $item['product_size'] != '') {
+                $itemName .= ' (' . htmlspecialchars($item['product_color']) . ')';
             }
         ?>
             <tr>

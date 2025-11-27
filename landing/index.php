@@ -1,5 +1,5 @@
 <?php
-//require 'dbconnection.php';
+session_start();
 require '../database/dbConnection.php';
 
 $product_slug = $_GET['slug'] ?? '';
@@ -17,13 +17,9 @@ if ($product_slug != '') {
         $product_id = $data['product_id'];
 
     } else {
-        // If no product found with the given slug, redirect to a default page or show an error
-        header("Location: 404.php");
         exit;
     }
 } else {
-    // If no slug is provided, redirect to a default page or show an error
-    header("Location: 404.php");
     exit;
 }
 // END
@@ -77,6 +73,104 @@ if ($row > 0) {
 // END
 
 ?>
+
+<!-- Checkout Start -->
+    <?php
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Retrieve form data
+            $fullName = $_POST['fullName'];
+            $phone = $_POST['phone'];
+            $email = $_POST['email'];
+            $address = $_POST['address'];
+            $city = $_POST['city'];
+            $payment_method = $_POST['payment'] ?? 'Cash On Delivery';
+            $accNum = $_POST['accNum'] ?? '';
+            $transactionID = $_POST['transactionID'] ?? '';
+            $user_id = 0;
+
+            // Generate a unique invoice number
+            function generateInvoiceNo() {
+                $timestamp = microtime(true) * 10000;
+                $uniqueString = 'INV-' . strtoupper(base_convert($timestamp, 10, 36));
+                return $uniqueString;
+            }
+            $invoice_no = generateInvoiceNo();
+            $_SESSION['temporary_invoice_no'] = $invoice_no;
+
+            // Validate payment details for mobile banking
+            if ($payment_method != "Cash On Delivery" && ($accNum == "" || $transactionID == "")) {
+                ?>
+                <META HTTP-EQUIV="Refresh" CONTENT="2; URL=index.php#checkout">
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        let msg_box = document.getElementById("msg");
+                        if (msg_box) {
+                            msg_box.style.display = "block";
+                            msg_box.innerText = "Please Provide both Account Number and Transaction ID!";
+                            setTimeout(() => {
+                                msg_box.style.display = "none";
+                            }, 3000);
+                        }
+                    });
+                </script>
+                <?php
+                exit;
+            } else {
+                // Retrieve cart data from POST request
+                $cartData = json_decode($_POST['carts'], true);
+
+                foreach ($cartData as $product) {
+                    $product_id = $product['id'];
+                    $product_title = $product['name'];
+                    $product_quantity = $product['quantity'];
+                    $product_size = $product['size'] ?? '';
+                    $product_color = $product['color'] ?? '';
+                    $total_price = $product['price'] * $product_quantity;
+
+                    // Insert data into order_info table
+                    $sql = "INSERT INTO order_info (user_id, user_full_name, user_phone, user_email, user_address, city_address, invoice_no, product_id, product_title, product_quantity, product_size, product_color, total_price, payment_method)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param(
+                        "issssssisissis",
+                        $user_id,
+                        $fullName,
+                        $phone,
+                        $email,
+                        $address,
+                        $city,
+                        $invoice_no,
+                        $product_id,
+                        $product_title,
+                        $product_quantity,
+                        $product_size,
+                        $product_color,
+                        $total_price,
+                        $payment_method
+                    );
+
+                    if ($stmt->execute()) {
+                        if ($payment_method != "Cash On Delivery") {
+                            $order_no = $conn->insert_id;
+                            // Insert data into payment_info table
+                            $sql_payment = "INSERT INTO payment_info (invoice_no, order_no, payment_method, acc_number, transaction_id)
+                            VALUES (?, ?, ?, ?, ?)";
+                            $stmt_payment = $conn->prepare($sql_payment);
+                            $stmt_payment->bind_param("sisss", $invoice_no, $order_no, $payment_method, $accNum, $transactionID);
+                            $stmt_payment->execute();
+                            $stmt_payment->close();
+                        }
+                    }
+                    $stmt->close();
+                }
+                $conn->close();
+                // Redirect or show success message
+                echo "<script>window.location.href = 'index.php?or_msg=successful';</script>";
+                exit;
+            }
+        }
+    ?>
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -123,6 +217,158 @@ if ($row > 0) {
                 max-height: 100%;
                 border: 1px solid rgba(0, 0, 0, .1);
                 border-radius: 5px;
+            }
+
+            /* Modal Styles */
+            .size-color-modal {
+                display: none;
+                position: fixed;
+                z-index: 9999;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                overflow: auto;
+            }
+
+            .modal-content-custom {
+                background-color: #fefefe;
+                margin: 5% auto;
+                padding: 30px;
+                border: 1px solid #888;
+                border-radius: 10px;
+                width: 90%;
+                max-width: 500px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            .close-modal {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                line-height: 20px;
+            }
+
+            .close-modal:hover,
+            .close-modal:focus {
+                color: #000;
+            }
+
+            .modal-header-custom {
+                margin-bottom: 20px;
+            }
+
+            .modal-header-custom h3 {
+                margin: 0;
+                color: #333;
+            }
+
+            .selection-group {
+                margin-bottom: 25px;
+            }
+
+            .selection-group label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 10px;
+                color: #555;
+                font-size: 16px;
+            }
+
+            .selection-options {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .option-item {
+                padding: 10px 20px;
+                border: 2px solid #ddd;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                background-color: #fff;
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            .option-item:hover {
+                border-color: #007bff;
+                background-color: #f0f8ff;
+            }
+
+            .option-item.selected {
+                border-color: #007bff;
+                background-color: #007bff;
+                color: #fff;
+            }
+
+            .color-option {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .color-option.selected::after {
+                content: '✓';
+                color: #fff;
+                font-size: 24px;
+                font-weight: bold;
+                text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+            }
+
+            .modal-actions {
+                display: flex;
+                gap: 10px;
+                justify-content: flex-end;
+                margin-top: 25px;
+            }
+
+            .modal-btn {
+                padding: 12px 30px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .modal-btn-cancel {
+                background-color: #6c757d;
+                color: #fff;
+            }
+
+            .modal-btn-cancel:hover {
+                background-color: #5a6268;
+            }
+
+            .modal-btn-add {
+                background-color: #28a745;
+                color: #fff;
+            }
+
+            .modal-btn-add:hover {
+                background-color: #218838;
+            }
+
+            .modal-btn-add:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            .error-message {
+                color: #dc3545;
+                font-size: 14px;
+                margin-top: 10px;
+                display: none;
             }
         </style>
 
@@ -278,9 +524,44 @@ if ($row > 0) {
                                 $productQuantity = $data['available_stock'];
                                 $productImg = $data['product_img1'];
 
+                                // Fetch available sizes for this product
+                                $sizes_sql = "SELECT size FROM product_size_list WHERE product_id = $productId";
+                                $sizes_result = mysqli_query($conn, $sizes_sql);
+                                $sizes = [];
+                                while ($size_row = mysqli_fetch_assoc($sizes_result)) {
+                                    $sizes[] = $size_row['size'];
+                                }
+
+                                // Fetch available colors for this product
+                                $colors_sql = "SELECT 
+                                pcl.color, cl.color_hex 
+                                FROM product_color_list AS pcl
+                                JOIN color_labels AS cl
+                                WHERE pcl.color = cl.color_label 
+                                AND product_id = $productId";
+
+                                $colors_result = mysqli_query($conn, $colors_sql);
+                                $colors = [];
+                                while ($color_row = mysqli_fetch_assoc($colors_result)) {
+                                    $colors[] = [
+                                        'name' => $color_row['color'],
+                                        'code' => $color_row['color_hex']
+                                    ];
+                                }
+
+                                $sizes_json = json_encode($sizes);
+                                $colors_json = json_encode($colors);
+
                                 echo '
                                     <div class="col-md-3 mx-auto">
-                                        <div class="product-single" product-id="'.$productId.'" product-name="'.$productName.'" product-img="'.$productImg.'" product-price="'.$productPrice.'" product-quantity="1">
+                                        <div class="product-single" 
+                                             product-id="'.$productId.'" 
+                                             product-name="'.$productName.'" 
+                                             product-img="'.$productImg.'" 
+                                             product-price="'.$productPrice.'" 
+                                             product-quantity="1"
+                                             product-sizes=\''.htmlspecialchars($sizes_json, ENT_QUOTES, 'UTF-8').'\'
+                                             product-colors=\''.htmlspecialchars($colors_json, ENT_QUOTES, 'UTF-8').'\'>
                                             <div class="product-img">
                                                 <img src="'.$productImg.'" alt="Product Image">
                                             </div>
@@ -290,7 +571,7 @@ if ($row > 0) {
                                                 <h3>৳ '.$productPrice.'</h3>
                                                     <h3 style="color: gray; text-decoration: line-through;">৳ '.$productPrice.'</h3>
                                                 </div>
-                                                <button class="btn" onclick="addToCart(this)">Add to Cart</button>
+                                                <button class="btn" onclick="handleAddToCart(this)">Add to Cart</button>
                                             </div>
                                         </div>
                                     </div>
@@ -305,6 +586,34 @@ if ($row > 0) {
             </div>
         </div>
         <!-- Products End -->
+
+
+        <!-- Size and Color Selection Modal -->
+        <div id="sizeColorModal" class="size-color-modal">
+            <div class="modal-content-custom">
+                <div class="modal-header-custom">
+                    <span class="close-modal" onclick="closeSizeColorModal()">&times;</span>
+                    <h3>Select Product Options</h3>
+                </div>
+                
+                <div id="sizeSelectionGroup" class="selection-group" style="display: none;">
+                    <label>Select Size: <span style="color: red;">*</span></label>
+                    <div id="sizeOptions" class="selection-options"></div>
+                </div>
+
+                <div id="colorSelectionGroup" class="selection-group" style="display: none;">
+                    <label>Select Color: <span style="color: red;">*</span></label>
+                    <div id="colorOptions" class="selection-options"></div>
+                </div>
+
+                <p class="error-message" id="selectionError">Please select all required options</p>
+
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-cancel" onclick="closeSizeColorModal()">Cancel</button>
+                    <button class="modal-btn modal-btn-add" id="confirmAddToCart">Add to Cart</button>
+                </div>
+            </div>
+        </div>
 
 
         <!-- Product Gallery -->
@@ -340,98 +649,6 @@ if ($row > 0) {
         </div>
         <!-- Product Gallery End -->
 
-
-        <!-- Checkout Start -->
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            session_start();
-            // Retrieve form data
-            $fullName = $_POST['fullName'];
-            $phone = $_POST['phone'];
-            $email = $_POST['email'];
-            $address = $_POST['address'];
-            $city = $_POST['city'];
-            $payment_method = $_POST['payment'] ?? 'Cash On Delivery';
-            $accNum = $_POST['accNum'] ?? '';
-            $transactionID = $_POST['transactionID'] ?? '';
-
-            // Generate a unique invoice number
-            function generateInvoiceNo() {
-                $timestamp = microtime(true) * 10000;
-                $uniqueString = 'INV-' . strtoupper(base_convert($timestamp, 10, 36));
-                return $uniqueString;
-            }
-            $invoice_no = generateInvoiceNo();
-            $_SESSION['temporary_invoice_no'] = $invoice_no;
-
-            // Validate payment details for mobile banking
-            if ($payment_method != "Cash On Delivery" && ($accNum == "" || $transactionID == "")) {
-                ?>
-                <META HTTP-EQUIV="Refresh" CONTENT="2; URL=index.php#checkout">
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        let msg_box = document.getElementById("msg");
-                        if (msg_box) {
-                            msg_box.style.display = "block";
-                            msg_box.innerText = "Please Provide both Account Number and Transaction ID!";
-                            setTimeout(() => {
-                                msg_box.style.display = "none";
-                            }, 3000);
-                        }
-                    });
-                </script>
-                <?php
-                exit;
-            } else {
-                // Retrieve cart data from POST request
-                $cartData = json_decode($_POST['carts'], true);
-
-                foreach ($cartData as $product) {
-                    $product_id = $product['id'];
-                    $product_title = $product['name'];
-                    $product_quantity = $product['quantity'];
-                    $total_price = $product['price'] * $product_quantity;
-
-                    // Insert data into order_info table
-                    $sql = "INSERT INTO order_info (user_full_name, user_phone, user_email, user_address, city_address, invoice_no, product_id, product_title, product_quantity, total_price, payment_method)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param(
-                        "ssssssisiss",
-                        $fullName,
-                        $phone,
-                        $email,
-                        $address,
-                        $city,
-                        $invoice_no,
-                        $product_id,
-                        $product_title,
-                        $product_quantity,
-                        $total_price,
-                        $payment_method
-                    );
-
-                    if ($stmt->execute()) {
-                        if ($payment_method != "Cash On Delivery") {
-                            $order_no = $conn->insert_id;
-                            // Insert data into payment_info table
-                            $sql_payment = "INSERT INTO payment_info (invoice_no, order_no, payment_method, acc_number, transaction_id)
-                            VALUES (?, ?, ?, ?, ?)";
-                            $stmt_payment = $conn->prepare($sql_payment);
-                            $stmt_payment->bind_param("sisss", $invoice_no, $order_no, $payment_method, $accNum, $transactionID);
-                            $stmt_payment->execute();
-                            $stmt_payment->close();
-                        }
-                    }
-                    $stmt->close();
-                }
-                $conn->close();
-                // Redirect or show success message
-                echo "<script>window.location.href = 'index.php?or_msg=successful';</script>";
-                exit;
-            }
-        }
-        ?>
 
         <div id="checkout">
             <div class="container" id="products">
@@ -697,6 +914,230 @@ if ($row > 0) {
         <script src="js/cart_calculation.js"></script>
 
         <script>
+            // Global variables for modal
+            let currentProductElement = null;
+            let selectedSize = null;
+            let selectedColor = null;
+
+            // Handle Add to Cart button click
+            function handleAddToCart(button) {
+                const productDiv = button.closest('.product-single');
+                const sizes = JSON.parse(productDiv.getAttribute('product-sizes') || '[]');
+                const colors = JSON.parse(productDiv.getAttribute('product-colors') || '[]');
+
+                // If no size and no color, add directly to cart
+                if (sizes.length === 0 && colors.length === 0) {
+                    addToCart(button);
+                    return;
+                }
+
+                // Store current product element
+                currentProductElement = productDiv;
+                selectedSize = null;
+                selectedColor = null;
+
+                // Open modal and populate options
+                openSizeColorModal(sizes, colors);
+            }
+
+            // Open the size/color selection modal
+            function openSizeColorModal(sizes, colors) {
+                const modal = document.getElementById('sizeColorModal');
+                const sizeGroup = document.getElementById('sizeSelectionGroup');
+                const colorGroup = document.getElementById('colorSelectionGroup');
+                const sizeOptions = document.getElementById('sizeOptions');
+                const colorOptions = document.getElementById('colorOptions');
+                const errorMsg = document.getElementById('selectionError');
+
+                // Clear previous selections
+                sizeOptions.innerHTML = '';
+                colorOptions.innerHTML = '';
+                errorMsg.style.display = 'none';
+
+                // Show/hide size selection
+                if (sizes.length > 0) {
+                    sizeGroup.style.display = 'block';
+                    sizes.forEach(size => {
+                        const sizeDiv = document.createElement('div');
+                        sizeDiv.className = 'option-item';
+                        sizeDiv.textContent = size;
+                        sizeDiv.onclick = function() {
+                            // Remove selected class from all size options
+                            document.querySelectorAll('#sizeOptions .option-item').forEach(el => {
+                                el.classList.remove('selected');
+                            });
+                            // Add selected class to clicked option
+                            this.classList.add('selected');
+                            selectedSize = size;
+                            errorMsg.style.display = 'none';
+                        };
+                        sizeOptions.appendChild(sizeDiv);
+                    });
+                } else {
+                    sizeGroup.style.display = 'none';
+                }
+
+                // Show/hide color selection
+                if (colors.length > 0) {
+                    colorGroup.style.display = 'block';
+                    colors.forEach(color => {
+                        const colorDiv = document.createElement('div');
+                        colorDiv.className = 'option-item color-option';
+                        colorDiv.style.backgroundColor = color.code;
+                        colorDiv.title = color.name;
+                        colorDiv.onclick = function() {
+                            // Remove selected class from all color options
+                            document.querySelectorAll('#colorOptions .option-item').forEach(el => {
+                                el.classList.remove('selected');
+                            });
+                            // Add selected class to clicked option
+                            this.classList.add('selected');
+                            selectedColor = color.name;
+                            errorMsg.style.display = 'none';
+                        };
+                        colorOptions.appendChild(colorDiv);
+                    });
+                } else {
+                    colorGroup.style.display = 'none';
+                }
+
+                // Show modal
+                modal.style.display = 'block';
+            }
+
+            // Close the modal
+            function closeSizeColorModal() {
+                const modal = document.getElementById('sizeColorModal');
+                modal.style.display = 'none';
+                currentProductElement = null;
+                selectedSize = null;
+                selectedColor = null;
+            }
+
+            // Confirm add to cart from modal
+            document.getElementById('confirmAddToCart').addEventListener('click', function() {
+                const sizes = JSON.parse(currentProductElement.getAttribute('product-sizes') || '[]');
+                const colors = JSON.parse(currentProductElement.getAttribute('product-colors') || '[]');
+                const errorMsg = document.getElementById('selectionError');
+
+                // Validate selections
+                let isValid = true;
+                if (sizes.length > 0 && !selectedSize) {
+                    isValid = false;
+                }
+                if (colors.length > 0 && !selectedColor) {
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    errorMsg.style.display = 'block';
+                    return;
+                }
+
+                // Add to cart with size and color
+                addToCartWithOptions(currentProductElement, selectedSize, selectedColor);
+                closeSizeColorModal();
+            });
+
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('sizeColorModal');
+                if (event.target == modal) {
+                    closeSizeColorModal();
+                }
+            }
+
+            // Modified addToCart function to handle size and color
+            function addToCartWithOptions(productElement, size, color) {
+                const productId = productElement.getAttribute('product-id');
+                const productName = productElement.getAttribute('product-name');
+                const productImg = productElement.getAttribute('product-img');
+                const productPrice = parseFloat(productElement.getAttribute('product-price'));
+                const productQuantity = parseInt(productElement.getAttribute('product-quantity'));
+
+                // Get existing cart or initialize
+                let carts = JSON.parse(localStorage.getItem('carts')) || [];
+
+                // Create unique identifier including size and color
+                const uniqueId = `${productId}_${size || 'nosize'}_${color || 'nocolor'}`;
+
+                // Check if product with same size and color already exists
+                const existingProductIndex = carts.findIndex(item => 
+                    item.id == productId && item.size === size && item.color === color
+                );
+
+                if (existingProductIndex !== -1) {
+                    // Update quantity
+                    carts[existingProductIndex].quantity += productQuantity;
+                } else {
+                    // Add new product
+                    carts.push({
+                        id: productId,
+                        name: productName,
+                        img: productImg,
+                        price: productPrice,
+                        quantity: productQuantity,
+                        size: size || '',
+                        color: color || ''
+                    });
+                }
+
+                // Save to localStorage
+                localStorage.setItem('carts', JSON.stringify(carts));
+
+                // Update cart display
+                updateCartDisplay();
+
+                // Show success message
+                alert('Product added to cart successfully!');
+            }
+
+            // Original addToCart function for products without size/color
+            function addToCart(button) {
+                const productElement = button.closest('.product-single');
+                addToCartWithOptions(productElement, null, null);
+            }
+
+            // Update cart display function
+            function updateCartDisplay() {
+                const carts = JSON.parse(localStorage.getItem('carts')) || [];
+                const orderItems = document.getElementById('order-items');
+                const subtotalElement = document.getElementById('subtotal-price');
+
+                if (!orderItems) return;
+
+                orderItems.innerHTML = '';
+                let subtotal = 0;
+
+                carts.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    subtotal += itemTotal;
+
+                    let optionsText = '';
+                    if (item.size || item.color) {
+                        optionsText = '<br><small style="color: #666;">';
+                        if (item.size) optionsText += `Size: ${item.size}`;
+                        if (item.size && item.color) optionsText += ' | ';
+                        if (item.color) optionsText += `Color: ${item.color}`;
+                        optionsText += '</small>';
+                    }
+
+                    orderItems.innerHTML += `
+                        <div class="order-item">
+                            <div class="order-item-name">${item.name} × ${item.quantity}${optionsText}</div>
+                            <div class="order-item-price">৳ ${itemTotal}</div>
+                        </div>
+                    `;
+                });
+
+                subtotalElement.textContent = `৳ ${subtotal}`;
+
+                // Update total price with shipping
+                const shippingPrice = parseInt(document.getElementById('shipping-price').textContent.replace('৳', '').trim()) || 0;
+                const totalPrice = subtotal + shippingPrice;
+                document.getElementById('total-price').textContent = `৳ ${totalPrice}`;
+            }
+
             document.addEventListener("DOMContentLoaded", function () {
                 const shippingPriceElement = document.getElementById("shipping-price");
                 const totalPriceElement = document.getElementById("total-price");
@@ -728,12 +1169,15 @@ if ($row > 0) {
                     radio.addEventListener("change", updateShippingPrice);
                 });
 
+                // Initialize cart display
+                updateCartDisplay();
+
                 // Initialize the shipping price on page load
                 updateShippingPrice();
             });
 
 
-            // Send product data from the localstora to the server
+            // Send product data from the localStorage to the server
             document.addEventListener('DOMContentLoaded', () => {
                 const form = document.querySelector('form');
                 form.addEventListener('submit', (event) => {

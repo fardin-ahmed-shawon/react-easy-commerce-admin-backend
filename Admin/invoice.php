@@ -166,6 +166,7 @@ body {
                     <th class="text-end">Price</th>
                     <th class="text-center">Qty</th>
                     <th>Size</th>
+                    <th>Color</th>
                     <th class="text-end">Total</th>
                 </tr>
             </thead>
@@ -181,16 +182,17 @@ body {
                             <td class="text-end">৳ '.number_format($unit_price,2).'</td>
                             <td class="text-center">'.intval($qty).'</td>
                             <td>'.htmlspecialchars($item['product_size']).'</td>
+                            <td>'.htmlspecialchars($item['product_color'] ?? 'Default').'</td>
                             <td class="text-end">৳ '.number_format((float)$item['total_price'],2).'</td>
                           </tr>';
                 }
                 $shipping = (float)find_shipping_charge($invoice_no);
                 $total = $subtotal + $shipping - $discount_amount;
                 ?>
-                <tr><td colspan="4" class="text-end"><strong>Subtotal</strong></td><td class="text-end">৳ <?php echo number_format($subtotal,2); ?></td></tr>
-                <tr><td colspan="4" class="text-end"><strong>Shipping</strong></td><td class="text-end">৳ <?php echo number_format($shipping,2); ?></td></tr>
-                <tr><td colspan="4" class="text-end"><strong>Discount</strong></td><td class="text-end">৳ <?php echo number_format($discount_amount,2); ?></td></tr>
-                <tr><td colspan="4" class="text-end"><strong>Grand Total</strong></td><td class="text-end"><strong>৳ <?php echo number_format($total,2); ?></strong></td></tr>
+                <tr><td colspan="5" class="text-end"><strong>Subtotal</strong></td><td class="text-end">৳ <?php echo number_format($subtotal,2); ?></td></tr>
+                <tr><td colspan="5" class="text-end"><strong>Shipping</strong></td><td class="text-end">৳ <?php echo number_format($shipping,2); ?></td></tr>
+                <tr><td colspan="5" class="text-end"><strong>Discount</strong></td><td class="text-end">৳ <?php echo number_format($discount_amount,2); ?></td></tr>
+                <tr><td colspan="5" class="text-end"><strong>Grand Total</strong></td><td class="text-end"><strong>৳ <?php echo number_format($total,2); ?></strong></td></tr>
             </tbody>
         </table>
     </div>

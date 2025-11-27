@@ -52,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $product_code = $_POST['product_code'];
     $product_type = $_POST['product_type'];
     $product_sizes = isset($_POST['product_sizes']) ? $_POST['product_sizes'] : [];
+    $product_colors = isset($_POST['product_colors']) ? $_POST['product_colors'] : [];
 
 
     // Produt title to slug conversion
@@ -124,6 +125,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $size_stmt->bind_param("is", $product_id, $size);
                 $size_stmt->execute();
             }
+            // END
+
+            // Insert colors into product_color_list
+            $color_query = "INSERT INTO product_color_list (product_id, color) VALUES (?, ?)";
+            $color_stmt = $conn->prepare($color_query);
+
+            foreach ($product_colors as $color) {
+                $color_stmt->bind_param("is", $product_id, $color);
+                $color_stmt->execute();
+            }
+            // END
 
             $product_added_status = "Product Added Successfully!";
             // Delete the original images after successful database entry
@@ -244,7 +256,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         
                         <!-- Size Selection -->
                         <div class="input-box">
-                          <label class="details">Choose Size (If available)</label>
+                          <label class="details">Choose Model (If available)</label>
                           <div class="size-options">
                             <?php
                               $sql = "SELECT id, size_label FROM size_labels ORDER BY id ASC";
@@ -305,7 +317,66 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                           .size-chip span:hover {
                             background: #e5e7eb;
                           }
+
+                          /* END */
+                          .color-chip {
+                            position: relative;
+                            cursor: pointer;
+                          }
+
+                          .color-chip input {
+                            display: none; /* hide the actual checkbox */
+                          }
+
+                          .color-chip span {
+                            display: inline-block;
+                            padding: 6px 12px;
+                            border-radius: 20px;
+                            border: 1px solid #d1d5db;
+                            font-size: 14px;
+                            font-weight: 500;
+                            transition: all 0.2s ease;
+                          }
+
+                          .color-chip input:checked + span {
+                            font-size: 18px;
+                            background: #2563eb; /* blue highlight */
+                            color: #fff;
+                            border-color: 2px solid #000000ff;
+                            box-shadow: 0 15px 15px rgba(37, 99, 235, 0.3);
+                          }
+
+                          .color-chip span:hover {
+                            background: #e5e7eb;
+                          }
                         </style>
+
+                        
+                        <!-- Color Selection -->
+                        <div class="input-box">
+                          <label class="details">Choose Color (If available)</label>
+                          <div class="size-options">
+                            <?php
+                              $sql = "SELECT id, color_label, color_hex FROM color_labels ORDER BY id ASC";
+                              $result = $conn->query($sql);
+
+                              if ($result && $result->num_rows > 0) {
+                                  while ($row = $result->fetch_assoc()) {
+                                      $color = htmlspecialchars($row['color_label']);
+                                      $color_hex = htmlspecialchars($row['color_hex']);
+                                      echo '
+                                        <label class="color-chip">
+                                          <input type="checkbox" name="product_colors[]" value="' . $color . '">
+                                          <span style="background: ' . $color_hex . '; border-color: ' . $color_hex . ';">' . $color . '</span>
+                                        </label>
+                                      ';
+                                  }
+                              } else {
+                                  echo "<p>No colors found.</p>";
+                              }
+                            ?>
+                          </div>
+                        </div>
 
 
                         <!-- keyword -->
@@ -315,8 +386,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                         <!-- product code -->
                         <div class="input-box">
-                          <label class="details">SKU</label>
-                          <input name="product_code" type="text" placeholder="Enter your product SKU">
+                          <label class="details">Product Code</label>
+                          <input name="product_code" type="text" placeholder="Enter your product code">
                         </div>
                         <!-- product type -->
                         <div class="input-box">

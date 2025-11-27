@@ -27,7 +27,7 @@
             <?php if (isset($access['product']) && $access['product'] == 1): ?>
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#product" aria-expanded="false" aria-controls="product">
-                <span class="menu-title">Product</span>
+                <span class="menu-title">Products</span>
                 <i class="mdi mdi-format-list-bulleted menu-icon"></i>
               </a>
               <div class="collapse" id="product">
@@ -40,6 +40,9 @@
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="sizes.php">Sizes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="colors.php">Colors</a>
                   </li>
                 </ul>
               </div>
@@ -81,6 +84,31 @@
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="landing-page-list.php">Landing Page List</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <?php endif; ?>
+
+            <?php if (isset($access['orders']) && $access['orders'] == 1): ?>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#order" aria-expanded="false" aria-controls="order">
+                <span class="menu-title">Orders</span>
+                <i class="mdi mdi-order-bool-descending-variant menu-icon"></i>
+              </a>
+              <div class="collapse" id="order">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item">
+                    <a class="nav-link" href="pendingOrders.php">Pending Orders</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="viewOrders.php">Active Orders</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="create-order.php">Create Order</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="order-management.php">Order Management</a>
                   </li>
                 </ul>
               </div>
@@ -172,28 +200,6 @@
               }
             ?>
 
-            <?php if (isset($access['orders']) && $access['orders'] == 1): ?>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#order" aria-expanded="false" aria-controls="order">
-                <span class="menu-title">View Orders</span>
-                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              </a>
-              <div class="collapse" id="order">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="pendingOrders.php">Pending Orders</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="viewOrders.php">Active Orders</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="create-order.php">Create Order</a>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <?php endif; ?>
-
             <?php if (isset($access['payments']) && $access['payments'] == 1): ?>
             <li class="nav-item">
               <a class="nav-link" href="viewPayments.php">
@@ -259,15 +265,6 @@
               <a class="nav-link" href="inventory.php">
                 <span class="menu-title">Inventory</span>
                 <i class="mdi mdi-storefront menu-icon"></i>
-              </a>
-            </li>
-            <?php endif; ?>
-            
-            <?php if (isset($access['invoice']) && $access['invoice'] == 1): ?>
-            <li class="nav-item">
-              <a class="nav-link" href="makeInvoice.php">
-                <span class="menu-title">Make Invoice</span>
-                <i class="mdi mdi-invoice-list-outline menu-icon"></i>
               </a>
             </li>
             <?php endif; ?>

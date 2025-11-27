@@ -4,10 +4,6 @@ $page_title = 'Order Management';
 ?>
 <?php require 'header.php'; ?>
 
-<!-- SweetAlert2 CSS & JS - REMOVED, NO LONGER NEEDED -->
-<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script> -->
-
 <?php
 // --------------------
 // Fetch main categories (for the new dropdown filter)
@@ -705,7 +701,7 @@ if ($main_ctg) {
     <div class="enhanced-header">
         <h2>
             <i class="mdi mdi-package-variant"></i>
-            Order Management System
+            Order Management
         </h2>
         <p>Manage and track all your orders efficiently</p>
     </div>

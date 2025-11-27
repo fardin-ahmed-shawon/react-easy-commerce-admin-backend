@@ -62,6 +62,11 @@ if (!empty($invoice_no)) {
                                          THEN CONCAT(' - (', product_size, ')') 
                                          ELSE '' 
                                        END,
+                                       CASE 
+                                         WHEN (product_color IS NOT NULL AND product_color <> '') 
+                                         THEN CONCAT(' - (', product_color, ')') 
+                                         ELSE '' 
+                                       END,
                                        ' x', product_quantity) SEPARATOR ', ') AS products
                                 FROM order_info 
                                 WHERE invoice_no IN ($placeholders)
