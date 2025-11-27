@@ -283,6 +283,9 @@
                   <li class="nav-item">
                     <a class="nav-link" href="pathao-courier-list.php">Pathao</a>
                   </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="parcel-list.php">Parcel List</a>
+                  </li>
                 </ul>
               </div>
             </li>

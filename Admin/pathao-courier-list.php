@@ -27,7 +27,7 @@ $page_title = 'Pathao Courier'; // Set the page title
                   <h1 class="m-0 py-2">Active Orders</h1>
                   <h4>- Choose Your Order & Send to Pathao as Consignment</h4>
                 </div>
-                <!-- <a href="" class="btn btn-dark">API Setup <span class="mdi mdi-share-variant"></span></a> -->
+                <a href="pathao-api.php" class="btn btn-dark">API Setup <span class="mdi mdi-share-variant"></span></a>
             </div>
 
             <div class="row">
