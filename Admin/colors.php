@@ -231,3 +231,5 @@ document.getElementById('reset-label').addEventListener('click', function() {
     document.getElementById('colorinput').focus();
 });
 </script>
+
+<?php require 'footer.php'; ?>
