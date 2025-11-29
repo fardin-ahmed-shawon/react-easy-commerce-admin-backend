@@ -355,7 +355,11 @@ body {
 <?php
 if ($result && ($result->num_rows ?? 0) > 0) {
     $stmtOrderHeader = $conn->prepare("SELECT * FROM order_info WHERE invoice_no = ? LIMIT 1");
-    $stmtItems = $conn->prepare("SELECT * FROM order_info WHERE invoice_no = ?");
+    $stmtItems = $conn->prepare("SELECT o.* , p.product_code
+                FROM order_info o
+                LEFT JOIN product_info p ON p.product_id = o.product_id
+                WHERE invoice_no = ?
+                ");
     $stmtDiscount = $conn->prepare("SELECT total_discount_amount FROM order_discount_list WHERE invoice_no = ? LIMIT 1");
 
     while ($r = $result->fetch_assoc()) {
@@ -441,6 +445,7 @@ if ($result && ($result->num_rows ?? 0) > 0) {
             <thead>
                 <tr>
                     <th>Item</th>
+                    <th>SKU</th>
                     <th>Size</th>
                     <th class="text-center">Qty</th>
                     <th class="text-end">Price(Tk.)</th>
@@ -456,6 +461,7 @@ if ($result && ($result->num_rows ?? 0) > 0) {
                     $subtotal += (float)$item['total_price'];
                     echo '<tr>
                             <td>'.htmlspecialchars($item['product_title']).'</td>
+                            <td>'.htmlspecialchars($item['product_code']).'</td>
                             <td>'.htmlspecialchars($item['product_size']).'</td>
                             
                             <td class="text-center">'.intval($qty).'</td>

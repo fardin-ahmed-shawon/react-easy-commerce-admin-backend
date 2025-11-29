@@ -31,7 +31,11 @@ if ($dres && $dres->num_rows > 0) {
 }
 
 // Fetch items
-$stmtItems = $conn->prepare("SELECT * FROM order_info WHERE invoice_no = ?");
+$stmtItems = $conn->prepare("SELECT o.*, p.product_code 
+FROM order_info o
+LEFT JOIN product_info p ON p.product_id = o.product_id
+WHERE invoice_no = ?
+");
 $stmtItems->bind_param("s", $invoice_no);
 $stmtItems->execute();
 $itemsRes = $stmtItems->get_result();
@@ -442,6 +446,7 @@ body {
             <thead>
                 <tr>
                     <th>Item</th>
+                    <th>SKU</th>
                     <th>Size</th>
                     <th class="text-center">Qty</th>
                     <th class="text-end">Price(Tk.)</th>
@@ -457,6 +462,7 @@ body {
                     $subtotal += (float)$item['total_price'];
                     echo '<tr>
                             <td>'.htmlspecialchars($item['product_title']).'</td>
+                            <td>'.htmlspecialchars($item['product_code']).'</td>
                             <td>'.htmlspecialchars($item['product_size']).'</td>
                             
                             <td class="text-center">'.intval($qty).'</td>
@@ -467,13 +473,13 @@ body {
                 $shipping = (float)find_shipping_charge($invoice_no);
                 $total = $subtotal + $shipping - $discount_amount;
                 ?>
-                <tr><td colspan="4" class="text-end"><strong>Subtotal(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($subtotal,2); ?></strong></td></tr>
-                <tr><td colspan="4" class="text-end"><strong>Shipping Cost(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($shipping,2); ?></strong></td></tr>
-                <tr><td colspan="4" class="text-end"><strong>Discount(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($discount_amount,2); ?></strong></td></tr>
-                <tr><td colspan="4" class="text-end"><strong>Grand Total(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($total,2); ?></strong></td></tr>
+                <tr><td colspan="5" class="text-end"><strong>Subtotal(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($subtotal,2); ?></strong></td></tr>
+                <tr><td colspan="5" class="text-end"><strong>Shipping Cost(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($shipping,2); ?></strong></td></tr>
+                <tr><td colspan="5" class="text-end"><strong>Discount(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($discount_amount,2); ?></strong></td></tr>
+                <tr><td colspan="5" class="text-end"><strong>Grand Total(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($total,2); ?></strong></td></tr>
                 
                 <tr>
-                    <td colspan="7" class="text-center">
+                    <td colspan="8" class="text-center">
                         <strong>In Word(Tk.): </strong>
                             <?php
                                 echo number_formatter_to_text($total);
