@@ -28,8 +28,7 @@ $pageAccessMap = [
     'banner.php'              => 'banner',
     'discounts.php'           => 'discounts',
 
-    'add-coupons.php'         => 'coupons',
-    'view-coupons.php'        => 'coupons',
+    'coupons.php'             => 'coupons',
 
     'viewCustomers.php'       => 'customers',
 

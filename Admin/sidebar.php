@@ -119,7 +119,7 @@
             <li class="nav-item">
               <a class="nav-link" href="slider.php">
                 <span class="menu-title">Slider</span>
-                <i class="mdi mdi-panorama-variant menu-icon"></i>
+                <i class="mdi mdi-view-carousel menu-icon"></i>
               </a>
             </li>
             <?php endif; ?>
@@ -128,7 +128,7 @@
             <li class="nav-item">
               <a class="nav-link" href="banner.php">
                 <span class="menu-title">Banner</span>
-                <i class="mdi mdi-image-edit menu-icon"></i>
+                <i class="mdi mdi-image-multiple menu-icon"></i>
               </a>
             </li>
             <?php endif; ?>
@@ -144,20 +144,10 @@
 
             <?php if (isset($access['coupons']) && $access['coupons'] == 1): ?>
             <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#coupons" aria-expanded="false" aria-controls="order">
+              <a class="nav-link" href="coupons.php">
                 <span class="menu-title">Coupons</span>
                 <i class="mdi mdi-ticket-percent menu-icon"></i>
               </a>
-              <div class="collapse" id="coupons">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="add-coupons.php">Add Coupons</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="view-coupons.php">View Coupons</a>
-                  </li>
-                </ul>
-              </div>
             </li>
             <?php endif; ?>
 
