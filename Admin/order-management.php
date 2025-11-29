@@ -536,9 +536,8 @@ if ($main_ctg) {
     }
 
     .btn-outline-modern {
-        background: transparent;
-        border: 2px solid var(--border-color);
-        color: var(--dark-color);
+        background: black;
+        color: #fff;
     }
 
     .btn-sm-modern {
@@ -750,12 +749,12 @@ if ($main_ctg) {
                     </select>
                 </div>
                 
-                <div class="col-md-2 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn-modern btn-primary-modern flex-fill">
-                        <i class="mdi mdi-magnify"></i> Search
+                <div class="col-md-2 d-flex align-items-end gap-2 mb-1">
+                    <button type="submit" class="btn-modern btn-primary-modern">
+                        <i style="font-size: 18px;" class="mdi mdi-magnify"></i>
                     </button>
-                    <a href="makeInvoice.php" class="btn-modern btn-outline-modern">
-                        <i class="mdi mdi-refresh"></i>
+                    <a href="order-management.php" class="btn-modern btn-outline-modern">
+                        <i style="font-size: 18px;" class="mdi mdi-refresh"></i>
                     </a>
                 </div>
             </div>
@@ -778,7 +777,7 @@ if ($main_ctg) {
                     <i class="mdi mdi-close-circle"></i> Canceled
                 </button>
                 <button type="submit" name="filter" value="SendToSteadfast" class="status-pill <?php echo $filter == 'SendToSteadfast' ? 'active' : ''; ?>" style="background: #e0e7ff; color: #3730a3; border-color: #6366f1;">
-                    <i class="mdi mdi-send"></i> Ready to Ship
+                    <i class="mdi mdi-send"></i> Courier Booked
                 </button>
             </div>
         </form>

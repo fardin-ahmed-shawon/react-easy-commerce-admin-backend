@@ -358,37 +358,45 @@ function find_shipping_charge($invoice_no = '') {
     global $conn;
 
     // Fetch website information
-    $websiteInfoQuery = "SELECT inside_location, inside_delivery_charge, outside_delivery_charge  FROM website_info WHERE id=1";
+    $websiteInfoQuery = "SELECT inside_location, inside_delivery_charge, outside_delivery_charge  
+                         FROM website_info 
+                         WHERE id = 1 LIMIT 1";
     $websiteInfoResult = mysqli_query($conn, $websiteInfoQuery);
     $websiteInfo = mysqli_fetch_assoc($websiteInfoResult);
 
     // Delivery Information
     $inside_location = $websiteInfo['inside_location'] ?? 'Dhaka';
-    $inside_delivery_charge = $websiteInfo['inside_delivery_charge'] ?? '80';
-    $outside_delivery_charge = $websiteInfo['outside_delivery_charge'] ?? '150';
+    $inside_delivery_charge = $websiteInfo['inside_delivery_charge'] ?? 80;
+    $outside_delivery_charge = $websiteInfo['outside_delivery_charge'] ?? 150;
 
     $shipping_cost = 0;
 
-    // Check is shipping charge free or not
+    // Check if shipping is free
     if (is_shipping_charge_free($invoice_no) == 1) {
         return $shipping_cost;
     }
 
     // Fetch Order Info
     $orderInfoQuery = "SELECT city_address FROM order_info WHERE invoice_no = '$invoice_no' LIMIT 1";
-
     $orderInfoResult = mysqli_query($conn, $orderInfoQuery);
     $orderInfo = mysqli_fetch_assoc($orderInfoResult);
 
+    // ---- FIX HERE: CHECK IF RESULT IS NULL ----
+    if (!$orderInfo || empty($orderInfo['city_address'])) {
+        return $shipping_cost;  // default 0 if data missing
+    }
 
-    if ($orderInfo['city_address'] == 'Inside Dhaka') {
+    // Match city address
+    if ($orderInfo['city_address'] === 'Inside Dhaka') {
         $shipping_cost = $inside_delivery_charge;
-    } else if ($orderInfo['city_address'] == 'Outside Dhaka') {
+    } 
+    else if ($orderInfo['city_address'] === 'Outside Dhaka') {
         $shipping_cost = $outside_delivery_charge;
     }
 
     return $shipping_cost;
 }
+
 
 
 // ******* Fetch Sub Categories ********* //
@@ -741,5 +749,15 @@ function get_track_parcel_url($invoice_no= '') {
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////// END Pathao API Integrate ////////////////////////////
+
+function number_formatter_to_text($num = '') {
+    $formatter = new NumberFormatter('en_US', NumberFormatter::SPELLOUT);
+                                
+    // Convert to words
+    $words = $formatter->format($num);
+                                
+    // Make uppercase and add ONLY
+    return strtoupper($words . ' ONLY');
+}
 
 ?>

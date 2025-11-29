@@ -118,7 +118,7 @@ body {
 }
 
 .customer-info {
-    font-size: 11px;
+    font-size: 10px;
     margin: 10px 0;
     line-height: 1.5;
 }
@@ -144,7 +144,7 @@ body {
 
 .items-table {
     width: 100%;
-    font-size: 11px;
+    font-size: 10px;
     margin: 10px 0;
     border-collapse: collapse;
 }
@@ -181,7 +181,7 @@ body {
     margin-top: 10px;
     padding-top: 10px;
     border-top: 2px solid #000;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .summary-row {
@@ -191,7 +191,7 @@ body {
 }
 
 .summary-row.total {
-    font-size: 13px;
+    font-size: 10px;
     font-weight: bold;
     margin-top: 8px;
     padding-top: 8px;
@@ -211,7 +211,7 @@ body {
 }
 
 .thank-you {
-    font-size: 13px;
+    font-size: 10px;
     font-weight: bold;
     margin: 10px 0;
 }
@@ -307,8 +307,8 @@ body {
             <tr>
                 <th>Item</th>
                 <th class="text-center">Qty</th>
-                <th class="text-right">Price</th>
-                <th class="text-right">Total</th>
+                <th class="text-right">Price<br>(Tk.)</th>
+                <th class="text-right">Total<br>(Tk.)</th>
             </tr>
         </thead>
         <tbody>
@@ -320,18 +320,15 @@ body {
             $subtotal += (float)$item['total_price'];
             
             $itemName = htmlspecialchars($item['product_title']);
-            if(!empty($item['product_size']) && $item['product_size'] != 'Default') {
+            if(!empty($item['product_size']) && $item['product_size'] != 'N/A') {
                 $itemName .= ' (' . htmlspecialchars($item['product_size']) . ')';
-            }
-            if(!empty($item['product_color']) && $item['product_size'] != '') {
-                $itemName .= ' (' . htmlspecialchars($item['product_color']) . ')';
             }
         ?>
             <tr>
                 <td class="item-name"><?php echo $itemName; ?></td>
                 <td class="text-center"><?php echo intval($qty); ?></td>
-                <td class="text-right">৳<?php echo number_format($unit_price, 2); ?></td>
-                <td class="text-right">৳<?php echo number_format((float)$item['total_price'], 2); ?></td>
+                <td class="text-right"><?php echo number_format($unit_price); ?></td>
+                <td class="text-right"><?php echo number_format((float)$item['total_price']); ?></td>
             </tr>
         <?php } ?>
         </tbody>
@@ -339,40 +336,40 @@ body {
 
     <!-- Summary -->
     <?php
-    $shipping = ($order['city_address'] === "") 
-        ? $noCharge 
-        : (($order['city_address'] === "Inside Dhaka") 
-            ? $insideCharge 
-            : $outsideCharge);
+    $shipping = find_shipping_charge($invoice_no);
     
     $total = $subtotal + $shipping - $discount_amount;
     ?>
     <div class="summary">
         <div class="summary-row">
-            <span>Subtotal:</span>
-            <span>৳<?php echo number_format($subtotal, 2); ?></span>
+            <span>Subtotal(Tk.):</span>
+            <span><?php echo number_format($subtotal); ?></span>
         </div>
         <div class="summary-row">
-            <span>Delivery Charge:</span>
-            <span>৳<?php echo number_format($shipping, 2); ?></span>
+            <span>Delivery Charge(Tk.):</span>
+            <span><?php echo number_format($shipping); ?></span>
         </div>
         <?php if($discount_amount > 0): ?>
         <div class="summary-row">
-            <span>Discount:</span>
-            <span>-৳<?php echo number_format($discount_amount, 2); ?></span>
+            <span>Discount(Tk.):</span>
+            <span>-<?php echo number_format($discount_amount); ?></span>
         </div>
         <?php endif; ?>
         <div class="summary-row total">
-            <span>TOTAL:</span>
-            <span>৳<?php echo number_format($total, 2); ?></span>
+            <span>TOTAL(Tk.):</span>
+            <span><?php echo number_format($total); ?></span>
         </div>
+        <div class="summary-row total">
+            <span>IN WORD(Tk.):</span>
+            <span><?php echo number_formatter_to_text($total); ?></span>
+        </div>
+        
     </div>
 
     <!-- Footer -->
     <div class="footer">
-        <p class="thank-you">THANK YOU!</p>
-        <p>For any queries, please contact us</p>
-        <p>Visit again!</p>
+        <p class="thank-you">THANK YOU FOR SHOPPING WITH US.</p>
+        <p>For home delivery, visit our website or call us now.</p>
     </div>
 </div>
 
