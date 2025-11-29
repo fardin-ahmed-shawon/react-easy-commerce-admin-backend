@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 13, 2025 at 03:53 PM
+-- Generation Time: Nov 29, 2025 at 05:42 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -345,7 +345,8 @@ INSERT INTO `order_info` (`order_no`, `user_id`, `user_full_name`, `user_phone`,
 (1, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi', '', 'INV-68Z7PYVO7', 1, 'Mens Premium Shirt - Designer Edition', 1, 'M', NULL, 1450, 'Cash On Delivery', NULL, '2025-11-13 14:32:00', 'Processing', 'Show'),
 (2, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi', 'Outside Dhaka', 'INV-68Z7YUHVV', 18, 'Women Premium Tops -Parishas', 3, 'Default', NULL, 2580, 'Cash On Delivery', NULL, '2025-11-13 14:56:33', 'Processing', 'Show'),
 (3, 0, 'Md Jony', '01559907883', 'fardin@gmail.com', 'Dhanmondi', 'Inside Dhaka', 'INV-68Z8E37LS', 18, 'Women Premium Tops -Parishas', 1, '20', 'Red', 860, 'Cash On Delivery', NULL, '2025-11-13 15:39:13', 'Processing', 'Show'),
-(4, 0, 'Fardin Ahmed Shawon', '01944667441', '', 'Mohammadpur, Dhaka', 'Inside Dhaka', 'INV-68ZB9XAYF', 18, 'Women Premium Tops -Parishas', 1, '30', 'Blue', 860, 'Cash On Delivery', NULL, '2025-11-13 20:29:53', 'Processing', 'Show');
+(4, 0, 'Fardin Ahmed Shawon', '01944667441', '', 'Mohammadpur, Dhaka', 'Inside Dhaka', 'INV-68ZB9XAYF', 18, 'Women Premium Tops -Parishas', 1, '30', 'Blue', 860, 'Cash On Delivery', NULL, '2025-11-13 20:29:53', 'Processing', 'Show'),
+(5, 0, 'Md LLL', '01559907883', 'fardin@gmail.com', 'Dhanmondi', 'Inside Dhaka', 'INV-690HPLIP5', 18, 'Women Premium Tops -Parishas', 1, '40', 'Black', 860, 'Cash On Delivery', NULL, '2025-11-16 19:46:24', 'Pending', 'Show');
 
 -- --------------------------------------------------------
 
@@ -664,10 +665,9 @@ CREATE TABLE `slider` (
 --
 
 INSERT INTO `slider` (`slider_id`, `slider_img`) VALUES
-(13, '../img/compressed_sld2.jpg'),
-(14, '../img/compressed_sld1.jpg'),
-(15, '../img/compressed_banner1.jpg'),
-(16, '../img/compressed_banner2.jpg');
+(17, '../img/compressed_ipad-air-m3-6119.jpg'),
+(18, '../img/compressed_17-SERIES-1659.jpg'),
+(19, '../img/compressed_MacBook-Air-M4-1105.jpg');
 
 -- --------------------------------------------------------
 
@@ -819,7 +819,7 @@ CREATE TABLE `website_info` (
 --
 
 INSERT INTO `website_info` (`id`, `name`, `logo`, `logo_size`, `fav`, `address`, `inside_location`, `inside_delivery_charge`, `outside_delivery_charge`, `phone`, `wp_api_num`, `messenger_username`, `acc_num`, `email`, `fb_link`, `insta_link`, `twitter_link`, `yt_link`, `location`, `vdo_location`, `banner_one`, `banner_two`, `shop_banner`, `about_banner`, `contact_banner`, `faq_banner`, `term_banner`, `privacy_banner`, `shipping_banner`, `top_banner_ad_content`) VALUES
-(1, 'Easy Tech', 'uploads/black logo_transparent.png', '120', '', 'Dhaka, Bangladesh', 'Dhaka', 80, 150, '01XXXXXXXXX', '1XXXXXXXXX', '', '01XXXXXXXXX', 'example@gmail.com', '#', '#', '#', '#', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d58433.58839526138!2d90.35775996504786!3d23.743839015450195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755bf6de2c3b19b%3A0xeeef7eec6d1d012a!2sEasy%20Tech%20Solutions!5e0!3m2!1sen!2sbd!4v1752511116922!5m2!1sen!2sbd', '', 'uploads/ss3.jpg', 'uploads/ss2.jpg', '', '', '', '', '', '', '', 'Get 25% off on your purchase! Use this coupon code RKKXSO50PQ on the Checkout Page');
+(1, 'Easy Tech', 'uploads/easy-logo (1).png', '120', '', 'Dhaka, Bangladesh', 'Dhaka', 80, 150, '01XXXXXXXXX', '1XXXXXXXXX', '', '01XXXXXXXXX', 'example@gmail.com', '#', '#', '#', '#', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d58433.58839526138!2d90.35775996504786!3d23.743839015450195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755bf6de2c3b19b%3A0xeeef7eec6d1d012a!2sEasy%20Tech%20Solutions!5e0!3m2!1sen!2sbd!4v1752511116922!5m2!1sen!2sbd', '', 'uploads/Airpods-Pro-3-6486.jpg', 'uploads/Apple-Watch-Series-11dd-6576.jpg', '', '', '', '', '', '', '', 'Get 25% off on your purchase! Use this coupon code RKKXSO50PQ on the Checkout Page');
 
 --
 -- Indexes for dumped tables
@@ -1114,7 +1114,7 @@ ALTER TABLE `order_discount_list`
 -- AUTO_INCREMENT for table `order_info`
 --
 ALTER TABLE `order_info`
-  MODIFY `order_no` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `order_no` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `page_access`
@@ -1192,7 +1192,7 @@ ALTER TABLE `size_labels`
 -- AUTO_INCREMENT for table `slider`
 --
 ALTER TABLE `slider`
-  MODIFY `slider_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `slider_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `steadfast_info`
