@@ -91,6 +91,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <div class="content-wrapper">
+
+  <div class="page-header">
+    <h3 class="page-title">
+      <span class="page-title-icon bg-gradient-primary text-white me-2">
+        <i class="mdi mdi-order-bool-descending-variant"></i>
+      </span> Orders
+    </h3>
+  </div>
+
 <div class="container py-5">
 <div class="card shadow-lg border-0">
     <div class="card-header bg-dark text-white">
