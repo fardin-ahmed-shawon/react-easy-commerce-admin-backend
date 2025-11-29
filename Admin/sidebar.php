@@ -28,7 +28,7 @@
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#product" aria-expanded="false" aria-controls="product">
                 <span class="menu-title">Products</span>
-                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+                <i class="mdi mdi-package-variant menu-icon"></i>
               </a>
               <div class="collapse" id="product">
                 <ul class="nav flex-column sub-menu">
