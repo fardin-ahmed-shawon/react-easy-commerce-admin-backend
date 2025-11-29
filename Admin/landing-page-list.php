@@ -48,6 +48,7 @@ $page_title = 'Landing Page List';
               <td>Image</td>
               <td>Title</td>
               <td>URL</td>
+              <td>Preview</td>
               <td>Actions</td>
             </tr>
           </thead>
@@ -78,27 +79,34 @@ $page_title = 'Landing Page List';
 
             if ($result && mysqli_num_rows($result) > 0) {
               while ($item = mysqli_fetch_assoc($result)) {
-                $title = htmlspecialchars($item['product_title'], ENT_QUOTES);
-                $slug = htmlspecialchars($item['product_slug'], ENT_QUOTES);
-                $code  = htmlspecialchars($item['product_code'], ENT_QUOTES);
-                $price = htmlspecialchars($item['product_price'], ENT_QUOTES);
-                $id    = (int)$item['product_id'];
-                $landingId = (int)$item['landing_id'];
+                  $title = htmlspecialchars($item['product_title'], ENT_QUOTES);
+                  $slug = htmlspecialchars($item['product_slug'], ENT_QUOTES);
+                  $id    = (int)$item['product_id'];
+                  $landingId = (int)$item['landing_id'];
 
-                echo '<tr>';
-                echo '<td>'. $id .'</td>';
-                echo '<td><img src="../img/'. htmlspecialchars($item['product_img1']) .'" alt="img" style="width:50px;height:50px;"></td>';
-                echo '<td>'. $title .'</td>';
-                echo '<td>'.$site_link.'landing/'. $slug .'</td>';
-                echo '<td>';
-                echo '<a href="'.$site_link.'landing/'. $slug .'" class="btn btn-dark btn-sm" target="_blank">Preview <span class="mdi mdi-eye"></span></a> ';
-                echo '<button class="btn btn-dark btn-sm" onclick="confirmEdit('. $landingId .')">Edit <span class="mdi mdi-square-edit-outline"></span></button> ';
-                echo '<button class="btn btn-dark btn-sm" onclick="confirmDelete('. $id .')">Delete <span class="mdi mdi-trash-can-outline"></span></button> ';
-                echo '</td>';
-                echo '</tr>';
+                  // Single Landing URL
+                  $url = $site_link . "landing/" . $slug;
+
+                  echo "<tr>";
+                  echo "<td>{$id}</td>";
+                  echo "<td>
+                          <img src='../img/".htmlspecialchars($item['product_img1'])."' style='width:50px;height:50px;'>
+                        </td>";
+                  echo "<td>{$title}</td>";
+                  echo "<td><a href='{$url}' target='_blank'>{$url}</a></td>";
+                  echo "<td>
+                          <a href='{$url}' class='btn btn-dark btn-sm' target='_blank'>Preview</a>
+                          <button class='btn btn-primary btn-sm' onclick=\"copyURL('{$url}')\">Copy URL</button>
+                        </td>";
+                  echo "<td>
+                          <button class='btn btn-dark btn-sm' onclick='confirmEdit({$landingId})'>Edit</button>
+                          <button class='btn btn-dark btn-sm' onclick='confirmDelete({$id})'>Delete</button>
+                        </td>";
+                  echo "</tr>";
               }
+
             } else {
-              echo "<tr><td colspan='10' class='text-center text-danger'>No matching products found.</td></tr>";
+              echo "<tr><td colspan='6' class='text-center text-danger'>No matching products found.</td></tr>";
             }
             ?>
           </tbody>
@@ -132,4 +140,15 @@ $page_title = 'Landing Page List';
     });
   }
 </script>
+
+<script>
+  function copyURL(url) {
+      navigator.clipboard.writeText(url).then(() => {
+          alert("URL Copied!");
+      }).catch(err => {
+          console.error("Copy failed", err);
+      });
+  }
+</script>
+
 <?php require 'footer.php'; ?>

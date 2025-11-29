@@ -4,25 +4,21 @@ require '../database/dbConnection.php';
 
 $product_slug = $_GET['slug'] ?? '';
 
-// fetch product id based on slug
+// Fetch product id based on slug
 if ($product_slug != '') {
-
     $sql = "SELECT product_id FROM landing_pages WHERE product_slug='$product_slug'";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_num_rows($result);
 
     if ($row > 0) {
-
         $data = mysqli_fetch_assoc($result);
         $product_id = $data['product_id'];
-
     } else {
         exit;
     }
 } else {
     exit;
 }
-// END
 
 // Fetch website settings
 $sql = "SELECT * FROM website_info";
@@ -30,7 +26,6 @@ $result = mysqli_query($conn, $sql);
 $row = mysqli_num_rows($result);
 if ($row > 0) {
     while ($data = mysqli_fetch_assoc($result)) {
-
         $websiteName = $data['name'];
         $websiteAddress = $data['address'];
         $websitePhone = $data['phone'];
@@ -40,21 +35,12 @@ if ($row > 0) {
         $websiteInstaLink = $data['insta_link'];
         $websiteTwitterLink = $data['twitter_link'];
         $websiteYtLink = $data['yt_link'];
-
-        // Delivery Information
         $inside_location = $data['inside_location'];
         $inside_delivery_charge = $data['inside_delivery_charge'];
         $outside_delivery_charge = $data['outside_delivery_charge'];
-
-        // Video location
-        $vdo = '';
-
         $logo = $data['logo'];
-
     }
 }
-// END
-
 
 // Fetch Landing Page Info
 $sql = "SELECT * FROM landing_pages WHERE product_slug='$product_slug'";
@@ -62,1149 +48,1804 @@ $result = mysqli_query($conn, $sql);
 $row = mysqli_num_rows($result);
 if ($row > 0) {
     while ($data = mysqli_fetch_assoc($result)) {
-
         $home_title = $data['home_title'];
         $home_des = $data['home_description'];
         $home_img = $data['home_img'];
         $feature_img = $data['feature_img'];
+        $youtube_url = $data['yt_link'] ?? '';
+
+        $features_main_title = $data['features_main_title'];
+        $why_choose_main_title = $data['why_choose_main_title'] ?? '';
+        $why_choose_bottom_title = $data['why_choose_bottom_title'] ?? '';
+        $review_main_title = $data['review_main_title'] ?? '';
+        $checkout_main_title = $data['checkout_main_title'] ?? '';
 
     }
 }
-// END
 
-?>
+// Process Order
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $fullName = $_POST['name'];
+    $phone = $_POST['phone'];
+    $email = $_POST['email'] ?? '';
+    $address = $_POST['address'];
+    $product_selection = $_POST['product'];
+    
+    // Determine city based on product selection
+    if ($product_selection == '2-box') {
+        $city = 'Free Shipping';
+    } else {
+        $city = $_POST['shipping'] == 'inside-dhaka' ? 'Inside Dhaka' : 'Outside Dhaka';
+    }
+    
+    $payment_method = 'Cash On Delivery';
+    $user_id = 0;
 
-<!-- Checkout Start -->
-    <?php
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Retrieve form data
-            $fullName = $_POST['fullName'];
-            $phone = $_POST['phone'];
-            $email = $_POST['email'];
-            $address = $_POST['address'];
-            $city = $_POST['city'];
-            $payment_method = $_POST['payment'] ?? 'Cash On Delivery';
-            $accNum = $_POST['accNum'] ?? '';
-            $transactionID = $_POST['transactionID'] ?? '';
-            $user_id = 0;
+    
+    function generateInvoiceNo() {
+        $timestamp = microtime(true) * 10000;
+        $uniqueString = 'INV-' . strtoupper(base_convert($timestamp, 10, 36));
+        return $uniqueString;
+    }
 
-            // Generate a unique invoice number
-            function generateInvoiceNo() {
-                $timestamp = microtime(true) * 10000;
-                $uniqueString = 'INV-' . strtoupper(base_convert($timestamp, 10, 36));
-                return $uniqueString;
-            }
-            $invoice_no = generateInvoiceNo();
-            $_SESSION['temporary_invoice_no'] = $invoice_no;
 
-            // Validate payment details for mobile banking
-            if ($payment_method != "Cash On Delivery" && ($accNum == "" || $transactionID == "")) {
-                ?>
-                <META HTTP-EQUIV="Refresh" CONTENT="2; URL=index.php#checkout">
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        let msg_box = document.getElementById("msg");
-                        if (msg_box) {
-                            msg_box.style.display = "block";
-                            msg_box.innerText = "Please Provide both Account Number and Transaction ID!";
-                            setTimeout(() => {
-                                msg_box.style.display = "none";
-                            }, 3000);
-                        }
-                    });
-                </script>
-                <?php
-                exit;
-            } else {
-                // Retrieve cart data from POST request
-                $cartData = json_decode($_POST['carts'], true);
+    $invoice_no = generateInvoiceNo();
+    $_SESSION['temporary_invoice_no'] = $invoice_no;
 
-                foreach ($cartData as $product) {
-                    $product_id = $product['id'];
-                    $product_title = $product['name'];
-                    $product_quantity = $product['quantity'];
-                    $product_size = $product['size'] ?? '';
-                    $product_color = $product['color'] ?? '';
-                    $total_price = $product['price'] * $product_quantity;
-
-                    // Insert data into order_info table
-                    $sql = "INSERT INTO order_info (user_id, user_full_name, user_phone, user_email, user_address, city_address, invoice_no, product_id, product_title, product_quantity, product_size, product_color, total_price, payment_method)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param(
-                        "issssssisissis",
-                        $user_id,
-                        $fullName,
-                        $phone,
-                        $email,
-                        $address,
-                        $city,
-                        $invoice_no,
-                        $product_id,
-                        $product_title,
-                        $product_quantity,
-                        $product_size,
-                        $product_color,
-                        $total_price,
-                        $payment_method
-                    );
-
-                    if ($stmt->execute()) {
-                        if ($payment_method != "Cash On Delivery") {
-                            $order_no = $conn->insert_id;
-                            // Insert data into payment_info table
-                            $sql_payment = "INSERT INTO payment_info (invoice_no, order_no, payment_method, acc_number, transaction_id)
-                            VALUES (?, ?, ?, ?, ?)";
-                            $stmt_payment = $conn->prepare($sql_payment);
-                            $stmt_payment->bind_param("sisss", $invoice_no, $order_no, $payment_method, $accNum, $transactionID);
-                            $stmt_payment->execute();
-                            $stmt_payment->close();
-                        }
-                    }
-                    $stmt->close();
-                }
-                $conn->close();
-                // Redirect or show success message
-                echo "<script>window.location.href = 'index.php?or_msg=successful';</script>";
-                exit;
-            }
+    // Get product data from POST
+    $quantity = $_POST['quantity'] ?? 1;
+    
+    // Fetch product details
+    $sql = "SELECT * FROM product_info WHERE product_id = $product_id";
+    $result = mysqli_query($conn, $sql);
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_title = $row['product_title'];
+        $product_price = $row['product_price'];
+        $product_regular_price = $row['product_regular_price'];
+        
+        // Adjust based on selection
+        if ($product_selection == '2-box') {
+            $quantity = 2;
+            $product_title = "2 Box " . $product_title;
         }
-    ?>
+        
+        $total_price = $product_price * $quantity;
 
+        $sql = "INSERT INTO order_info (user_id, user_full_name, user_phone, user_email, user_address, city_address, invoice_no, product_id, product_title, product_quantity, total_price, payment_method)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param(
+            "issssssisiss",
+            $user_id,
+            $fullName,
+            $phone,
+            $email,
+            $address,
+            $city,
+            $invoice_no,
+            $product_id,
+            $product_title,
+            $quantity,
+            $total_price,
+            $payment_method
+        );
+
+        if ($stmt->execute()) {
+            $stmt->close();
+            $conn->close();
+            echo "<script>window.location.href = 'thank-you/order-success.php?invoice=$invoice_no';</script>";
+            exit;
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title><?php echo $websiteName; ?></title>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
-        <meta content="Product Landing Page" name="keywords">
-        <meta content="Product Landing Page" name="description">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $websiteName; ?> - <?php echo $home_title; ?></title>
+    <link href="../Admin/<?= $logo ?>" rel="icon">
+    
+    <!-- Slick Slider CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@100..800&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        <!-- Favicon -->
-        <link href="../Admin/<?= $logo ?>" rel="icon">
+        body {
+            font-family: "Anek Bangla", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
 
-        <!-- Google Fonts -->
-        <link href="https://fonts.googleapis.com/css?family=Montserrat:400|Quicksand:500,600,700&display=swap" rel="stylesheet">
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-        <!-- Remix Icons -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.css">
+        /* Header */
+        header {
+            background: #fff;
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
 
-        <!-- CSS Libraries -->
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-        <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+        .logo {
+            display: flex;
+            justify-content: center;
+        }
 
-        <!-- Template Stylesheet -->
-        <link href="css/style.css" rel="stylesheet">
-        <link href="css/checkout.css" rel="stylesheet">
+        .logo img {
+            max-width: 150px;
+            height: auto;
+        }
 
-        <style>
-            .container {
-                max-width: 1600px;
+        /* Success Message */
+        #success-box {
+            margin: auto;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 500;
+            padding: 20px;
+            color: #0A3622;
+            background: #D1E7DD;
+            position: fixed;
+            width: 100%;
+            z-index: 9999;
+            top: 0;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 10px 5px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            background: linear-gradient(135deg, #017739 0%, #04aa3e 100%);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .hero p {
+            color: #7a7a7a;
+            font-size: 1rem;
+            font-weight: 700;
+            opacity: 0.9;
+        }
+
+        /* Video Section */
+        /* Video Section with Fixed Dimensions */
+        .video-section {
+            padding: 10px 5px;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        .video-wrapper {
+            max-width: 100%;
+            width: 900px; /* Set your desired width */
+            height: 900px; /* Set your desired height */
+            margin: 0 auto;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 10px;
+            object-fit: cover; /* or use 'contain' to prevent cropping */
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 0, 0, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .play-button:hover {
+            background: rgba(255, 0, 0, 1);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .play-button::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 25px solid white;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            margin-left: 5px;
+        }
+
+        .video-iframe-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .video-iframe-container.active {
+            display: block;
+        }
+
+        .video-iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .video-wrapper {
+                width: 600px;
+                height: 600px; 
             }
-            #success-box {
-                margin: auto;
-                text-align: center;
-                font-size: 20px;
-                font-weight: 500;
-                padding: 20px;
-                color: #0A3622;
-                background: #D1E7DD;
-            }
-            #testimonials .testimonial-item img {
-                margin: 0 auto;
-                max-width: 100%;
-                max-height: 100%;
-                border: 1px solid rgba(0, 0, 0, .1);
-                border-radius: 5px;
-            }
+        }
 
-            /* Modal Styles */
-            .size-color-modal {
-                display: none;
-                position: fixed;
-                z-index: 9999;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-                overflow: auto;
+        @media (max-width: 768px) {
+            .video-wrapper {
+                width: 500px;
+                height: 500px; 
             }
-
-            .modal-content-custom {
-                background-color: #fefefe;
-                margin: 5% auto;
-                padding: 30px;
-                border: 1px solid #888;
-                border-radius: 10px;
-                width: 90%;
-                max-width: 500px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            
+            .play-button {
+                width: 60px;
+                height: 60px;
             }
-
-            .close-modal {
-                color: #aaa;
-                float: right;
-                font-size: 28px;
-                font-weight: bold;
-                cursor: pointer;
-                line-height: 20px;
+            
+            .play-button::after {
+                border-left: 18px solid white;
+                border-top: 11px solid transparent;
+                border-bottom: 11px solid transparent;
             }
+        }
 
-            .close-modal:hover,
-            .close-modal:focus {
-                color: #000;
+        @media (max-width: 480px) {
+            .video-wrapper {
+                width: 400px;
+                height: 400px; 
             }
-
-            .modal-header-custom {
-                margin-bottom: 20px;
-            }
-
-            .modal-header-custom h3 {
-                margin: 0;
-                color: #333;
-            }
-
-            .selection-group {
-                margin-bottom: 25px;
-            }
-
-            .selection-group label {
-                display: block;
-                font-weight: 600;
-                margin-bottom: 10px;
-                color: #555;
-                font-size: 16px;
-            }
-
-            .selection-options {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .option-item {
-                padding: 10px 20px;
-                border: 2px solid #ddd;
-                border-radius: 5px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                background-color: #fff;
-                font-size: 14px;
-                font-weight: 500;
-            }
-
-            .option-item:hover {
-                border-color: #007bff;
-                background-color: #f0f8ff;
-            }
-
-            .option-item.selected {
-                border-color: #007bff;
-                background-color: #007bff;
-                color: #fff;
-            }
-
-            .color-option {
+            
+            .play-button {
                 width: 50px;
                 height: 50px;
-                border-radius: 50%;
-                position: relative;
-                display: flex;
-                align-items: center;
-                justify-content: center;
             }
-
-            .color-option.selected::after {
-                content: '✓';
-                color: #fff;
-                font-size: 24px;
-                font-weight: bold;
-                text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+            
+            .play-button::after {
+                border-left: 15px solid white;
+                border-top: 9px solid transparent;
+                border-bottom: 9px solid transparent;
             }
-
-            .modal-actions {
-                display: flex;
-                gap: 10px;
-                justify-content: flex-end;
-                margin-top: 25px;
-            }
-
-            .modal-btn {
-                padding: 12px 30px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 16px;
-                font-weight: 600;
-                transition: all 0.3s ease;
-            }
-
-            .modal-btn-cancel {
-                background-color: #6c757d;
-                color: #fff;
-            }
-
-            .modal-btn-cancel:hover {
-                background-color: #5a6268;
-            }
-
-            .modal-btn-add {
-                background-color: #28a745;
-                color: #fff;
-            }
-
-            .modal-btn-add:hover {
-                background-color: #218838;
-            }
-
-            .modal-btn-add:disabled {
-                background-color: #ccc;
-                cursor: not-allowed;
-            }
-
-            .error-message {
-                color: #dc3545;
-                font-size: 14px;
-                margin-top: 10px;
-                display: none;
-            }
-        </style>
-
-    </head>
-
-    <body>
-    <?php
-        if (isset($_GET['or_msg'])) {
-            echo '<div style="z-index: 9999; position: fixed; width: 100%;" id="success-box">Order Successfully Placed...</div>';
         }
+
+        /* CTA Button */
+        .cta-button {
+            display: inline-block;
+            background: #0030FF;
+            color: #fff;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 48, 255, 0.3);
+        }
+
+        .cta-button:hover {
+            background: #4764e5ff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 48, 255, 0.4);
+        }
+
+        /* Countdown Timer */
+        .countdown-section {
+            background: #000000;
+            color: #fff;
+            padding: 6px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 30px;
+        }
+
+        .countdown-section h3 {
+            color: #f62222ff;
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            /* margin-top: 10px; */
+        }
+
+        .countdown-item {
+            /* background: rgba(255, 255, 255, 0.1); */
+            /* padding: 10px 20px; */
+            border-radius: 10px;
+        }
+
+        .countdown-item span {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: -15px;
+            padding-top: 9px;
+        }
+
+        .countdown-item label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Section Title */
+        .section-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffffffff;
+            background: #000000ff;
+            padding: 5px 0;
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        /* Features Section */
+        .features {
+            background: #fff;
+            padding: 10px 5px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0;
+            margin-top: 0;
+            background: #fff;
+        }
+
+        .feature-card {
+            background: #fff;
+            padding: 10px 5px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            margin: 0 auto 15px;
+            fill: #008000;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 10px;
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Gallery */
+        .gallery {
+            background: #f8f9fa;
+            /* padding: 60px 20px; */
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+            padding-bottom: 30px;
+        }
+
+       
+
+        .gallery-item img {
+            width: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Products Section */
+        .products {
+            background: #fff;
+            /* padding: 40px 20px; */
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+            padding-bottom: 30px;
+        }
+
+        .product-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card img {
+            width: 60%;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+
+        .product-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .product-price {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .product-price h4 {
+            color: #4caf50;
+            font-size: 1.3rem;
+        }
+
+        .product-price .old-price {
+            color: gray;
+            text-decoration: line-through;
+            font-size: 1rem;
+        }
+
+        /* Reviews */
+        .reviews {
+            background: #f8f9fa;
+            /* padding: 40px 20px; */
+        }
+
+        .reviews-slider .review-card {
+            padding: 10px;
+        }
+
+        .reviews-slider .review-card img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        /* Order Form */
+        .order-form {
+            background: #ffffffff;
+            padding: 20px 0;
+        }
+
+        .order-form .section-title {
+            background: #0030FF;
+            color: #fff;
+            font-size: 1.3rem;
+            padding: 12px 20px;
+            margin-bottom: 30px;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .form-container {
+            /* max-width: 900px; */
+            margin: 0 auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .product-selection {
+            background: transparent;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .product-option {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .product-option:hover,
+        .product-option.active {
+            border-color: #0030FF;
+        }
+
+        .product-option input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .form-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #000;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+            background: #fff;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0030FF;
+        }
+
+        .shipping-options label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .shipping-options input[type="radio"] {
+            margin-right: 8px;
+            width: auto;
+        }
+
+        .order-summary {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.95rem;
+        }
+
+        .summary-total {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #000;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #000;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #0030FF;
+            color: #fff;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            /* font-weight: 600; */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background: #0028dd;
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            background: #e3effa;
+            color: #000000ff;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #000000ff;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.5rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .countdown { gap: 10px; }
+            
+            .countdown-item span { font-size: 1.4rem; }
+        }
+    </style>
+
+    <style>
+        /* ... existing styles ... */
+        
+        /* Product Selection Table Style */
+        .product-selection {
+            margin-top: 30px;
+        }
+        
+        .product-selection-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .product-table-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            background: #f5f5f5;
+            padding: 12px 20px;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+            border: 1px solid #e0e0e0;
+            border-bottom: none;
+        }
+        
+        .product-option {
+            position: relative;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            align-items: center;
+            background: #fff;
+            padding: 20px;
+            margin: 25px 0;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* Tablet */
+        @media (max-width: 968px) {
+            .product-option {
+                grid-template-columns: 1.5fr 1fr; /* Reduce columns */
+                gap: 10px;
+                padding: 15px;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+            .product-option {
+                grid-template-columns: 1fr; /* Stack all items */
+                text-align: left;
+                padding: 12px;
+                gap: 6px;
+            }
+        }
+        
+        .product-option:first-of-type {
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .product-option:last-of-type {
+            border-radius: 8px;
+        }
+        
+        .product-option:hover {
+            background: #f9f9f9;
+        }
+        
+        .product-option.active {
+            background: #fff;
+            border-color: #0030FF;
+        }
+        
+        .discount-badge {
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            background: #0030FF;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 1;
+        }
+        
+        .free-delivery-badge {
+            position: absolute;
+            top: -20px;
+            right: 160px;
+            background: #28a745;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 1;
+        }
+        
+        .product-column {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .product-radio {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .product-info {
+            flex: 1;
+        }
+        
+        .product-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        
+        .product-save-text {
+            font-size: 0.8rem;
+            color: #28a745;
+            font-weight: 500;
+        }
+        
+        /* Quantity Controls */
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantity-btn:hover {
+            background: #0030FF;
+            color: #fff;
+            border-color: #0030FF;
+        }
+        
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .quantity-input {
+            width: 40px;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .price-column {
+            text-align: center;
+        }
+        
+        .product-regular-price {
+            font-size: 0.85rem;
+            color: #999;
+            text-decoration: line-through;
+            margin-bottom: 2px;
+        }
+        
+        .product-sale-price {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        /* Product Image in Checkout */
+        .order-product-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .order-product-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .order-product-details {
+            flex: 1;
+        }
+        
+        .order-product-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .order-product-qty {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .order-product-price {
+            font-weight: bold;
+            color: #0030FF;
+        }
+    </style>
+</head>
+<body>
+    <?php if (isset($_GET['or_msg'])): ?>
+    <div id="success-box">Order Successfully Placed...</div>
+    <script>
+        setTimeout(() => {
+            document.getElementById('success-box').style.display = 'none';
+        }, 3000);
+    </script>
+    <?php endif; ?>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="../Admin/<?= $logo ?>" alt="<?= $websiteName ?>">
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1><?= $home_title ?></h1>
+            <p><?= $home_des ?></p>
+        </div>
+    </section>
+
+    <!-- Video Section -->
+    <?php
+    if (!empty($youtube_url)) {
+        // Extract video ID from different YouTube URL formats
+        $video_id = '';
+        
+        // Handle shorts URL
+        if (preg_match('/shorts\/([a-zA-Z0-9_-]+)/', $youtube_url, $match)) {
+            $video_id = $match[1];
+        }
+        // Handle regular watch URL
+        elseif (preg_match('/watch\?v=([a-zA-Z0-9_-]+)/', $youtube_url, $match)) {
+            $video_id = $match[1];
+        }
+        // Handle youtu.be short URL
+        elseif (preg_match('/youtu\.be\/([a-zA-Z0-9_-]+)/', $youtube_url, $match)) {
+            $video_id = $match[1];
+        }
+        // Handle embed URL
+        elseif (preg_match('/embed\/([a-zA-Z0-9_-]+)/', $youtube_url, $match)) {
+            $video_id = $match[1];
+        }
+        
+        if ($video_id) {
+            $embed_url = "https://www.youtube.com/embed/$video_id?autoplay=1&rel=0";
+            $thumbnail_url = "https://img.youtube.com/vi/$video_id/maxresdefault.jpg";
     ?>
-        
-        <!-- Header Start-->
-        <div id="header" style="margin-top: 0;">
-            <div class="container">
-                <div id="logo" class="pb-5" style="border-radius: 50%; display: flex; align-items: center; justify-content: space-between;">
-                    <a href="<?= $site_link; ?>/landing/<?= $product_slug; ?>"><img style="width: 200px;" src="../Admin/<?= $logo ?>" alt="Logo" /></a>
-                </div>
-                <div class="row align-items-center">
-                    <div class="col-md-7">
-                        <div class="header-content">
-                        
-                            <h2><span>
-                                <?= $home_title; ?>
-                            </span></h2>
-
-                            <ul class="fa-ul">
-                                <li><span class="fa-li"><i class="far fa-arrow-alt-circle-right"></i>
-                                </span><?= $home_des; ?></li>
-                            </ul>
-
-                            <a class="btn" href="#products">Order Now</a>
-                        </div>
-                    </div>
-                    <div class="col-md-5">
-                        <div class="header-img">
-                            <img src="../Admin/<?= $home_img; ?>" alt="Product Image">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Header End-->
-        
-        <!-- Feature Start-->
-        <div id="feature">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Product Features</h2>
-                    <p>
-                        Our product has many features. Here are some of the features of our product. You can check out the features below.
-                    </p>
-                </div>
-                <div class="row align-items-center">
-
-                    <?php
-                        // Fetch total number of features
-                        $sql = "SELECT COUNT(*) as total FROM features";
-                        $result = mysqli_query($conn, $sql);
-                        $data = mysqli_fetch_assoc($result);
-                        $totalFeatures = $data['total'];
-
-                        // Calculate the midpoint
-                        $midpoint = ceil($totalFeatures / 2); // Round up for odd numbers
-                    ?>
-
-                    <div class="col-md-4">
-                        <!-- Fetch first half -->
-                        <?php
-                            $sql = "SELECT * FROM features WHERE product_id = $product_id  LIMIT $midpoint";
-                            $result = mysqli_query($conn, $sql);
-                            if (mysqli_num_rows($result) > 0) {
-                                while ($data = mysqli_fetch_assoc($result)) {
-                                    $ft_title = $data['feature_title'];
-                                    $ft_des = $data['feature_description'];
-
-                                    echo '
-                                        <div class="product-feature">
-                                            <div class="product-content">
-                                                <h2>'.$ft_title.'</h2>
-                                                <p>'.$ft_des.'</p>
-                                            </div>
-                                            <div class="product-icon">
-                                                <i class="fa fa-check"></i>
-                                            </div>
-                                        </div>
-                                    ';
-                                }
-                            }
-                        ?>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="product-img">
-                            <img src="../Admin/<?= $feature_img; ?>" alt="Product Image">
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <!-- Fetch second half -->
-                        <?php
-                            $sql = "SELECT * FROM features WHERE product_id = $product_id  LIMIT $midpoint, $totalFeatures";
-                            $result = mysqli_query($conn, $sql);
-                            if (mysqli_num_rows($result) > 0) {
-                                while ($data = mysqli_fetch_assoc($result)) {
-                                    $ft_title = $data['feature_title'];
-                                    $ft_des = $data['feature_description'];
-
-                                    echo '
-                                        <div class="product-feature">
-                                            <div class="product-icon">
-                                                <i class="fa fa-check"></i>
-                                            </div>
-                                            <div class="product-content">
-                                                <h2>'.$ft_title.'</h2>
-                                                <p>'.$ft_des.'</p>
-                                            </div>
-                                        </div>
-                                    ';
-                                }
-                            }
-                        ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Feature End-->
-        
-        
-        <!-- Products Start -->
-        <div id="products">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Get Your Products</h2>
-                    <p>
-                        Choose your favorite product from our collection. Here is our product collection.
-                    </p>
-                </div>
-                <div class="row align-items-center">
-                    <!-- Product List -->
-
-                    <?php 
-                        
-                        $sql = "SELECT * FROM product_info WHERE product_id = $product_id";
-                        $result = mysqli_query($conn, $sql);
-                        $row = mysqli_num_rows($result);
-
-                        if ($row > 0) {
-                            while ($data = mysqli_fetch_assoc($result)) {
-                                $productId = $data['product_id'];
-                                $productName = $data['product_title'];
-                                $productPrice = $data['product_price'];
-                                $productQuantity = $data['available_stock'];
-                                $productImg = $data['product_img1'];
-
-                                // Fetch available sizes for this product
-                                $sizes_sql = "SELECT size FROM product_size_list WHERE product_id = $productId";
-                                $sizes_result = mysqli_query($conn, $sizes_sql);
-                                $sizes = [];
-                                while ($size_row = mysqli_fetch_assoc($sizes_result)) {
-                                    $sizes[] = $size_row['size'];
-                                }
-
-                                // Fetch available colors for this product
-                                $colors_sql = "SELECT 
-                                pcl.color, cl.color_hex 
-                                FROM product_color_list AS pcl
-                                JOIN color_labels AS cl
-                                WHERE pcl.color = cl.color_label 
-                                AND product_id = $productId";
-
-                                $colors_result = mysqli_query($conn, $colors_sql);
-                                $colors = [];
-                                while ($color_row = mysqli_fetch_assoc($colors_result)) {
-                                    $colors[] = [
-                                        'name' => $color_row['color'],
-                                        'code' => $color_row['color_hex']
-                                    ];
-                                }
-
-                                $sizes_json = json_encode($sizes);
-                                $colors_json = json_encode($colors);
-
-                                echo '
-                                    <div class="col-md-3 mx-auto">
-                                        <div class="product-single" 
-                                             product-id="'.$productId.'" 
-                                             product-name="'.$productName.'" 
-                                             product-img="'.$productImg.'" 
-                                             product-price="'.$productPrice.'" 
-                                             product-quantity="1"
-                                             product-sizes=\''.htmlspecialchars($sizes_json, ENT_QUOTES, 'UTF-8').'\'
-                                             product-colors=\''.htmlspecialchars($colors_json, ENT_QUOTES, 'UTF-8').'\'>
-                                            <div class="product-img">
-                                                <img src="'.$productImg.'" alt="Product Image">
-                                            </div>
-                                            <div class="product-content">
-                                                <h2>'.$productName.'</h2>
-                                                <div style="display: flex; gap: 10px; align-items: center; justify-content: center;">
-                                                <h3>৳ '.$productPrice.'</h3>
-                                                    <h3 style="color: gray; text-decoration: line-through;">৳ '.$productPrice.'</h3>
-                                                </div>
-                                                <button class="btn" onclick="handleAddToCart(this)">Add to Cart</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ';
-
-                            }
-                        }
-
-                    ?>
-
-                </div>
-            </div>
-        </div>
-        <!-- Products End -->
-
-
-        <!-- Size and Color Selection Modal -->
-        <div id="sizeColorModal" class="size-color-modal">
-            <div class="modal-content-custom">
-                <div class="modal-header-custom">
-                    <span class="close-modal" onclick="closeSizeColorModal()">&times;</span>
-                    <h3>Select Product Options</h3>
+    
+    <section class="video-section">
+        <div class="container">
+            <div class="video-wrapper" id="videoWrapper">
+                <!-- Video Thumbnail -->
+                <div class="video-thumbnail" id="videoThumbnail" onclick="playVideo()">
+                    <img src="<?= $thumbnail_url ?>" alt="Video Thumbnail" 
+                        onerror="this.src='https://img.youtube.com/vi/<?= $video_id ?>/hqdefault.jpg'">
+                    <div class="play-button"></div>
                 </div>
                 
-                <div id="sizeSelectionGroup" class="selection-group" style="display: none;">
-                    <label>Select Size: <span style="color: red;">*</span></label>
-                    <div id="sizeOptions" class="selection-options"></div>
-                </div>
-
-                <div id="colorSelectionGroup" class="selection-group" style="display: none;">
-                    <label>Select Color: <span style="color: red;">*</span></label>
-                    <div id="colorOptions" class="selection-options"></div>
-                </div>
-
-                <p class="error-message" id="selectionError">Please select all required options</p>
-
-                <div class="modal-actions">
-                    <button class="modal-btn modal-btn-cancel" onclick="closeSizeColorModal()">Cancel</button>
-                    <button class="modal-btn modal-btn-add" id="confirmAddToCart">Add to Cart</button>
+                <!-- Video iFrame -->
+                <div class="video-iframe-container" id="videoIframe">
+                    <iframe src="" id="youtubePlayer" allowfullscreen allow="autoplay"></iframe>
                 </div>
             </div>
+            
+            <a href="#order" class="cta-button">অর্ডার করতে চাই</a>
+            <p style="font-size: 15px; color: #fc0202ff;"><b>অফারটি সীমিত সময়ের জন্য!</b></p>
+
+            
         </div>
-
-
-        <!-- Product Gallery -->
-        <div id="testimonials">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Gallery</h2>
-                    <p>
-                        Here are some of the products images from our collection. We are happy to serve you.
-                    </p>
-                </div>
-                <div class="owl-carousel testimonials-carousel">
-
-                <?php
-                    $sql = "SELECT * FROM gallery WHERE product_id = $product_id";
-                    $result = mysqli_query($conn, $sql);
-                    $row = mysqli_num_rows($result);
-                    if ($row > 0) {
-                        while ($data = mysqli_fetch_assoc($result)) {
-                            $galleryImg = $data['gallery_image'];
-
-                            echo '
-                                <div class="testimonial-item">
-                                    <img src="../Admin/'.$galleryImg.'" alt="">
-                                </div>
-                            ';
-                        }
-                    }
-                ?>
-
-                </div>
-            </div>
-        </div>
-        <!-- Product Gallery End -->
-
-
-        <div id="checkout">
-            <div class="container" id="products">
-                <div class="section-header">
-                    <h2>Checkout</h2>
-                    <p>
-                        Place your order now and get a discount. Hurry up! Limited time offer.
-                    </p>
-                </div>
-                <div class="row align-items-center">
-                    <div class="col-12">
-                        <div class="product-single">
-                            <form action="" method="post" enctype="multipart/form-data">
-                                <div class="row">
-                                    <!-- Billing Address Section -->
-                                    <div class="col-md-6 text-left">
-                                        <h4>Billing Address</h4>
-                                        <br>
-                                        <div class="content">
-                                            <div class="user-details full-input-box">
-                                                <!-- Input for Full Name -->
-                                                <div class="input-box form-group">
-                                                    <span class="details">Full Name<i class="text-danger">*</i></span>
-                                                    <input class="form-control" name="fullName" type="text" placeholder="Enter your full name" required="">
-                                                </div>
-                                                <!-- Input for Phone Number -->
-                                                <div class="input-box form-group">
-                                                    <span class="details">Phone Number<i class="text-danger">*</i></span>
-                                                    <input class="form-control" minlength="11" name="phone" type="text" placeholder="Enter your number" required="">
-                                                </div>
-                                                <!-- Input for Email -->
-                                                <div class="input-box form-group">
-                                                    <span class="details">Email</span>
-                                                    <input class="form-control" name="email" type="email" placeholder="Enter your email">
-                                                </div>
-                                                <!-- Input for Address -->
-                                                <div class="input-box form-group">
-                                                    <span class="details">Address<i class="text-danger">*</i></span>
-                                                    <input class="form-control" name="address" type="text" placeholder="Enter your address" required="">
-                                                </div>
-                                                <br>
-                                                <!-- Input for City -->
-                                                <div class="radio-input-box form-group">
-                                                    <span class="details">Choose Your Delivery Location<i class="text-danger">*</i></span>
-                                                    <br>
-                                                    <input name="city" type="radio" id="dhaka" value="Inside Dhaka" checked="">
-                                                    <label for="dhaka">Inside Dhaka</label>
-                                                    <br>
-                                                    <input name="city" type="radio" id="outside" value="Outside Dhaka">
-                                                    <label for="outside">Outside Dhaka</label>
-                                                    <br><br>
-                                                    <i>
-                                                        <p class="text-muted">* Delivery Charge Inside <?php echo $inside_location; ?> <?php echo $inside_delivery_charge; ?> ৳</p>
-                                                        <p class="text-muted">* Delivery Charge Outside <?php echo $inside_location; ?> <?php echo $outside_delivery_charge; ?> ৳</p>
-                                                    </i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Order Summary and Payment Section -->
-                                    <div class="col-md-6 text-left">
-                                        <div>
-                                            <h4>Your Order</h4>
-                                            <br>
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="order-list">
-                                                        <div class="order-titles">
-                                                            <h5>Products</h5>
-                                                            <h5>Subtotal</h5>
-                                                        </div>
-                                                        <hr>
-                                                        <div class="order-items" id="order-items">
-                                                            <!-- Cart items will be added dynamically -->
-                                                        </div>
-                                                        <div class="subtotal">
-                                                            <div class="subtotal-title">Subtotal</div>
-                                                            <div class="subtotal-price amount" id="subtotal-price">৳ </div>
-                                                        </div>
-                                                        <br>
-                                                        <div class="shipping">
-                                                            <div class="shipping-title">Shipping</div>
-                                                            <div class="shipping-price amount" id="shipping-price">৳ </div>
-                                                        </div>
-                                                        <hr>
-                                                        <div class="total-product-price">
-                                                            <div class="total-product-price-title">Total</div>
-                                                            <div class="total-product-price-price amount" id="total-price">৳ </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <br><br>
-                                        <div>
-                                            <h4>Payment Method</h4>
-                                            <br>
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="payment-method">
-                                                        <div class="payment-method-title">
-                                                            <h5>Choose Your Payment Method</h5><br>
-                                                            <p>We Accept Cash On Delivery & Mobile Banking.</p>
-                                                        </div>
-                                                        <div class="payment-method-list">
-
-                                                            <input type="radio" id="cash-on-delivery" name="payment" value="Cash On Delivery" checked>
-                                                            <label for="cash-on-delivery">Cash on Delivery</label><br>
-
-                                                            <input type="radio" id="bkash" name="payment" value="bKash">
-                                                            <label for="bkash">bKash</label><br>
-
-                                                            <!-- <input type="radio" id="rocket" name="payment" value="Rocket">
-                                                            <label for="rocket">Rocket</label><br> -->
-
-                                                            <input type="radio" id="nagad" name="payment" value="Nagad">
-                                                            <label for="nagad">Nagad</label><br>
-
-                                                        </div>
-                                                    </div>
-                                                    <br>
-                                                    <!-- Payment Details Section -->
-                                                    <div id="payment-details" style="display: none;">
-                                                        <div>
-                                                        *You Need To Send Us The <b style="color: red;">Total</b> Amount*
-                                                        <br>
-                                                        Account Number: <b style="color: red;"><?php echo $accNum;?></b>
-                                                        </div><br>
-                                                        <div class="form-group">
-                                                            <label for="accNum">Enter Account Number</label>
-                                                            <input class="form-control" name="accNum" type="text" placeholder="Enter your account number">
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="transactionID">Enter Transaction ID</label>
-                                                            <input class="form-control" name="transactionID" type="text" placeholder="Enter your transaction ID">
-                                                        </div>
-                                                    </div><br>
-                                                    <div class="checkout-btn">
-                                                        <button type="submit" class="btn btn-dark">Place Order</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const paymentRadios = document.querySelectorAll('input[name="payment"]');
-                const paymentDetails = document.getElementById('payment-details');
-
-                paymentRadios.forEach(radio => {
-                    radio.addEventListener('change', function () {
-                        if (this.value !== 'Cash On Delivery') {
-                            paymentDetails.style.display = 'block';
-                        } else {
-                            paymentDetails.style.display = 'none';
-                        }
-                    });
-                });
-            });
-        </script>
-        <!-- Checkout End -->
-
-
-        <!-- Testimonials Start -->
-        <div id="testimonials">
-            <div class="container">
-                <div class="section-header">
-                    <h2>100% Customer Satisfaction</h2>
-                    <p>
-                        Here are some of the reviews from our customers. We are happy to serve you.
-                    </p>
-                </div>
-                <div class="owl-carousel testimonials-carousel">
-
-                <?php
-                    $sql = "SELECT * FROM reviews WHERE product_id = $product_id";
-                    $result = mysqli_query($conn, $sql);
-                    $row = mysqli_num_rows($result);
-                    if ($row > 0) {
-                        while ($data = mysqli_fetch_assoc($result)) {
-                            $reviewImg = $data['review_image'];
-
-                            echo '
-                                <div class="testimonial-item">
-                                    <img src="../Admin/'.$reviewImg.'" alt="">
-                                </div>
-                            ';
-                        }
-                    }
-                ?>
-
-                </div>
-            </div>
-        </div>
-        <!-- Testimonials End -->
+    </section>
+    
+    <div style="background: #fff">
+        <h2 style="text-align: center; padding-top: 15px"><?= $checkout_main_title; ?></h2>
+    <h2 style="text-align: center; padding-bottom: 10px;color: #008000;">ডেলিভারি চার্জ সম্পূর্ণ ফ্রি
+            !</h2>
+    </div>
     
 
-        <!-- GET In Touch -->
-        <div id="faqs">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Get in Touch</h2>
-                    <p>
-                    You can contact with us through the following methods. We are here to help you.
-                    </p>
+    <script>
+        function playVideo() {
+            const thumbnail = document.getElementById('videoThumbnail');
+            const iframeContainer = document.getElementById('videoIframe');
+            const iframe = document.getElementById('youtubePlayer');
+            
+            // Hide thumbnail
+            thumbnail.style.display = 'none';
+            
+            // Show and load iframe with autoplay
+            iframeContainer.classList.add('active');
+            iframe.src = '<?= $embed_url ?>';
+        }
+    </script>
+    <?php 
+        }
+    } 
+    ?>
+
+
+    <!-- Countdown Timer -->
+    <section class="countdown-section">
+        <div class="container">
+            <h3>Limited Time OFFER!</h3>
+            <div class="countdown" id="countdown">
+                <div class="countdown-item">
+                    <span id="hours">00</span>
+                    <label>Hours</label>
                 </div>
-                <div class="row align-items-center">
-                    <div class="col-12 text-center">
-                        <div class="contact-info">
-                            <h3><i class="fa fa-map-marker"></i><?php echo $websiteAddress; ?></h3>
-                            <h3><i class="fa fa-envelope"></i><?php echo $websiteEmail; ?></h3>
-                            <h3><i class="fa fa-phone"></i><?php echo $websitePhone; ?></h3>
-                            <a class="btn" href="#">Contact Us</a>
-                            <div class="social">
-                                <a target="_blank" href="<?php echo $websiteTwitterLink; ?>"><i class="fab fa-twitter"></i></a>
-                                <a target="_blank" href="<?php echo $websiteFbLink; ?>"><i class="fab fa-facebook"></i></a>
-                                <a target="_blank" href="<?php echo $websiteInstaLink; ?>"><i class="fab fa-instagram"></i></a>
-                                <a target="_blank" href="<?php echo $websiteYtLink; ?>"><i class="fab fa-youtube"></i></a>
+                <div class="countdown-item">
+                    <span id="minutes">00</span>
+                    <label>Minutes</label>
+                </div>
+                <div class="countdown-item">
+                    <span id="seconds">00</span>
+                    <label>Seconds</label>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <h2 class="section-title" style="margin-bottom: 0"><?= $features_main_title; ?></h2>
+    <section class="features">
+        <div class="container">
+            <div class="features-grid">
+                <?php
+                $sql = "SELECT * FROM features WHERE product_id = $product_id";
+                $result = mysqli_query($conn, $sql);
+                if (mysqli_num_rows($result) > 0) {
+                    while ($data = mysqli_fetch_assoc($result)) {
+                        echo '
+                        <div class="feature-card">
+                            <svg class="feature-icon" viewBox="0 0 512 512">
+                                <path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z"></path>
+                            </svg>
+                            <h3>'.$data['feature_title'].'</h3>
+                            <p>'.$data['feature_description'].'</p>
+                        </div>';
+                    }
+                }
+                ?>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <a href="#order" class="cta-button">এখনই অর্ডার করুন</a>
+                <p style="font-size: 15px; color: #fc0202ff;"><b>Limited Time OFFER!</b></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery">
+        <div class="container">
+            <div class="gallery-grid">
+                <?php
+                $sql = "SELECT * FROM gallery WHERE product_id = $product_id";
+                $result = mysqli_query($conn, $sql);
+                if (mysqli_num_rows($result) > 0) {
+                    while ($data = mysqli_fetch_assoc($result)) {
+                        echo '<div class="gallery-item">
+                                <img src="../Admin/'.$data['gallery_image'].'" alt="Gallery Image">
+                              </div>';
+                    }
+                }
+                ?>
+            </div>
+        </div>
+    </section>
+
+
+    <style>
+        .why-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .why-list li {
+            font-size: 28px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .why-list li:last-child {
+            border-bottom: none;
+        }
+
+        .tick-icon {
+            margin-top: 3px; /* align icon with text */
+        }
+
+        .text {
+            line-height: 1.5;
+            color: #333;
+            font-size: 16px;
+        }
+    </style>
+    <!-- Why Choose Product Section -->
+    <section class="products">
+        <h2 class="section-title"><?= $why_choose_main_title; ?></h2>
+        <div class="container">
+            <div class="form-grid">
+
+                <div class="why-list">
+                    <ul>
+                        <?php
+                        $sql = "SELECT why_text FROM why_choose_product WHERE product_id = $product_id";
+                        $result = mysqli_query($conn, $sql);
+
+                        if (mysqli_num_rows($result) > 0) {
+                            while ($data = mysqli_fetch_assoc($result)) {
+                                echo '
+                                <li><b>
+                                    <span class="tick-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                            <path d="M20 6L9 17L4 12" stroke="#28a745" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </span>
+                                    <span class="text">'.$data['why_text'].'</span>
+                                </b></li>';
+                            }
+                        }
+                        ?>
+                    </ul>
+                </div>
+
+                <div>
+                    <?php
+                        $sql = "SELECT * FROM product_info WHERE product_id = $product_id";
+                        $result = mysqli_query($conn, $sql);
+                        if (mysqli_num_rows($result) > 0) {
+                            while ($data = mysqli_fetch_assoc($result)) {
+                                echo '
+                                <img style="border-radius: 10px; max-width: 100%;height: auto;display: block;" src="'.$data['product_img1'].'" alt="'.$data['product_title'].'">
+                                ';
+                            }
+                        }
+                    ?>
+                </div>
+                
+            </div>
+
+            <h2 style="
+                background: linear-gradient(135deg, #017739 0%, #04aa3e 100%);
+                border-radius: 10px;
+                color: #fff;
+                font-size: 2rem;
+                margin: 30px 0px;
+                padding: 10px;
+                text-align: center;
+                "
+            >
+            <?= $why_choose_bottom_title; ?>
+            </h2>
+
+            <div style="text-align: center;">
+                <a href="#order" class="cta-button">এখনই অর্ডার করুন</a>
+                <p style="font-size: 15px; color: #fc0202ff;"><b>Limited Time OFFER!</b></p>
+            </div>
+            <br><br>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews">
+        <h2 class="section-title"><?= $review_main_title; ?></h2>
+        <div class="container">
+            <div class="reviews-slider">
+                <?php
+                $sql = "SELECT * FROM reviews WHERE product_id = $product_id";
+                $result = mysqli_query($conn, $sql);
+                if (mysqli_num_rows($result) > 0) {
+                    while ($data = mysqli_fetch_assoc($result)) {
+                        echo '<div class="review-card">
+                                <img src="../Admin/'.$data['review_image'].'" alt="Review">
+                              </div>';
+                    }
+                }
+                ?>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="#order" class="cta-button">এখনই অর্ডার করুন</a>
+                <p style="font-size: 15px; color: #fc0202ff;"><b>Limited Time OFFER!</b></p>
+            </div>
+        </div>
+    </section><br>
+
+    <!-- OFfer section -->
+    <?php
+
+    $sql = "SELECT * FROM product_info WHERE product_id = $product_id";
+    $result = mysqli_query($conn, $sql);
+    if ($row = mysqli_fetch_assoc($result)) {
+        $product_price = $row['product_price'];
+        $product_regular_price = $row['product_regular_price'];
+    }
+
+    // ******* Calculate Product Discount Percentage ********* //
+    function get_product_discount_percentage($regular_price = '', $selling_price = '') {
+        // Defensive checks
+        if (!is_numeric($regular_price) || !is_numeric($selling_price)) {
+            return 0; // invalid input
+        }
+
+        if ($regular_price <= 0 || $selling_price < 0 || $selling_price >= $regular_price) {
+            return 0; // no discount
+        }
+
+        // Calculate discount percentage
+        $discount = (($regular_price - $selling_price) / $regular_price) * 100;
+
+        return round($discount); // rounded percentage
+    }
+
+    ?>
+    <section class="offers">
+    <div class="container">
+        <div class="offer-card">
+            <h2 class="offer-title">Extra <span class="accent"><?php echo get_product_discount_percentage($product_regular_price, $product_price) ?>% Off!</span></h2>
+
+            <hr class="divider">
+
+            <p class="orig-price">
+                রেগুলার মূল্য:
+                <span class="strike"><?= $product_regular_price ?> Tk.</span>
+            </p>
+
+            <p class="deal-price">
+                অফার মূল্য: <strong><?= $product_price ?> Tk.</strong>
+                <br>
+                <span class="wavy" aria-hidden="true"></span>
+            </p>
+
+            <!-- decorative image (uses your uploaded file) -->
+            <img class="offer-deco" src="/mnt/data/7693a936-693a-4c81-863b-bc815249604a.png" alt="">
+        </div>
+    </div>
+    </section>
+
+    <style>
+    /* container reset */
+    .offers { background: #d8f3fb; padding: 12px 0; font-family: "Helvetica Neue", Arial, sans-serif; }
+    .offers .container { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+    /* card */
+    .offer-card {
+    position: relative;
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+    overflow: visible;
+    }
+
+    /* title */
+    .offer-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #0b2436;
+    letter-spacing: 0.2px;
+    }
+    .offer-title .accent {
+    color: #1fa83a;            /* green */
+    font-weight: 600;
+    }
+
+    /* divider */
+    .divider {
+    margin: 18px auto;
+    width: 92%;
+    border: none;
+    border-top: 1px solid rgba(11,36,54,0.15);
+    }
+
+    /* original price row */
+    .orig-price {
+    margin: 12px 0 6px;
+    color: #54595f;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.2;
+    }
+    .orig-price .strike {
+    color: #e23b3b;
+    margin-left: 8px;
+    text-decoration: line-through;
+    font-weight: 700;
+    }
+
+    /* deal price row */
+    .deal-price {
+    margin: 6px 0 0;
+    font-size: 26px;
+    font-weight: 800;
+    color: #071d1f;
+    position: relative;
+    display: inline-block;
+    }
+
+    /* wavy underline: using SVG data-URI background for a green squiggle under the price */
+    .deal-price .wavy {
+    display: inline-block;
+    width: 120px;
+    height: 18px;
+    vertical-align: middle;
+    margin-left: 8px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='18' viewBox='0 0 120 18'><path d='M0 9c10-6 20 6 30 0s20-6 30 0 20 6 30 0 20-6 30 0' fill='none' stroke='%231fa83a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-size: contain;
+    transform: translateY(2px);
+    pointer-events: none;
+    }
+
+    /* decorative image (optional) */
+    .offer-deco {
+    position: absolute;
+    right: 18px;
+    bottom: -18px;
+    width: 140px;
+    opacity: 0.12;
+    transform: rotate(-6deg);
+    user-select: none;
+    pointer-events: none;
+    }
+
+    /* responsive tweaks */
+    @media (max-width: 640px) {
+    .offer-title { font-size: 20px; }
+    .deal-price { font-size: 20px; }
+    .deal-price .wavy { width: 90px; height: 14px; }
+    .offer-deco { width: 100px; right: 8px; bottom: -12px; }
+    }
+
+    .deal-price .wavy {
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 200px;
+        height: 6px;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='6' viewBox='0 0 200 6'><path d='M0 3 Q5 0, 10 3 T20 3 T30 3 T40 3 T50 3 T60 3 T70 3 T80 3 T90 3 T100 3 T110 3 T120 3 T130 3 T140 3 T150 3 T160 3 T170 3 T180 3 T190 3 T200 3' fill='none' stroke='%231fa83a' stroke-width='2' stroke-linecap='round'/></svg>");
+        background-repeat: repeat-x;
+        background-size: 200px 6px;
+        animation: wave-move 2s linear infinite;
+    }
+    </style>
+
+    <!-- End -->
+
+    <!-- Order Form Section -->
+     <section class="order-form" id="order">
+        <div class="container">
+            <h2 class="section-title"><?= $checkout_main_title; ?></h2>
+            <h3 style="text-align: center; margin-bottom: 40px;">নিচের ফর্মে আপনার নাম, মোবাইল নম্বর ও সম্পূর্ণ ঠিকানা লিখে "Place Order" ক্লিক করুন</h3>
+            <div class="form-container">
+                <form method="POST" action="" id="orderForm">
+                    <div class="form-grid">
+                        <div>
+                            <h3 class="form-section-title">Billing details</h3>
+                            
+                            <div class="form-group">
+                                <label for="name">Your Name *</label>
+                                <input type="text" id="name" name="name" placeholder="Type your full Name here...." required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="address">Your Address *</label>
+                                <textarea id="address" name="address" rows="3" placeholder="Type your full Address here...." required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Your Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" placeholder="Type your 11 digits Number here...." required pattern="[0-9]{11}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Your Email (Optional)</label>
+                                <input type="email" id="email" name="email" placeholder="Type your email here....">
+                            </div>
+
+                            <div class="product-selection">
+                                <h3 class="product-selection-title">Your Product</h3>
+                                
+                                <div class="product-table-header">
+                                    <div>Product</div>
+                                    <div style="text-align: center;">Quantity</div>
+                                    <div style="text-align: center;">Price</div>
+                                </div>
+                                
+                                <?php
+                                $sql = "SELECT * FROM product_info WHERE product_id = $product_id LIMIT 1";
+                                $result = mysqli_query($conn, $sql);
+                                if ($row = mysqli_fetch_assoc($result)) {
+                                    $productTitle = $row['product_title'];
+                                    $productPrice = $row['product_price'];
+                                    $productRegularPrice = $row['product_regular_price'];
+                                    $productImg = $row['product_img1'];
+                                    $doublePrice = $productPrice * 2;
+                                    $doubleRegularPrice = $productRegularPrice * 2;
+                                    
+                                    // Calculate discount percentages
+                                    $discount1 = round((($productRegularPrice - $productPrice) / $productRegularPrice) * 100);
+                                    $discount2 = round((($doubleRegularPrice - $doublePrice) / $doubleRegularPrice) * 100);
+                                    $saving1 = $productRegularPrice - $productPrice;
+                                    $saving2 = $doubleRegularPrice - $doublePrice;
+                                    
+                                    echo '
+                                    <div class="product-option active" data-price="'.$productPrice.'" data-regular-price="'.$productRegularPrice.'" data-shipping="'.$outside_delivery_charge.'" data-img="'.$productImg.'" data-title="'.$productTitle.'">
+                                        <div class="discount-badge">EXTRA '.$discount1.'% OFF!</div>
+                                        
+                                        <div class="product-column">
+                                            <input type="radio" name="product" id="product1" value="1-box" class="product-radio" checked>
+                                            <div class="product-info">
+                                                <label for="product1" class="product-title">
+                                                    1 X '.$productTitle.' (5 Pair in 1 Box)
+                                                </label>
+                                                <div class="product-save-text">SAVE ৳'.$saving1.'</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="quantity-controls">
+                                            <button type="button" class="quantity-btn" onclick="decreaseQty(1)">-</button>
+                                            <input type="text" class="quantity-input" id="qty1" value="1" readonly>
+                                            <button type="button" class="quantity-btn" onclick="increaseQty(1)">+</button>
+                                        </div>
+                                        
+                                        <div class="price-column">
+                                            <div class="product-regular-price">৳'.$productRegularPrice.'</div>
+                                            <div class="product-sale-price" id="price1">৳'.$productPrice.'</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="product-option" data-price="'.$doublePrice.'" data-regular-price="'.$doubleRegularPrice.'" data-shipping="0" data-img="'.$productImg.'" data-title="'.$productTitle.'">
+                                        <div class="free-delivery-badge">FREE DELIVERY</div>
+                                        <div class="discount-badge">EXTRA '.$discount2.'% OFF!</div>
+                                        
+                                        <div class="product-column">
+                                            <input type="radio" name="product" id="product2" value="2-box" class="product-radio">
+                                            <div class="product-info">
+                                                <label for="product2" class="product-title">
+                                                    2 X '.$productTitle.' (10 Pair in 2 Box)
+                                                </label>
+                                                <div class="product-save-text">SAVE ৳'.$saving2.' + DELIVERY CHARGE FREE</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="quantity-controls">
+                                            <button type="button" class="quantity-btn" onclick="decreaseQty(2)">-</button>
+                                            <input type="text" class="quantity-input" id="qty2" value="1" readonly>
+                                            <button type="button" class="quantity-btn" onclick="increaseQty(2)">+</button>
+                                        </div>
+                                        
+                                        <div class="price-column">
+                                            <div class="product-regular-price">৳'.$doubleRegularPrice.'</div>
+                                            <div class="product-sale-price" id="price2">৳'.$doublePrice.'</div>
+                                        </div>
+                                    </div>';
+                                }
+                                ?>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="form-section-title">Your order</h3>
+                            
+                            <div class="order-summary">
+                                <?php
+                                $sql = "SELECT * FROM product_info WHERE product_id = $product_id LIMIT 1";
+                                $result = mysqli_query($conn, $sql);
+                                $defaultProduct = mysqli_fetch_assoc($result);
+                                $defaultPrice = $defaultProduct['product_price'];
+                                $defaultImg = $defaultProduct['product_img1'];
+                                $defaultTotal = $defaultPrice + $outside_delivery_charge;
+                                ?>
+                                
+                                <div class="order-product-row" id="orderProductRow">
+                                    <img src="<?= $defaultImg ?>" alt="Product" class="order-product-img" id="orderProductImg">
+                                    <div class="order-product-details">
+                                        <div class="order-product-name" id="productName"><?= $defaultProduct['product_title'] ?></div>
+                                        <div class="order-product-qty" id="productQty">Quantity: 1</div>
+                                    </div>
+                                    <div class="order-product-price" id="productPrice">৳<?= number_format($defaultPrice, 2) ?></div>
+                                </div>
+
+                                <div class="summary-row">
+                                    <span>Subtotal</span>
+                                    <span id="subtotal">৳<?= number_format($defaultPrice, 2) ?></span>
+                                </div>
+
+                                <div class="summary-row" id="shippingRow">
+                                    <span>Shipping</span>
+                                    <span id="shippingOptions">
+                                        <div class="shipping-options" style="text-align: right;">
+                                            <label>
+                                                <input type="radio" name="shipping" value="outside-dhaka" data-cost="<?= $outside_delivery_charge ?>" checked>
+                                                Outside Dhaka: ৳<?= $outside_delivery_charge ?>
+                                            </label>
+                                            <label>
+                                                <input type="radio" name="shipping" value="inside-dhaka" data-cost="<?= $inside_delivery_charge ?>">
+                                                Inside Dhaka: ৳<?= $inside_delivery_charge ?>
+                                            </label>
+                                        </div>
+                                    </span>
+                                </div>
+
+                                <div class="summary-row summary-total">
+                                    <span>Total</span>
+                                    <span id="total">৳<?= number_format($defaultTotal, 2) ?></span>
+                                </div>
+                                
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                    <h4 style="margin: 0 0 10px 0; font-size: 1.1rem; color: #333;">Cash on delivery</h4>
+                                    <p style="margin: 0; color: #666; font-size: 0.9rem;">Pay with cash upon delivery.</p>
+                                </div>
+
+                                <button type="submit" class="submit-btn">
+                                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 8px; vertical-align: middle;">
+                                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                                    </svg>
+                                    Place Order <span id="orderTotal">৳<?= number_format($defaultTotal, 2) ?></span>
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
+                    <input type="hidden" name="quantity" id="quantityField" value="1">
+                </form>
             </div>
         </div>
-        <!-- GET In Touch Start -->
+    </section>
 
-
-        <!-- Footer Start -->
-        <div id="footer">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-12">
-                        <p>&copy; Copyright Easy Tech Solutions</a>. All Rights Reserved</p>
-                    </div>
-                </div>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="tel:<?= $websitePhone ?>">Call us: <?= $websitePhone ?></a>
+                <!-- <a href="#">Privacy Policy</a>
+                <a href="#">Terms & Conditions</a> -->
             </div>
+            <p>© <?= date('Y') ?> <?= $websiteName ?>. All Rights Reserved</p>
         </div>
-        <!-- Footer End -->
-        
-        
-        <!-- Back to Top -->
-        <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
+    </footer>
 
-        
-        <!-- JavaScript Libraries -->
-        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-        <script src="lib/easing/easing.min.js"></script>
-        <script src="lib/menuspy/menuspy.min.js"></script>
-        <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Slick Slider JS -->
+    <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    
+    <script>
+        // Slick Slider
+        $('.reviews-slider').slick({
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            autoplay: true,
+            autoplaySpeed: 2500,
+            arrows: false,
+            dots: true,
+            responsive: [
+                { breakpoint: 992, settings: { slidesToShow: 2 } },
+                { breakpoint: 768, settings: { slidesToShow: 1 } }
+            ]
+        });
 
-        <!-- Template Javascript -->
-        <script src="js/main.js"></script>
-        <script src="js/cart_calculation.js"></script>
+        // Countdown Timer
+        function startCountdown() {
 
-        <script>
-            // Global variables for modal
-            let currentProductElement = null;
-            let selectedSize = null;
-            let selectedColor = null;
+            function updateCountdown() {
+                const now = new Date();
 
-            // Handle Add to Cart button click
-            function handleAddToCart(button) {
-                const productDiv = button.closest('.product-single');
-                const sizes = JSON.parse(productDiv.getAttribute('product-sizes') || '[]');
-                const colors = JSON.parse(productDiv.getAttribute('product-colors') || '[]');
+                // Countdown resets every day at midnight (24:00:00)
+                const endDate = new Date();
+                endDate.setHours(24, 0, 0, 0);
 
-                // If no size and no color, add directly to cart
-                if (sizes.length === 0 && colors.length === 0) {
-                    addToCart(button);
+                const distance = endDate - now;
+
+                if (distance <= 0) {
+                    document.getElementById('countdown').innerHTML = '<p>Offer Ended!</p>';
                     return;
                 }
 
-                // Store current product element
-                currentProductElement = productDiv;
-                selectedSize = null;
-                selectedColor = null;
+                const hours = Math.floor(distance / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-                // Open modal and populate options
-                openSizeColorModal(sizes, colors);
+                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
             }
 
-            // Open the size/color selection modal
-            function openSizeColorModal(sizes, colors) {
-                const modal = document.getElementById('sizeColorModal');
-                const sizeGroup = document.getElementById('sizeSelectionGroup');
-                const colorGroup = document.getElementById('colorSelectionGroup');
-                const sizeOptions = document.getElementById('sizeOptions');
-                const colorOptions = document.getElementById('colorOptions');
-                const errorMsg = document.getElementById('selectionError');
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
 
-                // Clear previous selections
-                sizeOptions.innerHTML = '';
-                colorOptions.innerHTML = '';
-                errorMsg.style.display = 'none';
 
-                // Show/hide size selection
-                if (sizes.length > 0) {
-                    sizeGroup.style.display = 'block';
-                    sizes.forEach(size => {
-                        const sizeDiv = document.createElement('div');
-                        sizeDiv.className = 'option-item';
-                        sizeDiv.textContent = size;
-                        sizeDiv.onclick = function() {
-                            // Remove selected class from all size options
-                            document.querySelectorAll('#sizeOptions .option-item').forEach(el => {
-                                el.classList.remove('selected');
-                            });
-                            // Add selected class to clicked option
-                            this.classList.add('selected');
-                            selectedSize = size;
-                            errorMsg.style.display = 'none';
-                        };
-                        sizeOptions.appendChild(sizeDiv);
-                    });
-                } else {
-                    sizeGroup.style.display = 'none';
-                }
+        // Store shipping costs
+        const shippingCosts = {
+            inside: <?= $inside_delivery_charge ?>,
+            outside: <?= $outside_delivery_charge ?>
+        };
 
-                // Show/hide color selection
-                if (colors.length > 0) {
-                    colorGroup.style.display = 'block';
-                    colors.forEach(color => {
-                        const colorDiv = document.createElement('div');
-                        colorDiv.className = 'option-item color-option';
-                        colorDiv.style.backgroundColor = color.code;
-                        colorDiv.title = color.name;
-                        colorDiv.onclick = function() {
-                            // Remove selected class from all color options
-                            document.querySelectorAll('#colorOptions .option-item').forEach(el => {
-                                el.classList.remove('selected');
-                            });
-                            // Add selected class to clicked option
-                            this.classList.add('selected');
-                            selectedColor = color.name;
-                            errorMsg.style.display = 'none';
-                        };
-                        colorOptions.appendChild(colorDiv);
-                    });
-                } else {
-                    colorGroup.style.display = 'none';
-                }
+        // Store original shipping HTML
+        const originalShippingHTML = `
+            <div class="shipping-options" style="text-align: right;">
+                <label>
+                    <input type="radio" name="shipping" value="outside-dhaka" data-cost="${shippingCosts.outside}" checked>
+                    Outside Dhaka: ৳${shippingCosts.outside}
+                </label>
+                <label>
+                    <input type="radio" name="shipping" value="inside-dhaka" data-cost="${shippingCosts.inside}">
+                    Inside Dhaka: ৳${shippingCosts.inside}
+                </label>
+            </div>
+        `;
 
-                // Show modal
-                modal.style.display = 'block';
+        // Quantity Management
+        let quantities = {
+            1: 1,
+            2: 1
+        };
+
+        function increaseQty(product) {
+            quantities[product]++;
+            document.getElementById('qty' + product).value = quantities[product];
+            updateOrderSummary();
+        }
+
+        function decreaseQty(product) {
+            if (quantities[product] > 1) {
+                quantities[product]--;
+                document.getElementById('qty' + product).value = quantities[product];
+                updateOrderSummary();
             }
+        }
 
-            // Close the modal
-            function closeSizeColorModal() {
-                const modal = document.getElementById('sizeColorModal');
-                modal.style.display = 'none';
-                currentProductElement = null;
-                selectedSize = null;
-                selectedColor = null;
-            }
-
-            // Confirm add to cart from modal
-            document.getElementById('confirmAddToCart').addEventListener('click', function() {
-                const sizes = JSON.parse(currentProductElement.getAttribute('product-sizes') || '[]');
-                const colors = JSON.parse(currentProductElement.getAttribute('product-colors') || '[]');
-                const errorMsg = document.getElementById('selectionError');
-
-                // Validate selections
-                let isValid = true;
-                if (sizes.length > 0 && !selectedSize) {
-                    isValid = false;
-                }
-                if (colors.length > 0 && !selectedColor) {
-                    isValid = false;
-                }
-
-                if (!isValid) {
-                    errorMsg.style.display = 'block';
-                    return;
-                }
-
-                // Add to cart with size and color
-                addToCartWithOptions(currentProductElement, selectedSize, selectedColor);
-                closeSizeColorModal();
-            });
-
-            // Close modal when clicking outside
-            window.onclick = function(event) {
-                const modal = document.getElementById('sizeColorModal');
-                if (event.target == modal) {
-                    closeSizeColorModal();
-                }
-            }
-
-            // Modified addToCart function to handle size and color
-            function addToCartWithOptions(productElement, size, color) {
-                const productId = productElement.getAttribute('product-id');
-                const productName = productElement.getAttribute('product-name');
-                const productImg = productElement.getAttribute('product-img');
-                const productPrice = parseFloat(productElement.getAttribute('product-price'));
-                const productQuantity = parseInt(productElement.getAttribute('product-quantity'));
-
-                // Get existing cart or initialize
-                let carts = JSON.parse(localStorage.getItem('carts')) || [];
-
-                // Create unique identifier including size and color
-                const uniqueId = `${productId}_${size || 'nosize'}_${color || 'nocolor'}`;
-
-                // Check if product with same size and color already exists
-                const existingProductIndex = carts.findIndex(item => 
-                    item.id == productId && item.size === size && item.color === color
-                );
-
-                if (existingProductIndex !== -1) {
-                    // Update quantity
-                    carts[existingProductIndex].quantity += productQuantity;
-                } else {
-                    // Add new product
-                    carts.push({
-                        id: productId,
-                        name: productName,
-                        img: productImg,
-                        price: productPrice,
-                        quantity: productQuantity,
-                        size: size || '',
-                        color: color || ''
-                    });
-                }
-
-                // Save to localStorage
-                localStorage.setItem('carts', JSON.stringify(carts));
-
-                // Update cart display
-                updateCartDisplay();
-
-                // Show success message
-                alert('Product added to cart successfully!');
-            }
-
-            // Original addToCart function for products without size/color
-            function addToCart(button) {
-                const productElement = button.closest('.product-single');
-                addToCartWithOptions(productElement, null, null);
-            }
-
-            // Update cart display function
-            function updateCartDisplay() {
-                const carts = JSON.parse(localStorage.getItem('carts')) || [];
-                const orderItems = document.getElementById('order-items');
-                const subtotalElement = document.getElementById('subtotal-price');
-
-                if (!orderItems) return;
-
-                orderItems.innerHTML = '';
-                let subtotal = 0;
-
-                carts.forEach(item => {
-                    const itemTotal = item.price * item.quantity;
-                    subtotal += itemTotal;
-
-                    let optionsText = '';
-                    if (item.size || item.color) {
-                        optionsText = '<br><small style="color: #666;">';
-                        if (item.size) optionsText += `Size: ${item.size}`;
-                        if (item.size && item.color) optionsText += ' | ';
-                        if (item.color) optionsText += `Color: ${item.color}`;
-                        optionsText += '</small>';
-                    }
-
-                    orderItems.innerHTML += `
-                        <div class="order-item">
-                            <div class="order-item-name">${item.name} × ${item.quantity}${optionsText}</div>
-                            <div class="order-item-price">৳ ${itemTotal}</div>
-                        </div>
-                    `;
-                });
-
-                subtotalElement.textContent = `৳ ${subtotal}`;
-
-                // Update total price with shipping
-                const shippingPrice = parseInt(document.getElementById('shipping-price').textContent.replace('৳', '').trim()) || 0;
-                const totalPrice = subtotal + shippingPrice;
-                document.getElementById('total-price').textContent = `৳ ${totalPrice}`;
-            }
-
-            document.addEventListener("DOMContentLoaded", function () {
-                const shippingPriceElement = document.getElementById("shipping-price");
-                const totalPriceElement = document.getElementById("total-price");
-                const subtotalPriceElement = document.getElementById("subtotal-price");
-
-                // Function to update shipping price dynamically
-                function updateShippingPrice() {
-                    const selectedCity = document.querySelector('input[name="city"]:checked').value;
-                    let shippingPrice = 0;
-
-                    if (selectedCity === "Inside Dhaka") {
-                        shippingPrice = <?php echo $inside_delivery_charge; ?>;
-                    } else if (selectedCity === "Outside Dhaka") {
-                        shippingPrice = <?php echo $outside_delivery_charge; ?>;
-                    }
-
-                    // Update the shipping price in the DOM
-                    shippingPriceElement.textContent = `৳ ${shippingPrice}`;
-
-                    // Update the total price
-                    const subtotal = parseInt(subtotalPriceElement.textContent.replace("৳", "").trim());
-                    const totalPrice = subtotal + shippingPrice;
-                    totalPriceElement.textContent = `৳ ${totalPrice}`;
-                }
-
-                // Add event listeners to the radio buttons
-                const cityRadios = document.querySelectorAll('input[name="city"]');
-                cityRadios.forEach(radio => {
-                    radio.addEventListener("change", updateShippingPrice);
-                });
-
-                // Initialize cart display
-                updateCartDisplay();
-
-                // Initialize the shipping price on page load
-                updateShippingPrice();
-            });
-
-
-            // Send product data from the localStorage to the server
-            document.addEventListener('DOMContentLoaded', () => {
-                const form = document.querySelector('form');
-                form.addEventListener('submit', (event) => {
-                    event.preventDefault();
-
-                    const carts = JSON.parse(localStorage.getItem('carts')) || [];
-                    const formData = new FormData(form);
-
-                    // Add cart data to form data
-                    formData.append('carts', JSON.stringify(carts));
-
-                    // Send the form data to the server
-                    fetch(form.action, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.text())
-                    .then(data => {
-                        document.body.innerHTML = data;
-                        localStorage.clear();
-                        window.location.href = "<?= $site_link;?>/landing/<?= $product_slug; ?>?or_msg=successful";
-                    })
-                    .catch(error => console.error('Error:', error));
+        // Attach shipping event listeners
+        function attachShippingListeners() {
+            document.querySelectorAll('input[name="shipping"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateOrderSummary();
                 });
             });
+        }
 
-        </script>
+        // Order Calculation
+        function updateOrderSummary() {
+            const selectedProduct = document.querySelector('input[name="product"]:checked');
+            
+            if (!selectedProduct) return;
 
-    </body>
+            const productOption = selectedProduct.closest('.product-option');
+            const basePrice = parseInt(productOption.dataset.price);
+            const baseRegularPrice = parseInt(productOption.dataset.regularPrice);
+            const productShipping = parseInt(productOption.dataset.shipping);
+            const productImg = productOption.dataset.img;
+            const productTitle = productOption.dataset.title;
+            const productId = selectedProduct.value === '1-box' ? 1 : 2;
+            const quantity = quantities[productId];
+            
+            // Calculate prices
+            const subtotal = basePrice * quantity;
+            const regularTotal = baseRegularPrice * quantity;
+            
+            // Update individual product price display
+            document.getElementById('price' + productId).textContent = '৳' + subtotal.toFixed(2);
+            
+            let shippingPrice = 0;
+            
+            // Update shipping options based on product selection
+            const shippingContainer = document.getElementById('shippingOptions');
+            const shippingRow = document.getElementById('shippingRow');
+            
+            if (productShipping === 0) {
+                // Free delivery for 2-box option
+                shippingContainer.innerHTML = '<span style="color: #4caf50; font-weight: bold;">FREE DELIVERY</span>';
+                shippingPrice = 0;
+            } else {
+                // Check if we need to restore shipping options
+                const currentShippingInputs = shippingContainer.querySelectorAll('input[name="shipping"]');
+                
+                if (currentShippingInputs.length === 0) {
+                    // Restore original shipping options
+                    shippingContainer.innerHTML = originalShippingHTML;
+                    // Re-attach event listeners
+                    attachShippingListeners();
+                }
+                
+                // Get selected shipping cost
+                const selectedShipping = document.querySelector('input[name="shipping"]:checked');
+                if (selectedShipping) {
+                    shippingPrice = parseInt(selectedShipping.dataset.cost);
+                }
+            }
+
+            const total = subtotal + shippingPrice;
+
+            // Update quantity field
+            const totalQuantity = selectedProduct.value === '1-box' ? quantity : quantity * 2;
+            document.getElementById('quantityField').value = totalQuantity;
+
+            // Update product display with image
+            document.getElementById('orderProductImg').src = productImg;
+            document.getElementById('productName').textContent = productTitle + (selectedProduct.value === '2-box' ? ' (2 Box)' : '');
+            document.getElementById('productQty').textContent = 'Quantity: ' + quantity;
+            document.getElementById('productPrice').textContent = '৳' + subtotal.toFixed(2);
+            
+            // Update summary
+            document.getElementById('subtotal').textContent = '৳' + subtotal.toFixed(2);
+            document.getElementById('total').textContent = '৳' + total.toFixed(2);
+            document.getElementById('orderTotal').textContent = '৳' + total.toFixed(2);
+        }
+
+        // Product Selection
+        document.querySelectorAll('input[name="product"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.product-option').forEach(option => {
+                    option.classList.remove('active');
+                    option.style.borderColor = '#e0e0e0';
+                });
+                this.closest('.product-option').classList.add('active');
+                this.closest('.product-option').style.borderColor = '#0030FF';
+                updateOrderSummary();
+            });
+        });
+
+        // Initial shipping listeners
+        attachShippingListeners();
+
+        // Initialize
+        updateOrderSummary();
+
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Form Validation
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            const phone = document.getElementById('phone').value;
+            if (!/^[0-9]{11}$/.test(phone)) {
+                e.preventDefault();
+                alert('Please enter a valid 11-digit phone number');
+                return false;
+            }
+        });
+
+        // Initialize
+        startCountdown();
+        updateOrderSummary();
+    </script>
+</body>
 </html>
