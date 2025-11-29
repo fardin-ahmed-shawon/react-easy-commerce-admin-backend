@@ -151,7 +151,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
-
+<style>
+  .upload-box {
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    background: #f9fafb;
+    margin-bottom: 20px;
+  }
+  .upload-box label {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .upload-box small {
+    color: #64748b;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .img-preview {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 1px solid #e2e8f0;
+  }
+</style>
 <!--------------------------->
 <!-- START MAIN AREA -->
 <!--------------------------->
@@ -256,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         
                         <!-- Size Selection -->
                         <div class="input-box">
-                          <label class="details">Choose Model (If available)</label>
+                          <label class="details">Choose Size (If available)</label>
                           <div class="size-options">
                             <?php
                               $sql = "SELECT id, size_label FROM size_labels ORDER BY id ASC";
@@ -386,7 +412,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                         <!-- product code -->
                         <div class="input-box">
-                          <label class="details">Product Code</label>
+                          <label class="details">SKU</label>
                           <input name="product_code" type="text" placeholder="Enter your product code">
                         </div>
                         <!-- product type -->
@@ -435,29 +461,63 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <!-- ===== Font and SVG Support (if not included globally) ===== -->
 
                         <!-- main image -->
-                        <div class="img-upload-box">
+                        <!-- <div class="img-upload-box">
                           <label class="details">Attach Primary Image *</label>
                           <h4>(1000 X 1000)</h4>
                           <input type="file" name="product_img1" id="file" class="inputfile" required/><br>
+                        </div> -->
+
+                        <div class="upload-box">
+                          <label for="product_img1">Attach Primary Image *</label>
+                          <small>(Recommended size: 1000 x 1000)</small>
+                          <input type="file" name="product_img1" id="product_img1" class="form-control" class="inputfile" required>
+                          <img id="previewImage1" src="" class="img-preview d-none" alt="Preview">
                         </div>
+
                         <!-- image 2 -->
-                        <div class="img-upload-box">
+                        <!-- <div class="img-upload-box">
                           <label class="details">Attach Image 2</label>
                           <h4>(1000 X 1000)</h4>
                           <input type="file" name="product_img2" id="file" class="inputfile"/><br>
+                        </div> -->
+
+                        <div class="upload-box">
+                          <label for="product_img2">Attach Image 2</label>
+                          <small>(Recommended size: 1000 x 1000)</small>
+                          <input type="file" name="product_img2" id="product_img2" class="form-control" class="inputfile" required>
+                          <img id="previewImage2" src="" class="img-preview d-none" alt="Preview">
                         </div>
+
+
                         <!-- image 3 -->
-                        <div class="img-upload-box">
+                        <!-- <div class="img-upload-box">
                           <label class="details">Attach Image 3</label>
                           <h4>(1000 X 1000)</h4>
                           <input type="file" name="product_img3" id="file" class="inputfile"/><br>
+                        </div> -->
+
+                        <div class="upload-box">
+                          <label for="product_img3">Attach Image 3</label>
+                          <small>(Recommended size: 1000 x 1000)</small>
+                          <input type="file" name="product_img3" id="product_img3" class="form-control" class="inputfile" required>
+                          <img id="previewImage3" src="" class="img-preview d-none" alt="Preview">
                         </div>
+
+                        
                         <!-- image 4 -->
-                        <div class="img-upload-box">
+                        <!-- <div class="img-upload-box">
                           <label class="details">Attach Image 4</label>
                           <h4>(1000 X 1000)</h4>
                           <input type="file" name="product_img4" id="file" class="inputfile"/><br>
+                        </div> -->
+
+                        <div class="upload-box">
+                          <label for="product_img4">Attach Image 4</label>
+                          <small>(Recommended size: 1000 x 1000)</small>
+                          <input type="file" name="product_img4" id="product_img4" class="form-control" class="inputfile" required>
+                          <img id="previewImage4" src="" class="img-preview d-none" alt="Preview">
                         </div>
+
 
                       </div>
                       </div>
@@ -474,5 +534,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!--------------------------->
 <!-- END MAIN AREA -->
 <!--------------------------->
+<!-- Image Preview -->
+<script>
 
+  document.getElementById('product_img1').addEventListener('change', function(event) {
+    const [file] = event.target.files;
+    if (file) {
+      const preview = document.getElementById('previewImage1');
+      preview.src = URL.createObjectURL(file);
+      preview.classList.remove('d-none');
+    }
+  });
+
+  document.getElementById('product_img2').addEventListener('change', function(event) {
+    const [file] = event.target.files;
+    if (file) {
+      const preview = document.getElementById('previewImage2');
+      preview.src = URL.createObjectURL(file);
+      preview.classList.remove('d-none');
+    }
+  });
+
+  document.getElementById('product_img3').addEventListener('change', function(event) {
+    const [file] = event.target.files;
+    if (file) {
+      const preview = document.getElementById('previewImage3');
+      preview.src = URL.createObjectURL(file);
+      preview.classList.remove('d-none');
+    }
+  });
+
+  document.getElementById('product_img4').addEventListener('change', function(event) {
+    const [file] = event.target.files;
+    if (file) {
+      const preview = document.getElementById('previewImage4');
+      preview.src = URL.createObjectURL(file);
+      preview.classList.remove('d-none');
+    }
+  });
+
+</script>
 <?php require 'footer.php'; ?>

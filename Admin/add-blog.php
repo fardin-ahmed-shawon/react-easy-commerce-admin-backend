@@ -166,11 +166,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <label for="blog_title" class="form-label">Blog Title *</label>
               <input type="text" name="blog_title" id="blog_title" class="form-control" placeholder="Enter your blog title" required>
             </div>
-
+            
+            <!-- -->
+            <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+            <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+            <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
             <div class="mb-3">
               <label for="blog_description" class="form-label">Blog Description *</label>
-              <textarea name="blog_description" id="blog_description" class="form-control" rows="10" placeholder="Write your blog content..." ></textarea>
+              
+              <textarea id="summernote1" rows="4" name="blog_description" cols="58" class="mytextarea"> </textarea>
             </div>
+            <script>
+                $('#summernote1').summernote({
+                    placeholder: 'Write description here',
+                    tabsize: 2,
+                    height: 200
+                });
+            </script>
 
             <div class="mt-4">
               <button type="submit" class="btn btn-primary">
@@ -203,33 +215,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       preview.src = URL.createObjectURL(file);
       preview.classList.remove('d-none');
     }
-  });
-</script>
-
-<!-- TinyMCE -->
-<!-- Place the first <script> tag in your HTML's <head> -->
-<script src="https://cdn.tiny.cloud/1/sdr5uoo5rpy0lj4pgi7slnbboispfgfuzed4bmb4ivrvyiqq/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-
-<!-- Place the following <script> and <textarea> tags your HTML's <body> -->
-<script>
-  tinymce.init({
-    selector: 'textarea',
-    plugins: [
-      // Core editing features
-      'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-      // Your account includes a free trial of TinyMCE premium features
-      // Try the most popular premium features until Oct 19, 2025:
-      'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
-    ],
-    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-    tinycomments_mode: 'embedded',
-    tinycomments_author: 'Author name',
-    mergetags_list: [
-      { value: 'First.Name', title: 'First Name' },
-      { value: 'Email', title: 'Email' },
-    ],
-    ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
-    uploadcare_public_key: 'd7e5639eab9525d12cbc',
   });
 </script>
 
