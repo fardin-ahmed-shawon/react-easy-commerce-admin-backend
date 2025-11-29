@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES ('$invoice_no', '$total_order_amount', '$discount_amount')");
 
     // echo "<script>window.location.href='order_details.php?invoice_no=" . $invoice_no . "';</script>";
-    echo "<script>window.location.href='makeInvoice.php'</script>";
+    echo "<script>window.location.href='order-management.php'</script>";
 
     exit;
 }

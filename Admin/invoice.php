@@ -442,7 +442,7 @@ body {
             <thead>
                 <tr>
                     <th>Item</th>
-                    <th>Unit</th>
+                    <th>Size</th>
                     <th class="text-center">Qty</th>
                     <th class="text-end">Price(Tk.)</th>
                     <th class="text-end">Total(Tk.)</th>
