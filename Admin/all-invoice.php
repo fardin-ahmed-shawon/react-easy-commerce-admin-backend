@@ -447,6 +447,7 @@ if ($result && ($result->num_rows ?? 0) > 0) {
                     <th>Item</th>
                     <th>SKU</th>
                     <th>Size</th>
+                    <th>Color</th>
                     <th class="text-center">Qty</th>
                     <th class="text-end">Price(Tk.)</th>
                     <th class="text-end">Total(Tk.)</th>
@@ -462,8 +463,8 @@ if ($result && ($result->num_rows ?? 0) > 0) {
                     echo '<tr>
                             <td>'.htmlspecialchars($item['product_title']).'</td>
                             <td>'.htmlspecialchars($item['product_code']).'</td>
-                            <td>'.htmlspecialchars($item['product_size']).'</td>
-                            
+                            <td>' . (!empty($item['product_size']) && $item['product_size'] !== "N/A" ? htmlspecialchars($item['product_size']) : "N/A") . '</td>
+                            <td>' . (!empty($item['product_color']) && $item['product_color'] !== "N/A" ? htmlspecialchars($item['product_color']) : "N/A") . '</td>
                             <td class="text-center">'.intval($qty).'</td>
                             <td class="text-end">'.number_format($unit_price,2).'</td>
                             <td class="text-end">'.number_format((float)$item['total_price'],2).'</td>
@@ -472,13 +473,13 @@ if ($result && ($result->num_rows ?? 0) > 0) {
                 $shipping = (float)find_shipping_charge($invoice_no);
                 $total = $subtotal + $shipping - $discount_amount;
                 ?>
-                <tr><td colspan="4" class="text-end"><strong>Subtotal(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($subtotal,2); ?></strong></td></tr>
-                <tr><td colspan="4" class="text-end"><strong>Shipping Cost(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($shipping,2); ?></strong></td></tr>
-                <tr><td colspan="4" class="text-end"><strong>Discount(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($discount_amount,2); ?></strong></td></tr>
-                <tr><td colspan="4" class="text-end"><strong>Grand Total(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($total,2); ?></strong></td></tr>
+                <tr><td colspan="6" class="text-end"><strong>Subtotal(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($subtotal,2); ?></strong></td></tr>
+                <tr><td colspan="6" class="text-end"><strong>Shipping Cost(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($shipping,2); ?></strong></td></tr>
+                <tr><td colspan="6" class="text-end"><strong>Discount(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($discount_amount,2); ?></strong></td></tr>
+                <tr><td colspan="6" class="text-end"><strong>Grand Total(Tk.)</strong></td><td class="text-end"><strong><?php echo number_format($total,2); ?></strong></td></tr>
                 
                 <tr>
-                    <td colspan="5" class="text-center">
+                    <td colspan="7" class="text-center">
                         <strong>In Word(Tk.): </strong>
                             <?php
                                 echo number_formatter_to_text($total);

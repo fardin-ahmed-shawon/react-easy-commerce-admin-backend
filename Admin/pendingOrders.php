@@ -373,9 +373,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accept_invoice'])) {
                 $color = !empty($p['color']) ? " · {$p['color']}" : '';
 
                 echo "<li>
-                                    <span class='product-title'>{$p['title']}</span>
-                                    <div class='product-details'>Qty: {$p['quantity']}{$size}{$color} — {$p['price']} Tk</div>
-                                  </li>";
+                <span class='product-title'>{$p['title']}</span>
+                <div class='product-details'>Qty: {$p['quantity']}{$size}{$color} — {$p['price']} Tk</div>
+                </li>";
               }
 
               echo      "</ul>

@@ -48,7 +48,7 @@ if ($action == 'order-tracking') {
     $invoice_no = $conn->real_escape_string($invoice_no);
 
     // Query
-    $sql = "SELECT order_no, invoice_no, order_date, user_address, product_title, product_quantity, total_price, payment_method, order_status 
+    $sql = "SELECT order_no, invoice_no, order_date, user_address, product_title, product_size, product_color,  product_quantity, total_price, payment_method, order_status 
             FROM order_info 
             WHERE invoice_no = '$invoice_no'
             ORDER BY order_date DESC";
@@ -72,6 +72,8 @@ if ($action == 'order-tracking') {
                 "order_date"     => date("F j, Y", strtotime($row['order_date'])),
                 "user_address"   => $row['user_address'],
                 "product_title"  => $row['product_title'],
+                "product_size"   => $row['product_size'],
+                "product_color"  => $row['product_color'],
                 "product_quantity"=> $row['product_quantity'],
                 "total_price"    => $row['total_price'],
                 "payment_method" => $row['payment_method'],

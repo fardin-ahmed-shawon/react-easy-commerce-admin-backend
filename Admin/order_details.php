@@ -571,8 +571,15 @@ $order = $orders[0];
                             <td><?= htmlspecialchars($row['product_title']) ?></td>
                             <td><?= htmlspecialchars($row['product_code']) ?></td>
                             <td><?= $row['product_quantity'] ?></td>
-                            <td><?= htmlspecialchars($row['product_size']) ?></td>
-                            <td><?= htmlspecialchars($row['product_color'] ?? 'Default') ?></td>
+                            <td><?= !empty($row['product_size']) && $row['product_size'] !== 'N/A'
+                                    ? htmlspecialchars($row['product_size'])
+                                    : 'N/A'; ?>
+                            </td>
+
+                            <td><?= !empty($row['product_color']) && $row['product_color'] !== 'N/A'
+                                    ? htmlspecialchars($row['product_color'])
+                                    : 'N/A'; ?>
+                            </td>
                             <td>৳ <?= number_format($unit_price) ?></td>
                             <td>৳ <?= number_format((float)$row['total_price'], 2) ?></td>
                         </tr>

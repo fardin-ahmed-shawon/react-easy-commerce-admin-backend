@@ -500,7 +500,7 @@ if (!empty($invoice_no)) {
                 </thead>
                 <tbody>
                   <?php 
-                    $stmtItems = $conn->prepare("SELECT product_title, product_size, product_quantity, total_price FROM order_info WHERE invoice_no = ?");
+                    $stmtItems = $conn->prepare("SELECT product_title, product_size, product_color, product_quantity, total_price FROM order_info WHERE invoice_no = ?");
                     $stmtItems->bind_param("s", $lbl['invoice_no']);
                     $stmtItems->execute();
                     $itemsRes = $stmtItems->get_result();
@@ -509,8 +509,9 @@ if (!empty($invoice_no)) {
                         $qty = (int)$item['product_quantity'];
                         $price = (float)$item['total_price'] / $qty;
                         $size = !empty($item['product_size']) ? ' (' . htmlspecialchars($item['product_size']) . ')' : '';
+                        $color = !empty($item['product_color']) ? ' (' . htmlspecialchars($item['product_color']) . ')' : '';
                         echo '<tr>
-                                <td>' . htmlspecialchars($item['product_title']) . $size . '</td>
+                                <td>' . htmlspecialchars($item['product_title']) . $size . $color . '</td>
                                 <td style="text-align: center;">' . $qty . '</td>
                                 <td style="text-align: right;">' . number_format($price, 0) . '</td>
                               </tr>';

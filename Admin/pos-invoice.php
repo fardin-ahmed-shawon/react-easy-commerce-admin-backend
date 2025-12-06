@@ -320,9 +320,27 @@ body {
             $subtotal += (float)$item['total_price'];
             
             $itemName = htmlspecialchars($item['product_title']);
-            if(!empty($item['product_size']) && $item['product_size'] != 'N/A') {
-                $itemName .= ' (' . htmlspecialchars($item['product_size']) . ')';
+
+            $size = trim($item['product_size'] ?? '');
+            $color = trim($item['product_color'] ?? '');
+
+            $details = [];
+
+            // Add size only if valid
+            if (!empty($size) && strtolower($size) !== 'n/a') {
+                $details[] = htmlspecialchars($size);
             }
+
+            // Add color only if valid
+            if (!empty($color) && strtolower($color) !== 'n/a') {
+                $details[] = htmlspecialchars($color);
+            }
+
+            // Append formatted details: (Size, Color)
+            if (!empty($details)) {
+                $itemName .= ' (' . implode(', ', $details) . ')';
+            }
+
         ?>
             <tr>
                 <td class="item-name"><?php echo $itemName; ?></td>
