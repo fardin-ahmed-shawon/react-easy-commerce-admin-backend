@@ -47,11 +47,10 @@ if ($action == 'order-tracking') {
     // Sanitize
     $invoice_no = $conn->real_escape_string($invoice_no);
 
-    // Query
-    $sql = "SELECT order_no, invoice_no, order_date, user_address, product_title, product_size, product_color,  product_quantity, total_price, payment_method, order_status 
-            FROM order_info 
+    // Query to fetch all order items for this invoice
+    $sql = "SELECT * FROM order_info 
             WHERE invoice_no = '$invoice_no'
-            ORDER BY order_date DESC";
+            ORDER BY order_no DESC";
 
     $result = $conn->query($sql);
 
@@ -64,27 +63,61 @@ if ($action == 'order-tracking') {
     }
 
     if ($result->num_rows > 0) {
-        $orders = [];
+        $order_data = null;
+        $items = [];
+        $total_purchase_amount = 0;
+        $total_ordered_items = 0;
+
+        // Loop through all items
         while ($row = $result->fetch_assoc()) {
-            $orders[] = [
-                "order_no"       => $row['order_no'],
-                "invoice_no"     => $row['invoice_no'],
-                "order_date"     => date("F j, Y", strtotime($row['order_date'])),
-                "user_address"   => $row['user_address'],
-                "product_title"  => $row['product_title'],
-                "product_size"   => $row['product_size'],
-                "product_color"  => $row['product_color'],
-                "product_quantity"=> $row['product_quantity'],
-                "total_price"    => $row['total_price'],
-                "payment_method" => $row['payment_method'],
-                "order_status"   => $row['order_status'],
+            // Set order-level data from first row (same for all items)
+            if ($order_data === null) {
+                $shipping = find_shipping_charge($invoice_no);
+                $discount = calculate_discount_amount($invoice_no);
+
+                $order_data = [
+                    "invoice_no" => $row['invoice_no'],
+                    "date" => date('M j, Y', strtotime($row['order_date'])),
+                    "status" => $row['order_status'],
+                    "order_note" => $row['order_note'] ?? '',
+                    "paymentMethod" => $row['payment_method'],
+                    "shippingAddress" => $row['user_address'],
+                    "shippingCharge" => (string)$shipping,
+                    "discountAmount" => (string)$discount,
+                ];
+            }
+
+            // Add item to items array
+            $items[] = [
+                "order_no" => $row['order_no'],
+                "product_id" => $row['product_id'],
+                "product_title" => $row['product_title'],
+                "quantity" => $row['product_quantity'],
+                "size" => $row['product_size'],
+                "color" => $row['product_color'],
+                "total_price" => $row['total_price']
             ];
+
+            // Update totals
+            $total_purchase_amount += (int)$row['total_price'];
+            $total_ordered_items += (int)$row['product_quantity'];
         }
 
-        echo json_encode([
+        // Calculate final amount
+        $final_amount = $total_purchase_amount + (int)$order_data['shippingCharge'] - (int)$order_data['discountAmount'];
+
+        // Build final response
+        $response = [
             "success" => true,
-            "data" => $orders
-        ]);
+            "data" => array_merge($order_data, [
+                "total_purchase_amount" => (string)$total_purchase_amount,
+                "total_ordered_items" => (string)$total_ordered_items,
+                "final_amount" => (string)$final_amount,
+                "items" => $items
+            ])
+        ];
+
+        echo json_encode($response);
         exit();
     } else {
         echo json_encode([
